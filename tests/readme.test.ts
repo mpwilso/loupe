@@ -85,6 +85,19 @@ const sections = () => {
 const section = (title: string) => sections().find((s) => s.title === title)?.body ?? '';
 const story = readFileSync(join(root, 'examples/pellwick/expected/skip-a-box.md'), 'utf8');
 
+// Every image the README shows: <img src>, <source srcset> and Markdown images.
+const images = (text: string) => [...text.matchAll(/<img[^>]*\ssrc="([^"]+)"|<source[^>]*\ssrcset="([^"]+)"|!\[[^\]]*\]\(([^)\s]+)\)/g)].map((m) => m[1] ?? m[2] ?? m[3]);
+const missingImages = (text: string) => images(text).filter((path) => !/^https?:/.test(path) && !existsSync(join(root, path)));
+
+test('every image the README references exists in the repo', () => {
+  assert.ok(images(readme).length >= 4, 'the lockup and the diagram, each light and dark');
+  assert.deepEqual(missingImages(readme), []);
+  assert.deepEqual(missingImages('<img src="docs/img/no-such-demo.gif" alt="x">\n![x](brand/nowhere.png)\n<source srcset="brand/lockup-dark.svg">\n'), [
+    'docs/img/no-such-demo.gif',
+    'brand/nowhere.png',
+  ]);
+});
+
 test('the README runs from plain to technical, in a fixed order', () => {
   assert.deepEqual(
     sections().map((s) => s.title),
@@ -92,19 +105,14 @@ test('the README runs from plain to technical, in a fixed order', () => {
   );
 });
 
-test('the README opens with the lockup, both themes, the tagline, the paragraph, the demo and a line of links to the sections', () => {
+test('the README opens with the lockup, both themes, the tagline, the paragraph and a line of links to the sections', () => {
   const top = readme.split('\n## ')[0];
   assert.ok(top.includes('<source media="(prefers-color-scheme: dark)" srcset="brand/lockup-dark.svg">'));
   assert.ok(top.includes('<img src="brand/lockup-light.svg" alt="Loupe" width="360">'));
   assert.ok(top.includes("Story tools help you write faster. Loupe won't hand you a story it can't back up."));
   assert.ok(top.includes("get one that says what's known, unknown and assumed."));
-  const demo = '<img src="docs/img/loupe-demo.gif" width="100%" alt="A Slack thread pasted into a Claude project becomes a checked story with known facts, sources, confidence, an estimate and questions.">';
-  const caption = 'A Slack thread goes in, and a checked story comes out.';
   const jump = 'Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials changed](#what-the-trials-changed), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).';
-  const order = ["get one that says what's known, unknown and assumed.", demo, caption, jump].map((part) => top.indexOf(part));
-  assert.ok(order.every((at) => at >= 0), `missing: ${JSON.stringify(order)}`);
-  assert.deepEqual([...order].sort((a, b) => a - b), order, 'paragraph, demo, caption, then the jump line');
-  assert.doesNotMatch(readme, /demo GIF goes here/i, 'the placeholder is gone');
+  assert.ok(top.includes(`get one that says what's known, unknown and assumed.\n\n${jump}`), 'the paragraph, then the jump line');
 });
 
 test('the story section shows real lines from the example, then the whole story, collapsed', () => {

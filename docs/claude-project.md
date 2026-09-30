@@ -12,11 +12,9 @@ An organization owner can instead add the skill for everyone, from the organizat
 
 ## 1. Get the skill zip
 
-Every run of the repository's tests keeps the skill as a download for 7 days.
+Download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest). This download is the skill. Don't unzip it. It holds one folder, `loupe/`.
 
-1. In a browser, open the repository on GitHub and click **Actions**.
-2. Click the latest run of **tests** on the main branch.
-3. Scroll to **Artifacts** at the bottom and download **loupe-skill**. This download is the skill. Don't unzip it. It holds one folder, `loupe/`.
+Or, for a build newer than the release: open the repository on GitHub, click **Actions**, click the latest run of **tests** on **master**, and download **loupe-skill** under **Artifacts**. Each run keeps it for 7 days.
 
 ## 2. Upload the skill (every teammate, once)
 

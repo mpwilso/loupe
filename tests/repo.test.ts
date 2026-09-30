@@ -195,3 +195,13 @@ test('a tag starting with "v" tests, builds and releases the skill zip, with eve
     for (const [, action] of read(`.github/workflows/${file}`).matchAll(/uses: (\S+)/g)) assert.match(action, /@[0-9a-f]{40}$/, `${file}: ${action}`);
   }
 });
+
+// The setup guide and the README send people to the same place for the skill.
+test('the setup guide gets the skill from the latest release, with Actions as the second option', () => {
+  const step = read('docs/claude-project.md').split('## 1. Get the skill zip\n')[1].split('\n## ')[0];
+  const release = step.indexOf('[latest release](https://github.com/mpwilso/loupe/releases/latest)');
+  assert.ok(release >= 0, 'links the latest release');
+  assert.ok(release < step.indexOf('**Actions**'), 'the release first');
+  assert.match(step, /latest run of \*\*tests\*\* on \*\*master\*\*/);
+  assert.doesNotMatch(step, /main branch/);
+});

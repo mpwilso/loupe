@@ -9,10 +9,6 @@
 
 Loupe is a Claude skill for product managers. It turns meeting notes, tickets and emails into stories a developer can build without a second meeting. Product owners and product managers write with it. Developers, testers and anyone else who reads a story get one that says what's known, unknown and assumed.
 
-<img src="docs/img/loupe-demo.gif" width="100%" alt="A Slack thread pasted into a Claude project becomes a checked story with known facts, sources, confidence, an estimate and questions.">
-
-A Slack thread goes in, and a checked story comes out.
-
 Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials changed](#what-the-trials-changed), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).
 
 ## Why it exists
