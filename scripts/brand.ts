@@ -32,14 +32,18 @@ export const OPEN = facet(6);
 // Mint has too little contrast on a light page, so the open facet's stroke is Emerald there.
 export const OPEN_STROKE: Record<Theme, string> = { dark: C.mint, light: C.emerald };
 
-// Facets fade in once, 0.35s each, 0.2s apart, then hold. The base state is opacity 1, so a viewer that
-// skips the animation, or asks for reduced motion, sees the finished mark. "*" alone would lose to the
-// .facet and .fN rules on specificity, so the reduced-motion rule needs !important to stop the animation.
-export const ANIMATION =
-  '<style>.facet{animation-name:facet;animation-duration:.35s;animation-timing-function:ease-out;animation-iteration-count:1;animation-fill-mode:both}' +
-  FACETS.map(({ n }) => `.f${n}{animation-delay:${((n - 1) * 0.2).toFixed(1)}s}`).join('') +
-  '@keyframes facet{from{opacity:0}to{opacity:1}}' +
-  '@media (prefers-reduced-motion: reduce){*{animation:none!important}}</style>';
+// The light pass: every filled facet rests at full opacity, dims briefly and comes back, one after another,
+// clockwise. Nothing ever starts hidden, so a viewer that doesn't run the animation (a hidden tab, a paused
+// timeline) still sees the complete mark. The open facet never moves.
+// One cycle, in seconds: the pass takes about 0.9s, then the mark rests. Set it to 0 to turn the pass off.
+export const CYCLE_SECONDS = 10;
+// "*" alone would lose to the .facet and .fN rules on specificity, so the reduced-motion rule needs !important.
+export const ANIMATION = CYCLE_SECONDS
+  ? `<style>.facet{animation-name:pass;animation-duration:${CYCLE_SECONDS}s;animation-timing-function:ease-in-out;animation-iteration-count:infinite;animation-fill-mode:none}` +
+    FACETS.map(({ n }) => `.f${n}{animation-delay:${((n - 1) * 12) / 100}s}`).join('') +
+    '@keyframes pass{0%{opacity:1}4%{opacity:.4}9%{opacity:1}100%{opacity:1}}' +
+    '@media (prefers-reduced-motion: reduce){*{animation:none!important}}</style>'
+  : '';
 
 function markBody(theme: Theme): string {
   const facets = FACETS.map(({ n, d, fill }) => `<path class="facet f${n}" d="${d}" fill="${fill}"/>`).join('');

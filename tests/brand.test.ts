@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { inflateSync } from 'node:zlib';
-import { CENTER, FACETS, OPEN_STROKE, VERTICES, palette, render, wordmark } from '../scripts/brand.ts';
+import { CENTER, CYCLE_SECONDS, FACETS, OPEN_STROKE, VERTICES, palette, render, wordmark } from '../scripts/brand.ts';
 import { parseSvg, walk } from './svg.ts';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -64,18 +64,43 @@ test('the mark is a hexagon of radius 46 in six facets: five filled clockwise fr
   assert.deepEqual(OPEN_STROKE, { dark: hex('mint'), light: hex('emerald') });
 });
 
-test('the facets fade in once, 0.35s each, 0.2s apart, and hold; reduced motion shows the finished mark', () => {
+// The first frame must be the complete mark. When the animation doesn't run (a hidden tab, a paused timeline,
+// a viewer that doesn't animate SVG), CSS falls back to the first keyframe or the base state, so neither may hide anything.
+export function firstFrameProblems(css: string): string[] {
+  const problems: string[] = [];
+  for (const [, name, body] of css.matchAll(/@keyframes\s+([\w-]+)\s*\{((?:[^{}]*\{[^}]*\})*)\s*\}/g)) {
+    const frames = [...body.matchAll(/([\w%.,\s]+)\{([^}]*)\}/g)].map(([, at, rule]) => ({ at: at.trim(), rule }));
+    const start = frames.find((f) => f.at.split(',').some((s) => ['from', '0%'].includes(s.trim())));
+    const opacity = Number(start?.rule.match(/opacity:\s*([\d.]+)/)?.[1] ?? 1);
+    if (opacity < 1) problems.push(`@keyframes ${name} starts at opacity ${opacity}, so the first frame hides part of the mark`);
+  }
+  if (/animation-fill-mode:\s*(backwards|both)|animation:[^;}]*\b(backwards|both)\b/.test(css)) {
+    problems.push('animation-fill-mode backwards or both shows the first keyframe before the animation runs');
+  }
+  return problems;
+}
+
+test('the first frame must be the complete mark: no keyframe starts below opacity 1, and no fill-mode backwards or both', () => {
+  const brand = svgs.filter((p) => p.startsWith('brand/'));
+  for (const path of brand) assert.deepEqual(firstFrameProblems(read(path).match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''), [], path);
+  // The rule bites: the fade-in this replaced left the facets hidden whenever the timeline didn't run.
+  assert.equal(firstFrameProblems('.facet{animation-fill-mode:both}@keyframes facet{from{opacity:0}to{opacity:1}}').length, 2);
+  assert.equal(firstFrameProblems('.a{animation:x 1s backwards}').length, 1);
+  assert.deepEqual(firstFrameProblems('@keyframes pass{0%{opacity:1}4%{opacity:.4}9%{opacity:1}100%{opacity:1}}'), []);
+});
+
+test('the light pass: each filled facet dims and returns, 0.12s apart, every cycle; the open facet never moves; reduced motion stills it', () => {
   for (const path of animated) {
     const style = read(path).match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? '';
-    assert.match(style, /\.facet\{animation-name:facet;animation-duration:\.35s;animation-timing-function:ease-out;animation-iteration-count:1;animation-fill-mode:both\}/, path);
-    assert.ok(style.includes('.f1{animation-delay:0.0s}.f2{animation-delay:0.2s}.f3{animation-delay:0.4s}.f4{animation-delay:0.6s}.f5{animation-delay:0.8s}'), path);
-    assert.match(style, /@keyframes facet\{from\{opacity:0\}to\{opacity:1\}\}/, path);
+    assert.ok(style.includes(`.facet{animation-name:pass;animation-duration:${CYCLE_SECONDS}s;animation-timing-function:ease-in-out;animation-iteration-count:infinite;animation-fill-mode:none}`), path);
+    assert.ok(style.includes('.f1{animation-delay:0s}.f2{animation-delay:0.12s}.f3{animation-delay:0.24s}.f4{animation-delay:0.36s}.f5{animation-delay:0.48s}'), path);
+    assert.ok(style.includes('@keyframes pass{0%{opacity:1}4%{opacity:.4}9%{opacity:1}100%{opacity:1}}'), path);
     assert.ok(style.includes('@media (prefers-reduced-motion: reduce){*{animation:none!important}}'), path);
-    assert.doesNotMatch(style, /infinite|alternate/, path);
-    // Hidden only inside the keyframes: the base state is the finished mark.
-    assert.equal(style.replace(/@keyframes[^}]*\}[^}]*\}\}/, '').match(/opacity/g), null, path);
-    assert.doesNotMatch(read(path), /opacity="0"/, path);
+    const open = walk(parseSvg(read(path))).find((n) => n.name === 'path' && n.attrs.fill === 'none')!;
+    assert.equal(open.attrs.class, undefined, `${path}: the open facet does not animate`);
+    assert.doesNotMatch(read(path), /opacity="/, path);
   }
+  assert.equal(CYCLE_SECONDS, 10);
 });
 
 test('the small mark is still, cropped close, with the open facet a solid Emerald stroke', () => {
