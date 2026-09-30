@@ -31,7 +31,7 @@ Known / Unknown / Assumed
 Confidence: level, why, how to raise it
 Estimate: hours range, basis
 Questions before building
-Before release: the definition-of-done items it triggers
+Before release: only the actions specific to this story, such as telling support about a named change, or "None."
 At most five items in any list. Plain words an intern and an executive both understand in 30 seconds. No jargon without a plain explanation, no filler, no em dashes. It should read like the team's best PM wrote it. A checker rejects any story that doesn't fit this shape.
 
 ## One core, two ways in
@@ -49,6 +49,7 @@ The core: the story shape, templates, readiness bar, checker and context-file fo
 A finished story exports as a Parallax intent, so a story can go straight into governed development.
 
 ## How we'll know it works
+- Time to write a story: about a minute or two, fully checked.
 - Time from input to accepted story. Target: under 10 minutes.
 - Share of stories accepted without edits.
 - Questions raised later, in development, testing or acceptance, that the story should have caught. The goal is zero.

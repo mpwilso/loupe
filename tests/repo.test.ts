@@ -113,7 +113,8 @@ test('the trial run tables keep their fixed columns and rows', () => {
     'Correct refusals',
     'Questions a developer would still ask',
   ]);
-  assert.match(read('docs/trial-run.md'), /target for Loupe is under 60 seconds/);
+  assert.match(read('docs/trial-run.md'), /target for Loupe is about a minute or two, fully checked/);
+  assert.doesNotMatch(read('docs/trial-run.md'), /60 seconds|1:00/);
   for (const results of [baseline, loupe]) for (const row of results.slice(2)) assert.equal(row.split('|').length, resultHeader.split('|').length, row);
   assert.ok(read('docs/trial-run.md').includes('```\nWrite a user story with acceptance criteria for this. Use the attached team files.\n```'));
 });
@@ -144,4 +145,12 @@ test('every Loupe pass pastes the project instructions, and a run without the sk
   const trial = read('docs/trial-run.md');
   for (const pass of ['## Pass B', '## Pass C']) assert.match(trial.split(pass)[1].split('\n## ')[0], /Paste the project instructions from claude-project\.md, step 3/, pass);
   assert.match(trial, /A run where the skill didn't start counts as a failure/);
+});
+
+// The law matches the skill.
+test('direction.md keeps "Before release" to story-specific actions and sets the speed goal', () => {
+  const direction = read('docs/direction.md');
+  assert.match(direction, /^Before release: only the actions specific to this story, such as telling support about a named change, or "None\."$/m);
+  assert.doesNotMatch(direction, /definition-of-done items it triggers/);
+  assert.match(direction, /^- Time to write a story: about a minute or two, fully checked\.$/m);
 });

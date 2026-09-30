@@ -22,7 +22,7 @@ Skills belong to your account, not a project. Upload `loupe-skill.zip` once, as 
 
 - [ ] Open a new chat in the pass's project. Use one chat per input.
 - [ ] Start a timer and paste the whole input file from the kit's `inputs/` folder.
-- [ ] Note the **Write time**, from sending the input to the finished story or response. The target for Loupe is under 60 seconds, as `m:ss` under `1:00`.
+- [ ] Note the **Write time**, from sending the input to the finished story or response. The target for Loupe is about a minute or two, fully checked, as `m:ss`.
 - [ ] Note the **Steps shown**: what Claude reports it did, as `N files, N commands`, for example "Created 2 files, ran 2 commands" is `2 files, 2 commands`.
 - [ ] Stop the timer when you would hand the result to a developer. Ask for changes first if you need them. That is **Time**.
 - [ ] Start a second timer and check the output carefully against its input, using scoring.md. Stop it when you finish. That is **Review time**: how long you take to check it, not how long Claude takes to write it.
