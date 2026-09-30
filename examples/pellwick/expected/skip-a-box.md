@@ -33,8 +33,9 @@ How to raise it: Sam skips a box in staging and confirms the billing job does no
 Basis: Sam said "a couple of days if billing behaves" in the meeting on 2026-09-22, read here as two working days. Undo is not included, and neither is any billing fix.
 
 ## Questions before building
+- Does skipping count as a payments change under the December freeze, since it affects charging?
 - Can a subscriber undo a skip before the cutoff? Dana wants it, Sam says it adds work, and no one decided.
 - If billing does charge a skipped box, is fixing that part of this story or a separate one?
+- Which system decides the "next regular delivery date"? The web app and Stockroom sometimes disagree. (Priorities context file)
 - After a skip, the following box becomes the next box. Can the subscriber skip that one too?
-- Should the subscriber get an email confirming the skip, or is the on-screen message enough?
-- Where does "Skip this box" go: the account home page, the "change my box" page, or both?
+More open questions than fit here. Consider a spike first.

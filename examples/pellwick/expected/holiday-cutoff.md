@@ -32,8 +32,8 @@ How to raise it: Sam changes the setting in staging and checks the cutoff on a b
 Basis: No one has sized it. The range covers changing one setting twice and testing both switches in staging. It does not cover updating boxes that already exist.
 
 ## Questions before building
-- Should the switch on 1 December and back on 5 January happen on its own, or does someone do it by hand? Sam asked.
 - Both switches fall inside the December freeze dates. Does the freeze cover this change?
-- Do subscribers need notice? A box they could change on one day may lock a day earlier than they expect.
+- Should the switch on 1 December and back on 5 January happen on its own, or does someone do it by hand? Sam asked.
+- At what time of day, and in which time zone, does each switch happen?
 - The skip-a-box story uses 72 hours. Should skipping follow the same setting, so it gets the holiday cutoff too?
-- Agents tell subscribers no inside the cutoff today. How will they know it is 96 hours over the holidays?
+- Who needs telling before 1 December? A subscriber's box may lock a day earlier than they expect, and agents tell subscribers no inside the cutoff today.

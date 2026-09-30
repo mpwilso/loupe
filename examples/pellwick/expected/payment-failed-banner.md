@@ -43,6 +43,6 @@ How to raise it: A developer finds where the account page reads payment status a
 Basis: A display fix in the web app once the cause is known. The upper end covers tracing late status updates.
 
 ## Questions before building
-- What should the account page show during the wait of up to 10 minutes before the payment status arrives?
-- Does this fix count as a payments change under the December freeze, or is it display only?
+- What should the account page show during the wait of up to 10 minutes before the payment status arrives? Should the banner then clear without a reload?
 - Once fixed, do accounts that are already stuck clear on their own, or do they need a one-time fix?
+- Does this fix count as a payments change under the December freeze, or is it display only?
