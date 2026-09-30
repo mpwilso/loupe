@@ -2,7 +2,7 @@
 
 A few notes from Priya Raman, product manager, on 2026-09-11, based on the ten Jira stories we accepted in July and August 2026.
 
-If a subscriber will see it, write a user story. For staff tools, write a job story. Bugs go in the bug template. When another team asks us to change a rule or a setting, use our change request template (templates/change-request.md).
+If a subscriber will see it, write a user story. For staff tools, write a job story. Bugs go in the bug template. When another team asks us to change a rule or a setting, use our change request form (change-request-template.md).
 
 Start the title with a verb and say who gets the benefit, like "Let subscribers skip a box from their account".
 

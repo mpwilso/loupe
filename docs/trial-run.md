@@ -2,6 +2,8 @@
 
 Trial 2 runs three passes by hand in claude.ai, each in its own Claude Project, on five Pellwick inputs. Record the results in the tables below. These numbers become the README's proof strip, so fill the tables in exactly as described, and score every output with [scoring.md](scoring.md).
 
+Claude only ever sees the kit's `raw/` folder and what Loupe makes from it. The kit's `templates/` and `context/` folders are there only as the reference for scoring pass B. Never upload them to any project.
+
 Four inputs should give a story. One, `export-notes.md`, should not: success there means no story, only a "Not ready yet" response that asks the right questions. `slack-thread-address-change.md` only just clears the readiness bar, so refusing it is the wrong call.
 
 ## Download the trial files
@@ -29,7 +31,7 @@ Skills belong to your account, not a project. Upload `loupe-skill.zip` once, as 
 
 - [ ] Switch the "loupe" skill off.
 - [ ] Create a project named "Pellwick trial 2 baseline". Leave its instructions empty.
-- [ ] Upload every file in the kit's `raw/` folder as project knowledge, and nothing else.
+- [ ] Upload only the files in the kit's `raw/` folder as project knowledge. Don't upload `templates/` or `context/`: they teach Loupe's story shape, and the baseline must not see it.
 - [ ] For each input, send exactly this, with the input attached:
 
 ```
@@ -50,10 +52,12 @@ Write `n/a` for Node, Checker ran and Passed checker.
 
 - [ ] Switch the "loupe" skill on.
 - [ ] Create a project named "Pellwick trial 2 setup" with the instructions from claude-project.md, step 3.
-- [ ] Upload every file in the kit's `raw/` folder as project knowledge.
+- [ ] Upload only the files in the kit's `raw/` folder as project knowledge. Don't upload `templates/` or `context/`.
 - [ ] Open a new chat, start the timer and send "Set up the team from the files in this project." Answer its questions with "Only what the files say." Stop the timer when it hands over the context files.
-- [ ] Save the context files it gives you. Pass C uses them.
-- [ ] Compare them with `raw/`. A fact is dropped if it is in `raw/` but in none of the context files. A fact is added if it is in a context file but not in `raw/`. The kit's `context/` folder is the reference: every fact in it is in `raw/`.
+- [ ] Loupe should also turn the team's plain change request form, `raw/change-request-template.md`, into a template it can check. If it doesn't offer, don't ask. Record that it didn't.
+- [ ] Save every file it gives you: the context files and any template. Pass C uses them and nothing else.
+- [ ] Note whether it said the template passed its checker. If you can, run `node src/check.ts` on the template in a clone of this repository to confirm.
+- [ ] Compare the context files with `raw/`. A fact is dropped if it is in `raw/` but in none of the context files. A fact is added if it is in a context file but not in `raw/`. The kit's `context/` folder is the reference: every fact in it is in `raw/`. Compare the template with the kit's `templates/change-request.md` the same way.
 
 | Measure | Result |
 |---|---|
@@ -62,6 +66,8 @@ Write `n/a` for Node, Checker ran and Passed checker.
 | Every file passed check-context | yes |
 | Facts dropped | 0 |
 | Facts added | 0 |
+| Change request template written | yes |
+| Template passed the checker | yes |
 
 List each dropped or added fact here, one line each.
 
@@ -69,7 +75,7 @@ List each dropped or added fact here, one line each.
 
 - [ ] Keep the "loupe" skill on.
 - [ ] Create a project named "Pellwick trial 2 Loupe" with the instructions from claude-project.md, step 3.
-- [ ] Upload the context files from pass B and the kit's `templates/change-request.md` as project knowledge. Don't upload `raw/` or the kit's `context/`.
+- [ ] Upload only what pass B produced: its context files and its change request template, if it wrote one. Don't upload `raw/`, or the kit's `templates/` or `context/`.
 - [ ] Paste each input with no other words. Note the Node version from the "Checked with Node" line or the "Not checked:" line, or `none` if neither appears.
 
 | Input | Expected | Node | Checker ran | Passed checker | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |

@@ -94,7 +94,15 @@ test('the trial run tables keep their fixed columns and rows', () => {
     assert.deepEqual(results.slice(2).map((row) => row.split('|')[2].trim()), ['story', 'story', 'story', 'not ready', 'story']);
   }
   for (const input of inputs) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
-  assert.deepEqual(firstCells(setup), ['Time', 'Context files written', 'Every file passed check-context', 'Facts dropped', 'Facts added']);
+  assert.deepEqual(firstCells(setup), [
+    'Time',
+    'Context files written',
+    'Every file passed check-context',
+    'Facts dropped',
+    'Facts added',
+    'Change request template written',
+    'Template passed the checker',
+  ]);
   assert.deepEqual(comparison.slice(0, 2), ['| Measure | Loupe | Baseline |', '|---|---|---|']);
   assert.deepEqual(firstCells(comparison), [
     'Time to accepted story',

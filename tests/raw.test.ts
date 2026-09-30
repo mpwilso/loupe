@@ -58,7 +58,7 @@ const facts: [file: string, context: RegExp, raw: RegExp][] = [
   ['story-style', /User stories for anything a subscriber sees/, /If a subscriber will see it, write a user story/],
   ['story-style', /Job stories for staff tools/, /For staff tools, write a job story/],
   ['story-style', /Bugs use the bug template/, /Bugs go in the bug template/],
-  ['story-style', /when another team asks to change a rule or setting, use the team template in templates\/change-request.md/, /When another team asks us to change a rule or a setting, use our change request template \(templates\/change-request.md\)/],
+  ['story-style', /when another team asks to change a rule or setting, use the team template in templates\/change-request.md/, /When another team asks us to change a rule or a setting, use our change request form \(change-request-template.md\)/],
   ['story-style', /Titles start with a verb and name who benefits/, /Start the title with a verb and say who gets the benefit/],
   ['story-style', /cover the cutoff and what support sees in Stockroom/, /always cover the cutoff and what support will see in Stockroom/],
   ['story-style', /a developer who knows the web app. Add 50% when Stockroom changes too/, /a developer who knows the web app is doing it, and add 50% if Stockroom has to change as well/],
@@ -82,8 +82,15 @@ test('every fact line in the context files has a key fact', () => {
   assert.deepEqual(uncovered, []);
 });
 
-// Raw files are the team's own words. A real team's wiki doesn't know Loupe exists.
-test('no file in raw/ mentions Loupe', () => {
-  const mentions = readdirSync(dir('raw')).filter((file) => /loupe/i.test(read('raw', file)));
-  assert.deepEqual(mentions, []);
+// Raw files are the team's own words. A real team's wiki doesn't know Loupe exists, or use its sections.
+// "Acceptance criteria" is left out: ordinary teams use it too.
+const sections = ['The story', 'Not included', 'Known', 'Unknown', 'Assumed', 'Confidence', 'Estimate', 'Questions before building'];
+const loupeLine = new RegExp(`^(#+ *)?(${sections.join('|')}):?$|^(Call|Confidence|First question): `);
+
+test('no file in raw/ mentions Loupe or uses a Loupe section heading', () => {
+  const found = readdirSync(dir('raw')).flatMap((file) => {
+    const text = readFileSync(new URL(file, dir('raw')), 'utf8');
+    return [...(/loupe/i.test(text) ? [`${file}: mentions Loupe`] : []), ...text.split('\n').filter((line) => loupeLine.test(line.trim())).map((line) => `${file}: ${line}`)];
+  });
+  assert.deepEqual(found, []);
 });
