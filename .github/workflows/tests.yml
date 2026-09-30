@@ -44,10 +44,14 @@ jobs:
         with:
           node-version-file: .nvmrc
       - run: scripts/build-skill.sh
+      # GitHub zips the artifact itself, so the download is the skill with loupe/ at its root.
+      # A glob keeps dist/ as the root; a plain dist/loupe/ would drop the loupe/ folder.
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: loupe-skill
-          path: dist/loupe-skill.zip
+          path: |
+            dist/*
+            !dist/loupe-skill.zip
           if-no-files-found: error
           retention-days: 7
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
