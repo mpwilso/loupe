@@ -32,3 +32,30 @@ jobs:
         with:
           name: test-output-${{ matrix.node }}
           path: test-output.txt
+
+  # Files for the hand trial: the skill zip, and the Pellwick kit without the expected stories, so the trial stays blind.
+  trial-kit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+      - run: scripts/build-skill.sh
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: loupe-skill
+          path: dist/loupe-skill.zip
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pellwick-trial-kit
+          path: |
+            examples/pellwick/context/
+            examples/pellwick/templates/
+            examples/pellwick/inputs/
+          if-no-files-found: error
+          retention-days: 7

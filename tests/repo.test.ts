@@ -109,3 +109,13 @@ test('the baseline table matches the results table, and the comparison keeps its
   ]);
   assert.ok(read('docs/trial-run.md').includes('```\nWrite a user story with acceptance criteria for this. Use the attached team files.\n```'));
 });
+
+test('every CI action is pinned to a commit, and the trial kit stays blind', () => {
+  const workflow = read('.github/workflows/tests.yml');
+  const uses = [...workflow.matchAll(/uses: (\S+)/g)].map((m) => m[1]);
+  assert.ok(uses.length > 0);
+  for (const action of uses) assert.match(action, /@[0-9a-f]{40}$/, action);
+  for (const name of ['loupe-skill', 'pellwick-trial-kit']) assert.ok(workflow.includes(`name: ${name}\n`), name);
+  assert.equal(workflow.match(/retention-days: 7\n/g)?.length, 2);
+  assert.doesNotMatch(workflow, /examples\/pellwick\/expected/);
+});
