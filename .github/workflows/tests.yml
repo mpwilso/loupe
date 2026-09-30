@@ -61,5 +61,6 @@ jobs:
             examples/pellwick/context/
             examples/pellwick/templates/
             examples/pellwick/inputs/
+            examples/pellwick/raw/
           if-no-files-found: error
           retention-days: 7

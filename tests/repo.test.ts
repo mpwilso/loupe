@@ -118,4 +118,5 @@ test('every CI action is pinned to a commit, and the trial kit stays blind', () 
   for (const name of ['loupe-skill', 'pellwick-trial-kit']) assert.ok(workflow.includes(`name: ${name}\n`), name);
   assert.equal(workflow.match(/retention-days: 7\n/g)?.length, 2);
   assert.doesNotMatch(workflow, /examples\/pellwick\/expected/);
+  for (const folder of ['context', 'templates', 'inputs', 'raw']) assert.ok(workflow.includes(`examples/pellwick/${folder}/\n`), folder);
 });
