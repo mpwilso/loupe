@@ -87,6 +87,12 @@ test('every file SKILL.md points to is in the zip, one level down', () => {
   assert.doesNotMatch(file('SKILL.md'), /\\/, 'forward slashes only');
 });
 
+test('both modes start by checking the checker can run, and say so when it cannot', () => {
+  const skill = file('SKILL.md');
+  assert.equal(skill.match(/- \[ \] Run node --version/g)?.length, 2);
+  assert.ok(skill.includes('`Not checked: <the reason>`'));
+});
+
 test('the packaged checkers need no packages and no network', () => {
   const allowed = new Set(['node:fs', 'node:path', 'node:url', 'node:util']);
   for (const name of ['src/check.ts', 'src/check-context.ts', 'src/spec.ts']) {

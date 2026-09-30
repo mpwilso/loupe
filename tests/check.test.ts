@@ -66,6 +66,7 @@ const bad: Record<string, string> = {
   'two-questions':
     'line 28: Each item in Questions before building must ask one question, with exactly one question mark. This one has 2.',
   'not-ready-two-questions': 'line 8: Each item in Questions must ask one question, with exactly one question mark. This one has 2.',
+  'not-checked': 'line 1: This draft was never checked. Run the checker on it, fix what it reports, then remove the "Not checked:" line.',
   'not-ready-extra-section': 'line 10: "## Known" is not an allowed section. The sections are: "## Questions".',
 };
 

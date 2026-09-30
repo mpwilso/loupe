@@ -2,6 +2,10 @@
   "listItem": "^(- |\\d+\\. )",
   "maxListItems": 5,
   "none": "None.",
+  "unchecked": {
+    "pattern": "^Not checked:",
+    "message": "This draft was never checked. Run the checker on it, fix what it reports, then remove the \"Not checked:\" line."
+  },
   "title": {
     "pattern": "^# \\S",
     "message": "The first line must be the title, starting with \"# \"."

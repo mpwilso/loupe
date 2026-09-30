@@ -7,13 +7,18 @@ description: Writes user stories, bug reports and tickets from meeting notes, ti
 
 Loupe writes stories a developer can build without a second meeting. It has two modes: set up a team, and write a story. The checkers in this folder decide what is good enough. Nothing reaches the user until it passes.
 
-In the commands below, `SKILL` is the path of the folder holding this file. The checkers need Node 22.18 or newer (`node --version`), no packages and no network.
+In the commands below, `SKILL` is the path of the folder holding this file. The checkers need Node 22.18 or newer, no packages and no network.
+
+## Start of both modes: can the checker run?
+
+Run `node --version`. If Node is missing or older than 22.18, or a checker fails to start, tell the user plainly. Show any draft under a first line that reads exactly `Not checked: <the reason>`, and never say or imply that it passed. The checker rejects that line, so an unchecked draft can never pass by accident.
 
 ## Set up a team
 
 Copy this checklist and tick it off:
 
 ```
+- [ ] Run node --version and confirm the checker can run
 - [ ] Interview the product manager
 - [ ] Read what they share
 - [ ] Write the context files
@@ -31,6 +36,7 @@ Copy this checklist and tick it off:
 ## Write a story
 
 ```
+- [ ] Run node --version and confirm the checker can run
 - [ ] Gather the input, context files and team templates
 - [ ] Check the input against the readiness bar
 - [ ] Write the story, or a "Not ready yet" response

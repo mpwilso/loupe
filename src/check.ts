@@ -33,6 +33,7 @@ type StoryShape = Shape & {
   listItem: string;
   maxListItems: number;
   none: string;
+  unchecked: { pattern: string; message?: string };
   templates: { folder: string; fields: Record<string, string> };
   messages: Record<string, string>;
   errors: Record<string, string>;
@@ -130,8 +131,14 @@ export function check(text: string, templates = builtIn): { errors: Problem[]; w
     offset = end + 1;
     lines = lines.slice(offset);
   }
-  const shape = new RegExp(readiness.notReady.detect, 'i').test(lines[0] ?? '') ? readiness.notReady : story;
-  const errors = [...checkShape(lines, shape, templates), ...checkPlainLanguage(lines)];
+  // A draft marked "Not checked:" can never pass. When the mark is the first line, the rest is checked as usual.
+  const unchecked = new RegExp(story.unchecked.pattern);
+  const marks = lines.flatMap((text, i) => (unchecked.test(text) ? [{ line: i + 1, text: story.unchecked.message ?? '' }] : []));
+  const skip = marks[0]?.line === 1 ? 1 : 0;
+  const rest = lines.slice(skip);
+  const shape = new RegExp(readiness.notReady.detect, 'i').test(rest[0] ?? '') ? readiness.notReady : story;
+  const found = [...checkShape(rest, shape, templates), ...checkPlainLanguage(rest)].map((e) => (e.line ? { ...e, line: e.line + skip } : e));
+  const errors = [...marks.filter((m) => m.text), ...found];
   return { errors: errors.map((e) => (e.line ? { ...e, line: e.line + offset } : e)), warnings: [] };
 }
 
