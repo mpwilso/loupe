@@ -38,3 +38,5 @@ Basis: A similar field was added to this page last month.
 - Should the date say the weekday?
 - Who checks the wording before release?
 More open questions than fit here. Consider a spike first.
+
+Before release: None.

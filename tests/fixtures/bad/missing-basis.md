@@ -32,3 +32,5 @@ How to raise it: Nothing needed.
 
 ## Questions before building
 None.
+
+Before release: None.

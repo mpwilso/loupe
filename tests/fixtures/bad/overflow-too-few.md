@@ -35,3 +35,5 @@ Basis: A similar field was added to this page last month.
 - Which date shows when a box was skipped?
 - Does the date show on the phone layout too?
 More open questions than fit here. Consider a spike first.
+
+Before release: None.

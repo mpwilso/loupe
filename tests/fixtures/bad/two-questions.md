@@ -33,3 +33,5 @@ Basis: A similar field was added to this page last month.
 
 ## Questions before building
 - Should the date show the weekday? Or only the day and month?
+
+Before release: None.

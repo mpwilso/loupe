@@ -38,3 +38,5 @@ More open questions than fit here. Consider a spike first.
 - What shows when there is no next box?
 - Should the date say the weekday?
 - Who checks the wording before release?
+
+Before release: None.

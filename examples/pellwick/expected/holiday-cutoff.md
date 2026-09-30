@@ -44,3 +44,5 @@ Basis: No one has sized it, so the range is wide. The range covers changing one 
 - At what time of day, and in which time zone, does each switch happen?
 - If a subscriber has the "change my box" page open when the cutoff switches, which cutoff applies to their change?
 - Support must be told about any change they will see. Who tells agents about the 96-hour cutoff before 1 December? (Conventions context file)
+
+Before release: test in staging; a tester checks the acceptance criteria; tell support about the 96-hour holiday cutoff.

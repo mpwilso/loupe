@@ -44,3 +44,5 @@ Basis: No one has sized it, so the range is wide. Add 50% if Stockroom has to ch
 - If the 72 hours pass while the subscriber has the page open, which box does the new address apply to?
 - Should the subscriber get a confirmation after saving a new address?
 - Support must be told about any change they will see. Who tells them before this ships? (Conventions context file)
+
+Before release: test in staging; a tester checks the acceptance criteria; tell support that subscribers can change their address online.

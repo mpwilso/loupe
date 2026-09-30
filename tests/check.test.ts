@@ -72,6 +72,9 @@ const bad: Record<string, string> = {
   'not-ready-two-questions': 'line 12: Each item in Questions must ask one question, with exactly one question mark. This one has 2.',
   'missing-not-included': 'The "## Not included" section is missing.',
   'too-many-not-included': 'line 14: Not included has 6 items; the limit is 5.',
+  'missing-before-release':
+    'End the story with one line: "Before release:" and the definition-of-done items this story triggers, separated by semicolons, or "None."',
+  'too-many-before-release': 'line 37: "Before release:" lists 4 items; the limit is 3.',
   'not-checked': 'line 5: This draft was never checked. Run the checker on it, fix what it reports, then remove the "Not checked:" line.',
   'no-summary':
     'line 1: Start with three summary lines. The first must read "Call: Story written", "Call: Not ready yet" or "Call: Not checked".',
@@ -85,7 +88,7 @@ const bad: Record<string, string> = {
   'summary-level-mismatch':
     'line 2: The summary\'s confidence must start with the level under Confidence, then a reason, like "High, because ...".',
   'summary-question-mismatch': 'line 3: "First question:" must repeat the first item under ## Questions before building, word for word.',
-  'checked-line-in-file': 'line 37: "Checked with Node" belongs in the chat, after the story, not in the story file.',
+  'checked-line-in-file': 'line 38: "Checked with Node" belongs in the chat, after the story, not in the story file.',
   'not-ready-extra-section': 'line 14: "## Known" is not an allowed section. The sections are: "## Questions".',
 };
 

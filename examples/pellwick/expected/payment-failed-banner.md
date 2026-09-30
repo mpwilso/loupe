@@ -55,3 +55,5 @@ Basis: No one has sized it, so the range is wide. It covers a display fix in the
 - Once fixed, do accounts that are already stuck clear on their own, or do they need a one-time fix?
 - If the payment status takes longer than 10 minutes to arrive, what should the account page show then?
 - Support must be told about any change they will see. Who tells agents the banner now clears once the new card is charged? (Conventions context file)
+
+Before release: test in staging; a tester checks the acceptance criteria; tell support the banner now clears once the new card is charged.

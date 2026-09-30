@@ -28,7 +28,8 @@ type Section = {
   questionMarks?: { count: number; message: string };
   overflow?: { line: string; message: string; confidence: string; notLevel: string; confidenceMessage: string; unknown: string; unknownMessage?: string };
 };
-type Shape = { title: { pattern: string; message?: string }; preamble?: LineRule[]; sections: Section[] };
+type Closing = { pattern: string; message?: string; separator: string; max: number; maxMessage?: string };
+type Shape = { title: { pattern: string; message?: string }; preamble?: LineRule[]; sections: Section[]; closing?: Closing };
 type StoryShape = Shape & {
   listItem: string;
   maxListItems: number;
@@ -182,6 +183,16 @@ function checkShape(lines: string[], shape: Shape, templates: Template[]): Probl
     else if (text.startsWith('## ')) blocks.push({ heading: text, line: i + 1, body: [] });
     else (blocks.at(-1)?.body ?? preamble).push({ line: i + 1, text });
   });
+
+  // A story ends with one "Before release:" line after its last section.
+  if (shape.closing) {
+    const last = blocks.at(-1)?.body.at(-1);
+    if (last && new RegExp(shape.closing.pattern).test(last.text)) {
+      blocks.at(-1)?.body.pop();
+      const count = last.text.replace(/^[^:]*: /, '').split(shape.closing.separator).length;
+      if (count > shape.closing.max) add(last.line, fill(shape.closing.maxMessage, { count, max: shape.closing.max }));
+    } else add(undefined, shape.closing.message);
+  }
 
   if (shape.preamble) checkLines(preamble, shape.preamble, 'The top', 1, add);
   else if (preamble.length) add(preamble[0].line, M.strayText);

@@ -10,7 +10,6 @@ As a subscriber, I want to see my next delivery date, so that I know when to exp
 ## Acceptance criteria
 - Given I have an active subscription, when I open my orders page, then I see the next delivery date.
 
-# Known facts
 ## Not included
 None.
 
@@ -35,4 +34,4 @@ Basis: A similar field was added to this page last month.
 ## Questions before building
 None.
 
-Before release: None.
+Before release: test in staging; a tester checks the criteria; tell support; update the help page.

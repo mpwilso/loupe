@@ -31,6 +31,7 @@ Known / Unknown / Assumed
 Confidence: level, why, how to raise it
 Estimate: hours range, basis
 Questions before building
+Before release: the definition-of-done items it triggers
 At most five items in any list. Plain words an intern and an executive both understand in 30 seconds. No jargon without a plain explanation, no filler, no em dashes. It should read like the team's best PM wrote it. A checker rejects any story that doesn't fit this shape.
 
 ## One core, two ways in
