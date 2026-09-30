@@ -1,14 +1,18 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
-import { builtInFolder, check, loadTemplates } from '../src/check.ts';
+import { builtInFolder, check, findTeamTemplates, loadTemplates } from '../src/check.ts';
 import { format } from '../src/spec.ts';
 
 const root = new URL('..', import.meta.url);
 const cli = (...args: string[]) => spawnSync(process.execPath, ['src/check.ts', ...args], { cwd: root, encoding: 'utf8' });
 const fixture = (name: string) => readFileSync(new URL(`fixtures/${name}`, import.meta.url), 'utf8');
 const problems = (text: string) => check(text).errors.map(format);
+const noTeamTemplate =
+  "line 3: The story section doesn't follow any template. Tried: bug, job story, spike and user story. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.\n";
 const order =
   '"## The story", "## Acceptance criteria", "## Known", "## Unknown", "## Assumed", "## Confidence", "## Estimate", "## Questions before building"';
 
@@ -29,7 +33,7 @@ const bad: Record<string, string> = {
   'too-many-items': 'line 10: Known has 6 items; the limit is 5.',
   'bad-criterion': 'line 7: Each acceptance criterion must read "Given ..., when ..., then ...".',
   'no-template':
-    "line 3: The story section doesn't follow any template. Tried: bug, job story, spike and user story. For a team template, pass its folder with --templates <folder>.",
+    "line 3: The story section doesn't follow any template. Tried: bug, job story, spike and user story. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.",
   'known-no-source':
     "line 10: This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown.",
   'bad-confidence-level': 'line 19: The first line of Confidence must be exactly High, Medium or Low.',
@@ -48,6 +52,12 @@ const bad: Record<string, string> = {
   'not-ready-unknown-item':
     'line 4: "the budget" is not one of the five things a story needs: who\'s affected, the problem, the desired outcome, which system or application, known constraints.',
   'not-ready-too-many-questions': 'line 7: Questions has 6 items; the limit is 5.',
+  'overflow-not-last':
+    'line 28: The line "More open questions than fit here. Consider a spike first." must come last, after five questions.',
+  'overflow-too-few':
+    'line 30: The line "More open questions than fit here. Consider a spike first." must come last, after five questions.',
+  'overflow-high-confidence':
+    "line 19: Confidence can't be High while there are more open questions than fit. Lower it, or answer some questions first.",
   'not-ready-extra-section': 'line 10: "## Known" is not an allowed section. The sections are: "## Questions".',
 };
 
@@ -68,6 +78,11 @@ test('a story with an em dash fails', () => {
 test('the good fixtures pass', () => {
   assert.deepEqual(problems(fixture('good-story.md')), []);
   assert.deepEqual(problems(fixture('good-not-ready.md')), []);
+});
+
+test('five questions and the overflow line pass when Confidence is not High', () => {
+  const text = fixture('bad/overflow-high-confidence.md').replace('\nHigh\n', '\nMedium\n');
+  assert.deepEqual(problems(text), []);
 });
 
 test('an acronym spelled out on first use passes, and later uses need nothing', () => {
@@ -104,24 +119,48 @@ test('the built-in templates come from the files in templates/', () => {
   );
 });
 
-test('a story in a team template passes with --templates and fails without it', () => {
+test('a story finds its team templates next to the context folder, with no flag', () => {
   const story = 'examples/pellwick/expected/holiday-cutoff.md';
-  const pass = cli('--templates', 'examples/pellwick/templates', story);
+  assert.equal(findTeamTemplates(story), join('examples', 'pellwick', 'templates'));
+  const pass = cli(story);
   assert.equal(pass.status, 0);
   assert.equal(pass.stdout, '');
-  const fail = cli(story);
-  assert.equal(fail.status, 1);
-  assert.equal(
-    fail.stdout,
-    "line 3: The story section doesn't follow any template. Tried: bug, job story, spike and user story. For a team template, pass its folder with --templates <folder>.\n",
-  );
+});
+
+test('--templates overrides the team folder it would have found', () => {
+  const story = 'examples/pellwick/expected/holiday-cutoff.md';
+  assert.equal(cli('--templates', 'examples/pellwick/templates', story).status, 0);
+  const empty = mkdtempSync(join(tmpdir(), 'loupe-'));
+  try {
+    const fail = cli('--templates', empty, story);
+    assert.equal(fail.status, 1);
+    assert.equal(fail.stdout, noTeamTemplate);
+  } finally {
+    rmSync(empty, { recursive: true });
+  }
+});
+
+test('a team story whose templates folder is missing fails with a plain message', () => {
+  const team = mkdtempSync(join(tmpdir(), 'loupe-'));
+  mkdirSync(join(team, 'context'));
+  mkdirSync(join(team, 'expected'));
+  const story = join(team, 'expected', 'holiday-cutoff.md');
+  copyFileSync(new URL('../examples/pellwick/expected/holiday-cutoff.md', import.meta.url), story);
+  try {
+    assert.equal(findTeamTemplates(story), undefined);
+    const fail = cli(story);
+    assert.equal(fail.status, 1);
+    assert.equal(fail.stdout, noTeamTemplate);
+  } finally {
+    rmSync(team, { recursive: true });
+  }
 });
 
 test('with a team folder, the message names the team templates it tried too', () => {
   const team = loadTemplates('examples/pellwick/templates');
   const text = fixture('bad/no-template.md');
   assert.deepEqual(check(text, [...loadTemplates(builtInFolder), ...team]).errors.map(format), [
-    "line 3: The story section doesn't follow any template. Tried: bug, job story, spike, user story and change request. For a team template, pass its folder with --templates <folder>.",
+    "line 3: The story section doesn't follow any template. Tried: bug, job story, spike, user story and change request. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.",
   ]);
 });
 
@@ -129,7 +168,7 @@ test('a template file is checked against its own patterns, with line numbers fro
   const template = readFileSync(new URL('../templates/spike.md', import.meta.url), 'utf8');
   assert.deepEqual(problems(template), []);
   assert.deepEqual(problems(template.replace('Time box:', 'Timebox:')), [
-    "line 10: The story section doesn't follow any template. Tried: spike. For a team template, pass its folder with --templates <folder>.",
+    "line 10: The story section doesn't follow any template. Tried: spike. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.",
   ]);
 });
 

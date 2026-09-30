@@ -13,7 +13,7 @@ Product owners and product managers write with it. Developers, testers and anyon
 5. Says what it knows, what it doesn't and what it's assuming, one line each. Every known fact shows its source.
 6. Rates its confidence: high, medium or low, with why, and what would raise it.
 7. Estimates the work in hours, as a range for a developer who knows the system, with its basis. Once the team has history, it calibrates against it.
-8. Asks now the questions a developer would ask later.
+8. Asks now the questions a developer would ask later. Questions that would stop the build come first, and if more than five would, it says so, suggests a spike first and won't rate its confidence High.
 9. Learns. Accepted stories and the user's corrections update the context files, so nobody repeats themselves.
 
 ## The story, always in this shape

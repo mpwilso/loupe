@@ -40,7 +40,7 @@ export function frontMatter(lines: string[]): { end: number; fields: Map<string,
 
 // Runs a checker over each path and sets the exit code.
 export function runCli(
-  check: (text: string) => { errors: Problem[]; warnings: Problem[] },
+  check: (text: string, path: string) => { errors: Problem[]; warnings: Problem[] },
   usage: string,
   paths = process.argv.slice(2),
 ): void {
@@ -50,7 +50,7 @@ export function runCli(
   }
   let failed = false;
   for (const path of paths) {
-    const { errors, warnings } = check(readFileSync(path, 'utf8'));
+    const { errors, warnings } = check(readFileSync(path, 'utf8'), path);
     const lines = [...errors.map(format), ...warnings.map((w) => `warning: ${format(w)}`)];
     if (errors.length) failed = true;
     if (lines.length === 0) continue;

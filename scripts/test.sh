@@ -22,12 +22,8 @@ run() {
   return 0
 }
 for f in templates/*.md; do [ "$f" = templates/definition-of-ready.md ] || run src/check.ts "$f"; done
-for team in examples/*/; do
-  # A team's own templates folder is optional.
-  opts=()
-  [ -d "${team}templates" ] && opts=(--templates "${team}templates")
-  for f in "$team"templates/*.md "$team"expected/*.md; do [ -e "$f" ] && run src/check.ts "${opts[@]}" "$f"; done
-done
+# The checker finds each team's templates folder on its own.
+for f in examples/*/templates/*.md examples/*/expected/*.md; do [ -e "$f" ] && run src/check.ts "$f"; done
 for f in examples/*/context/*.md; do run src/check-context.ts "$f"; done
 echo "checked files: $((pass + fail)), passed: $pass, failed: $fail"
 [ "$fail" -eq 0 ] || failed=1

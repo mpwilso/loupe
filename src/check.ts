@@ -1,8 +1,9 @@
 // Checks a story, or a "Not ready yet" response, against the rules in spec/.
 // A file that starts with front matter is a template: its own example must fit its own patterns.
+// A team's own templates live in a templates folder next to its context folder, found from the story's path.
 // Usage: node src/check.ts [--templates <folder>] path/to/story.md ...
-import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { escapeRegExp, fill, format, frontMatter, loadSpec, runCli, type Problem } from './spec.ts';
@@ -24,6 +25,7 @@ type Section = {
   itemPattern?: string;
   itemMessage?: string;
   lines?: LineRule[];
+  overflow?: { line: string; message: string; confidence: string; notLevel: string; confidenceMessage: string };
 };
 type Shape = { title: { pattern: string; message: string }; preamble?: LineRule[]; sections: Section[] };
 type StoryShape = Shape & {
@@ -88,6 +90,17 @@ export function loadTemplates(folder: string): Template[] {
   return templates;
 }
 
+// Walks up from the story to the nearest folder holding a context folder, and returns its templates folder if there is one.
+export function findTeamTemplates(storyPath: string): string | undefined {
+  for (let dir = dirname(storyPath); ; dir = dirname(dir)) {
+    if (existsSync(join(dir, 'context'))) {
+      const folder = join(dir, 'templates');
+      return existsSync(folder) ? folder : undefined;
+    }
+    if (dirname(dir) === dir) return undefined;
+  }
+}
+
 export const builtInFolder = fileURLToPath(new URL(`../${story.templates.folder}/`, import.meta.url));
 const builtIn = loadTemplates(builtInFolder);
 
@@ -145,10 +158,26 @@ function checkShape(lines: string[], shape: Shape, templates: Template[]): Probl
   for (const section of shape.sections) {
     if (!seen.has(section.heading)) add(undefined, fill(M.missingSection, { heading: section.heading }));
   }
+  checkOverflow(shape, blocks, add);
   return problems;
 }
 
 type Add = (line: number | undefined, message: string) => void;
+
+// A list may end with one fixed line saying more questions are open than fit. It needs a full list, and rules out top confidence.
+function checkOverflow(shape: Shape, blocks: { heading: string; body: Entry[] }[], add: Add): void {
+  for (const section of shape.sections) {
+    const rule = section.overflow;
+    const body = blocks.find((b) => b.heading === section.heading)?.body;
+    const at = body?.findIndex((entry) => entry.text === rule?.line) ?? -1;
+    if (!rule || !body || at < 0) continue;
+    const items = body.filter((entry) => listItem.test(entry.text)).length;
+    if (at !== body.length - 1 || items < story.maxListItems) add(body[at].line, rule.message);
+    const heading = shape.sections.find((s) => s.name === rule.confidence)?.heading;
+    const level = blocks.find((b) => b.heading === heading)?.body[0];
+    if (level?.text === rule.notLevel) add(level.line, rule.confidenceMessage);
+  }
+}
 
 function checkSection(section: Section, headingLine: number, body: Entry[], templates: Template[], add: Add): void {
   const { name } = section;
@@ -166,6 +195,7 @@ function checkSection(section: Section, headingLine: number, body: Entry[], temp
       add(headingLine, fill(M.noTemplate, { names: list }));
     }
   } else if (section.kind === 'list') {
+    body = body.filter((entry) => entry.text !== section.overflow?.line);
     const none = body.find((entry) => entry.text === story.none);
     if (none && !section.allowNone) add(none.line, fill(M.noneNotAllowed, { name }));
     else if (none && body.length > 1) add(none.line, fill(M.noneMixed, { name }));
@@ -262,8 +292,12 @@ if (import.meta.main) {
   const usage = 'Usage: node src/check.ts [--templates <folder>] path/to/story.md ...';
   try {
     const { values, positionals } = parseArgs({ options: { templates: { type: 'string', multiple: true } }, allowPositionals: true });
-    const templates = [...builtIn, ...(values.templates ?? []).flatMap(loadTemplates)];
-    runCli((text) => check(text, templates), usage, positionals);
+    const override = values.templates && [...builtIn, ...values.templates.flatMap(loadTemplates)];
+    const forStory = (path: string) => {
+      const folder = findTeamTemplates(path);
+      return folder ? [...builtIn, ...loadTemplates(folder)] : builtIn;
+    };
+    runCli((text, path) => check(text, override ?? forStory(path)), usage, positionals);
   } catch (error) {
     console.error((error as Error).message);
     process.exit(2);

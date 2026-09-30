@@ -4,7 +4,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { builtInFolder, check, loadTemplates } from '../src/check.ts';
+import { builtInFolder, check, findTeamTemplates, loadTemplates } from '../src/check.ts';
 import { checkContext } from '../src/check-context.ts';
 import { format, loadSpec } from '../src/spec.ts';
 
@@ -26,13 +26,15 @@ test('the definition of ready names all five things in the readiness bar', () =>
   for (const { label } of items) assert.ok(text.includes(label.replace(/^the /, '')), label);
 });
 
-test('every expected example passes the checker, with its team templates', () => {
+test('every expected example passes the checker, with the team templates it finds', () => {
   for (const team of teams) {
-    const folder = join(root, `examples/${team}/templates`);
-    const templates = [...loadTemplates(builtInFolder), ...(existsSync(folder) ? loadTemplates(folder) : [])];
     const paths = list(`examples/${team}/expected`);
     assert.ok(paths.length > 0);
-    for (const path of paths) assert.deepEqual(check(read(path), templates).errors.map(format), [], path);
+    for (const path of paths) {
+      const folder = findTeamTemplates(join(root, path));
+      const templates = [...loadTemplates(builtInFolder), ...(folder ? loadTemplates(folder) : [])];
+      assert.deepEqual(check(read(path), templates).errors.map(format), [], path);
+    }
   }
 });
 
@@ -51,3 +53,4 @@ test('no tracked file contains an em dash', () => {
   const offenders = files.filter((path) => read(path).includes('\u2014'));
   assert.deepEqual(offenders, []);
 });
+
