@@ -254,3 +254,15 @@ test('the checker\'s help says to rerun up to five times, and when each label ap
   assert.equal(fail.status, 1);
   assert.match(fail.stdout, /\nFix every line above and run the checker again\. After five failed runs, show the draft under "Failed the checker after five runs:" and these messages\.\n$/);
 });
+
+// Trial 5: the checker sent stories back again and again. One run must report every problem, so one fix pass clears them all.
+test('one run reports every problem, not just the first', () => {
+  const text = fixture('three-problems.md');
+  assert.deepEqual(problems(text), [
+    'line 12: Each acceptance criterion must read "Given ..., when ..., then ...".',
+    "line 19: This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown.",
+    'line 25: This sentence has 36 words; the limit is 30. Split it up.',
+  ]);
+  const twice = text.replace('- I see the date on the orders page.\n', '- I see the date on the orders page.\n- I see it on the home page too.\n');
+  assert.equal(problems(twice).length, 4, 'the same rule broken twice gives two messages');
+});
