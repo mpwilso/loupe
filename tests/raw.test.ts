@@ -63,7 +63,7 @@ const facts: [file: string, context: RegExp, raw: RegExp][] = [
   ['story-style', /Titles start with a verb and name who benefits/, /Start the title with a verb and say who gets the benefit/],
   ['story-style', /cover the cutoff and what support sees in Stockroom/, /always cover the cutoff and what support will see in Stockroom/],
   ['story-style', /a developer who knows the web app. Add 50% when Stockroom changes too/, /a developer who knows the web app is doing it, and add 50% if Stockroom has to change as well/],
-  ['story-style', /Numbers from Helpline reason counts go in Known, with the month/, /Helpline reason counts, put the numbers in with the month/],
+  ['story-style', /quotes Helpline reason counts, it gives the month/, /quote Helpline reason counts, put the numbers in with the month/],
 ];
 
 test('every key fact in the context files is also in raw/, however it is worded', () => {
