@@ -6,6 +6,6 @@ Checked 2026-09-12. Sam Okafor, engineering lead, filled in the gaps on 2026-09-
 
 **Staging:** a shared copy of all three systems, filled with made-up subscribers. It gets rebuilt every Monday. Payments go to the payment provider's test mode. Testers check stories here before release.
 
-**Production:** the live systems. Loupe never reads from or writes to production.
+**Production:** the live systems.
 
 **Releases:** the web app goes out Tuesdays and Thursdays. Stockroom goes out once a week, on Wednesdays. Urgent fixes can go any day if the engineering lead approves.

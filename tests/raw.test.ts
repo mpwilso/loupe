@@ -41,7 +41,6 @@ const facts: [file: string, context: RegExp, raw: RegExp][] = [
   ['environments', /Payment calls go to the payment provider's test mode/, /Payments go to the payment provider's test mode/],
   ['environments', /where testers check stories before release/, /Testers check stories here before release/],
   ['environments', /The live systems/, /the live systems/],
-  ['environments', /Loupe never reads from or writes to production/, /Loupe never reads from or writes to production/],
   ['environments', /The web app releases on Tuesdays and Thursdays/, /the web app goes out Tuesdays and Thursdays/],
   ['environments', /Stockroom releases once a week, on Wednesdays/, /Stockroom goes out once a week, on Wednesdays/],
   ['environments', /Urgent fixes can go out any day with the engineering lead's approval/, /Urgent fixes can go any day if the engineering lead approves/],
@@ -81,4 +80,10 @@ test('every fact line in the context files has a key fact', () => {
     for (const line of body) if (!mine.some((re) => re.test(line))) uncovered.push(`${file}: ${line}`);
   }
   assert.deepEqual(uncovered, []);
+});
+
+// Raw files are the team's own words. A real team's wiki doesn't know Loupe exists.
+test('no file in raw/ mentions Loupe', () => {
+  const mentions = readdirSync(dir('raw')).filter((file) => /loupe/i.test(read('raw', file)));
+  assert.deepEqual(mentions, []);
 });

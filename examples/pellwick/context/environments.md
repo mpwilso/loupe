@@ -12,7 +12,7 @@ Each developer runs the web app and Stockroom locally with sample data. No real 
 A shared copy of all three systems with made-up subscribers. Rebuilt every Monday. Payment calls go to the payment provider's test mode. This is where testers check stories before release.
 
 ## Production
-The live systems. Loupe never reads from or writes to production.
+The live systems.
 
 ## Releases
 The web app releases on Tuesdays and Thursdays. Stockroom releases once a week, on Wednesdays. Urgent fixes can go out any day with the engineering lead's approval.
