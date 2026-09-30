@@ -21,15 +21,52 @@
     { "what": "a cloud access key", "pattern": "\\bAKIA[0-9A-Z]{16}\\b" },
     { "what": "an API key", "pattern": "\\b(sk-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{35})" },
     { "what": "a GitHub token", "pattern": "\\b(gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{22,})" },
-    { "what": "a Slack token", "pattern": "\\bxox[abprs]-[A-Za-z0-9-]{10,}" }
+    { "what": "a Slack token", "pattern": "\\bxox[abprs]-[A-Za-z0-9-]{10,}" },
+    { "what": "an email address", "pattern": "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b" }
   ],
+  "learned": {
+    "fileName": "learned.md",
+    "header": {
+      "pattern": "\\bapprov",
+      "message": "Start learned.md with a short line saying Loupe proposes these entries and a person approves each one."
+    },
+    "entry": "^- (\\S.*)$",
+    "field": "^\\s+(\\w+):\\s*(.*)$",
+    "fields": ["kind", "source", "applies", "replaces"],
+    "unknownFieldMessage": "\"{field}:\" is not an entry field. The fields are kind, source, applies and replaces.",
+    "strayMessage": "Each line after the header is an entry starting \"- \", or one of its fields, indented, like \"  kind: fact\".",
+    "sentence": {
+      "end": "[.!?]$",
+      "second": "[.!?]\\s+[A-Z]",
+      "message": "Write each entry as one plain sentence, ending with a period."
+    },
+    "kind": {
+      "pattern": "^(fact|rule)$",
+      "message": "This entry needs \"kind: fact\" (about the team, product or systems) or \"kind: rule\" (how the team wants stories written)."
+    },
+    "source": {
+      "pattern": "^[^,]+, [^,]+ on [^,]+, (\\d{4}-\\d{2}-\\d{2})$",
+      "message": "This entry needs a full source: who said it, how, on which story, and the date, like \"source: Priya Raman, correction on skip-a-box, 2026-10-02\".",
+      "dateMessage": "The date in this source must be a real date like 2026-10-02."
+    },
+    "applies": {
+      "pattern": "^\\S.* to \\S.*$",
+      "message": "\"applies:\" must say when the entry holds, from a start to an end, like \"applies: 1 December to 5 January\"."
+    },
+    "replaces": {
+      "pattern": "^\"(.+)\"$",
+      "message": "\"replaces:\" must quote the earlier fact exactly, in double quotes.",
+      "notFoundMessage": "\"replaces:\" quotes \"{quote}\", but no other context file or earlier entry says that. Quote the earlier fact exactly, and check learned.md together with the other context files.",
+      "duplicateMessage": "Two entries replace \"{quote}\". Keep one, or have the newer entry replace the older one."
+    }
+  },
   "messages": {
     "noFrontMatter": "The file must start with front matter between two \"---\" lines.",
     "missingField": "The front matter is missing \"{field}\": {help}.",
     "badDate": "\"{field}\" must be a real date like 2026-09-30.",
     "noSources": "\"{field}\" must list at least one place the facts came from.",
     "tooLong": "The body has {count} words; the limit is {limit}. Keep only what a new team member needs.",
-    "secret": "This looks like {what}. Remove it. Context files must never hold secrets or credentials.",
+    "secret": "This looks like {what}. Remove it. Context files must never hold secrets, credentials or customer data.",
     "stale": "Last updated {date}, {days} days ago. Check the facts are still true, then update the date."
   }
 }

@@ -38,10 +38,17 @@ const context = (text: string, date = today) => {
   const { errors, warnings } = checkContext(text, date);
   return [...errors, ...warnings];
 };
+// learned.md is checked with the team's other context files, which its "replaces:" lines quote.
+export const learnedOptions = () => ({ learned: true, others: [fixture('good-context.md')] });
+export const learned = (text: string) => {
+  const { errors, warnings } = checkContext(text, today, learnedOptions());
+  return [...errors, ...warnings];
+};
 
 export const badCases: { name: string; problems: () => Problem[] }[] = [
   ...files('bad/').map((name) => ({ name, problems: () => story(fixture(name)) })),
   ...files('bad/context/').map((name) => ({ name, problems: () => context(fixture(name)) })),
+  ...files('bad/learned/').map((name) => ({ name, problems: () => learned(fixture(name)) })),
   { name: 'warn/stale.md', problems: () => context(fixture('warn/stale.md'), new Date('2027-01-01T00:00:00Z')) },
   { name: 'a story with an em dash', problems: () => story(emDash()) },
   ...secrets.map(([what, value]) => ({ name: `${what} (${value.slice(0, 4)}...)`, problems: () => context(withLine(secretLine(value))) })),
