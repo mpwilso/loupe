@@ -36,7 +36,7 @@ How to raise it: The engineering lead confirms where the address is kept and whe
 
 ## Estimate
 6 to 20 hours
-Basis: No one has sized it, so the range is wide. Add 50% if Stockroom has to change too, as the Story style context file says.
+Basis: No one has sized it, so the range is wide. Stockroom 50% not included, since Stockroom is assumed unchanged. Add it if Stockroom has to change, as the Story style context file says.
 
 ## Questions before building
 - Does a new address need any check before it is saved?

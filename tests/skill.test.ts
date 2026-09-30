@@ -263,3 +263,12 @@ test('a team done section holds only what the input settles, with a bad and a go
   assert.match(rules, /- Bad: `Done when: .+`/);
   assert.match(rules, /- Good: `Done when: .+`/);
 });
+
+// Trial 3: two estimates didn't say whether the 50% Stockroom rule was included.
+test('every estimate says whether the team estimating rule is included', () => {
+  assert.match(file('writing-rules.md'), /The Basis line always says whether each team estimating rule is included, in one short phrase/);
+  for (const name of md('examples/pellwick/expected').filter((n) => n !== 'export-notes.md')) {
+    const basis = readFileSync(join(root, 'examples/pellwick/expected', name), 'utf8').match(/^Basis: .*$/m)?.[0] ?? '';
+    assert.match(basis, /Stockroom 50% (not )?included/, `${name}: ${basis}`);
+  }
+});

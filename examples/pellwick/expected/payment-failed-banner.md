@@ -47,7 +47,7 @@ How to raise it: A developer finds where the account page reads payment status a
 
 ## Estimate
 4 to 16 hours
-Basis: No one has sized it, so the range is wide. It covers a display fix in the web app and tracing late status updates.
+Basis: No one has sized it, so the range is wide. It covers a display fix in the web app and tracing late status updates. Stockroom 50% not included, since the fix is assumed to be in the web app only.
 
 ## Questions before building
 - What should the account page show during the wait of up to 10 minutes before the payment status arrives?

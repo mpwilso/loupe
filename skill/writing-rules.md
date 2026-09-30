@@ -21,6 +21,7 @@ Follow every rule when writing a story. The checker catches some of them, not al
 - At most five items in any list. Each question is one item with one question mark. Questions that would stop the build come first. If more than five would, end the list with exactly `More open questions than fit here. Consider a spike first.`, put each build-blocking question that didn't fit under Unknown, one line each, and don't rate confidence High. Never use that line as a default.
 - Plain words, no em dashes, at most 30 words per sentence, and spell out each acronym the first time.
 - The estimate's basis cites only the input or the context files. If there is none, say so, widen the range and don't rate confidence High.
+- The Basis line always says whether each team estimating rule is included, in one short phrase, such as "Stockroom 50% not included, since Stockroom is assumed unchanged."
 - If the input doesn't say what should happen in a case, the acceptance criterion says so and asks the user to confirm. Never invent expected behavior.
 - The same goes for screen details: any wording, message, note or display detail the input doesn't state. End the criterion with "To confirm:" and the detail.
   - Bad: `Given my box ships within 72 hours, when I open my account, then the skip button is grey and says "Too late to skip".`

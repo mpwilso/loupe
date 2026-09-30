@@ -40,7 +40,7 @@ How to raise it: Sam skips a box in staging and confirms the billing job does no
 
 ## Estimate
 12 to 20 hours
-Basis: Sam said "a couple of days if billing behaves" in the meeting on 2026-09-22, read here as two working days. It assumes billing needs no change, and it does not include undo.
+Basis: Sam said "a couple of days if billing behaves" in the meeting on 2026-09-22, read here as two working days. It assumes billing needs no change, and it does not include undo. Stockroom 50% not included, since Stockroom is assumed unchanged.
 
 ## Questions before building
 - Does skipping count as a payments change under the December freeze, since it affects charging?

@@ -36,7 +36,7 @@ How to raise it: Sam changes the setting in staging and checks the cutoff on a b
 
 ## Estimate
 4 to 12 hours
-Basis: No one has sized it, so the range is wide. The range covers changing one setting twice and testing both switches in staging. It does not cover updating boxes that already exist.
+Basis: No one has sized it, so the range is wide. The range covers changing one setting twice and testing both switches in staging. It does not cover updating boxes that already exist. Stockroom 50% not included, since Stockroom is assumed unchanged.
 
 ## Questions before building
 - Both switches fall inside the December freeze dates. Does the freeze cover this change?
