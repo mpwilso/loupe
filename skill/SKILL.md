@@ -48,15 +48,7 @@ Copy this checklist and tick it off:
 1. Save the team's context files in `team/context/` and any team templates in `team/templates/`, exactly as they appear in the project's knowledge.
 2. Check the input, with the context files, against the readiness bar in `SKILL/templates/definition-of-ready.md`: who's affected, the problem, the desired outcome, which system or application, and known constraints.
 3. Below the bar, write only a "Not ready yet" response, shaped like `SKILL/examples/not-ready.md`. Ask the few questions that would get the user over the bar.
-4. At or above the bar, write the story in the team's template, chosen by the team's `story-style.md`. The built-in templates are in `SKILL/templates/`. Follow the shape of `SKILL/examples/story.md`:
-   - Not included lists only what someone decided to leave out, citing where it was decided. If no one decided, it goes in Questions before building. With nothing decided, write "None."
-   - Every Known line ends with its source in parentheses: the input or a context file.
-   - Invent nothing. A gap goes in Unknown, Assumed or a question.
-   - At most five items in any list. Each question is one item with one question mark. Questions that would stop the build come first. If more than five would, end the list with exactly `More open questions than fit here. Consider a spike first.` and don't rate confidence High.
-   - Plain words, no em dashes, at most 30 words per sentence, and spell out each acronym the first time.
-   - The estimate's basis cites only the input or the context files. If there is none, say so, widen the range and don't rate confidence High.
-   - If the input doesn't say what should happen in a case, the acceptance criterion says so and asks the user to confirm. Never invent expected behavior.
-   - Confidence: High means nothing a developer needs is unknown. Medium means some unknowns, none of which would stop the build. Low means an unknown could change what gets built.
+4. At or above the bar, write the story in the team's template, chosen by the team's `story-style.md`. The built-in templates are in `SKILL/templates/`. Follow the shape of `SKILL/examples/story.md`, and read and follow every rule in `SKILL/writing-rules.md` before you write.
 5. Save it as `team/stories/<short-name>.md` and run `node SKILL/src/check.ts team/stories/<short-name>.md`. The checker finds `team/templates/` by itself. Fix every line it reports and run it again, until it prints nothing and exits with 0.
 6. Check the truth. The checker checks shape, not truth, so this step is yours. Reread every Known line against the source it cites. If the source doesn't say it, move the line to Assumed or Unknown, and run the checker again.
 7. Show the user the story only after both pass. Never show a story or response that fails the checker.

@@ -14,7 +14,7 @@ dir="$(dirname "$out")/loupe"
 rm -rf "$dir"
 mkdir -p "$dir/src" "$dir/spec" "$dir/templates" "$dir/examples"
 
-cp skill/SKILL.md "$dir/"
+cp skill/SKILL.md skill/writing-rules.md "$dir/"
 cp src/check.ts src/check-context.ts src/spec.ts "$dir/src/"
 cp spec/*.json "$dir/spec/"
 cp templates/*.md "$dir/templates/"

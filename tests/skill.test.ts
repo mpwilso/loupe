@@ -32,6 +32,7 @@ const file = (name: string) => entries.find((e) => e.name === `loupe/${name}`)?.
 // Each packaged file and the repo file it comes from. Nothing in skill/ but SKILL.md is ever copied by hand.
 const sources: Record<string, string> = {
   'SKILL.md': 'skill/SKILL.md',
+  'writing-rules.md': 'skill/writing-rules.md',
   'src/check.ts': 'src/check.ts',
   'src/check-context.ts': 'src/check-context.ts',
   'src/spec.ts': 'src/spec.ts',
@@ -118,11 +119,20 @@ test('the skill says the checker cannot check truth, so Claude rereads every Kno
 });
 
 test('the skill holds the judgment rules for estimates, missing behavior and confidence, and stays short', () => {
-  const skill = file('SKILL.md');
+  const skill = file('writing-rules.md');
   assert.match(skill, /basis cites only the input or the context files/);
   assert.match(skill, /Never invent expected behavior/);
   for (const level of ['High means', 'Medium means', 'Low means']) assert.ok(skill.includes(level), level);
-  assert.ok(skill.split('\n').length <= 80, 'SKILL.md: keep it to about 80 lines');
+  assert.ok(file('SKILL.md').split('\n').length <= 80, 'SKILL.md: keep it to about 80 lines');
+  assert.ok(file('SKILL.md').includes('`SKILL/writing-rules.md`'), 'SKILL.md points to the rules');
+});
+
+test('the skill asks about what happens around the change, and never answers it by inventing behavior', () => {
+  const rules = file('writing-rules.md');
+  assert.match(rules, /definition of done and conventions/);
+  assert.match(rules, /what the user sees right after the action/);
+  assert.match(rules, /boundary the input names/);
+  assert.match(rules, /Never answer these by inventing behavior/);
 });
 
 test('the packaged checkers need no packages and no network', () => {
