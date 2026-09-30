@@ -300,3 +300,15 @@ test('a story names the team rule it depends on and asks about known changes to 
     assert.match(text.split('## Questions before building\n')[1], /Is any change to the box's cutoff, 72 hours today, planned while .+ live\?/, name);
   }
 });
+
+// Speed: apply the plain-language limits while writing, so the checker doesn't have to catch them.
+test('writing-rules.md starts with a short plain-language checklist, stated once', () => {
+  const rules = file('writing-rules.md');
+  const first = rules.split('\n## ')[1] ?? '';
+  assert.match(first, /^While you write\n/);
+  for (const item of ['At most 30 words per sentence.', 'No em dashes.', 'Spell out each acronym the first time.']) {
+    assert.ok(first.includes(`- ${item}`), item);
+    assert.equal(rules.split(item).length, 2, `${item} appears once`);
+  }
+  assert.doesNotMatch(rules, /at most 30 words per sentence/);
+});

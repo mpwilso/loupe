@@ -2,6 +2,13 @@
 
 Follow every rule when writing a story. The checker catches some of them, not all.
 
+## While you write
+Apply these to every sentence as you write it:
+- At most 30 words per sentence.
+- No em dashes.
+- Spell out each acronym the first time.
+- Plain words an intern and an executive both understand.
+
 ## Sources and gaps
 - Not included lists only what someone decided to leave out, citing where it was decided. If no one decided, it goes in Questions before building. With nothing decided, write "None."
 - Every Known line ends with its source in parentheses. For a fact from a context file, cite the original document the file names, then the file, like "(planning email 2026-09-18, via the Priorities context file)". If the file names several sources and doesn't say which, name them all.
@@ -20,7 +27,6 @@ Follow every rule when writing a story. The checker catches some of them, not al
 ## Questions, estimate and confidence
 - End the story with one line, `Before release:`, then only the actions specific to this story, such as telling support about a named change, at most three, separated by semicolons. Leave out items that apply to every story, like testing in staging. If nothing specific applies, write `None.`
 - At most five items in any list. Each question is one item with one question mark. Questions that would stop the build come first. If more than five would, end the list with exactly `More open questions than fit here. Consider a spike first.`, put each build-blocking question that didn't fit under Unknown, one line each, and don't rate confidence High. Never use that line as a default.
-- Plain words, no em dashes, at most 30 words per sentence, and spell out each acronym the first time.
 - The estimate's basis cites only the input or the context files. If there is none, say so, widen the range and don't rate confidence High.
 - The Basis line always says whether each team estimating rule is included, in one short phrase, such as "Stockroom 50% not included, since Stockroom is assumed unchanged."
 - If the input doesn't say what should happen in a case, the acceptance criterion says so and asks the user to confirm. Never invent expected behavior.
