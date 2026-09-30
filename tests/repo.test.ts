@@ -54,3 +54,18 @@ test('no tracked file contains an em dash', () => {
   assert.deepEqual(offenders, []);
 });
 
+// Without pipefail, "scripts/test.sh | tee" takes tee's exit code, so failing tests would pass CI.
+test('the CI test step keeps pipefail when it pipes its output', () => {
+  const lines = read('.github/workflows/tests.yml').split('\n');
+  const start = lines.findIndex((line) => /^\s*- run: .*scripts\/test\.sh/.test(line));
+  assert.ok(start >= 0, 'no step runs scripts/test.sh');
+  const indent = lines[start].indexOf('-');
+  const step = [lines[start]];
+  for (const line of lines.slice(start + 1)) {
+    if (line.trim() && line.search(/\S/) <= indent) break;
+    step.push(line);
+  }
+  const text = step.join('\n');
+  if (!text.includes('|')) return;
+  assert.ok(/^\s*shell: bash\s*$/m.test(text) || text.includes('set -o pipefail'), `The test step pipes its output but has no "shell: bash" or "set -o pipefail":\n${text}`);
+});
