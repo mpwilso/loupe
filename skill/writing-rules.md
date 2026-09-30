@@ -13,6 +13,7 @@ Follow every rule when writing a story. The checker catches some of them, not al
 ## Around the change
 - Check the team's definition of done and conventions for anything this story triggers, such as telling support. If the input doesn't cover it, ask.
 - Ask what the user sees right after the action, and what happens at any boundary the input names, such as a cutoff passing while the page is open.
+- Name rules, not just values. When a story depends on a team rule with a current value, such as the cutoff, refer to the rule ("the box's cutoff, 72 hours today") and ask whether any known upcoming change to that rule affects the story.
 - For a bug, always ask whether records already affected fix themselves once the fix ships, or need a one-time repair.
 - Never answer these by inventing behavior. They go under Questions before building, or in an acceptance criterion that asks the user to confirm.
 

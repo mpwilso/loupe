@@ -8,9 +8,9 @@ First question: Does a new address need any check before it is saved?
 As a subscriber, I want to change my delivery address from my account, so that I don't have to email support to do it.
 
 ## Acceptance criteria
-- Given my next box ships in more than 72 hours, when I save a new address on my account page, then my next box goes to the new address.
-- Given my next box ships within 72 hours, when I save a new address, then that box goes to the old address and the one after to the new.
-- Given I saved a new address inside the 72 hours, when I look at my account page, then what do I see? The product manager must confirm this; the input doesn't say.
+- Given my next box's cutoff, 72 hours before the ship date today, has not passed, when I save a new address, then my next box goes to it.
+- Given my next box's cutoff has passed, when I save a new address, then that box goes to the old address and the one after to the new.
+- Given I saved a new address after the cutoff, when I look at my account page, then what do I see? The product manager must confirm this; the input doesn't say.
 - Given a subscriber changed their address, when an agent opens them in Stockroom, then the new address shows within a minute.
 
 ## Not included
@@ -40,9 +40,9 @@ Basis: No one has sized it, so the range is wide. Stockroom 50% not included, si
 
 ## Questions before building
 - Does a new address need any check before it is saved?
-- What should the account page tell a subscriber who saves a new address inside 72 hours of the ship date?
-- If the 72 hours pass while the subscriber has the page open, which box does the new address apply to?
+- What should the account page tell a subscriber who saves a new address after the box's cutoff?
+- If the box's cutoff passes while the subscriber has the page open, which box does the new address apply to?
 - Should the subscriber get a confirmation after saving a new address?
-- Support must be told about any change they will see. Who tells them before this ships? (Conventions context file)
+- Is any change to the box's cutoff, 72 hours today, planned while address changes are live?
 
 Before release: Tell support that subscribers can change their address online.

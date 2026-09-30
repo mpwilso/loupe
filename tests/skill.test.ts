@@ -284,3 +284,15 @@ test('"Before release" lists only actions specific to this story', () => {
     assert.doesNotMatch(line, /staging|a tester/i, `${name}: ${line}`);
   }
 });
+
+// Trial 3: neither version noticed that skips and address changes will be live during the 96-hour holiday cutoff.
+test('a story names the team rule it depends on and asks about known changes to it', () => {
+  assert.match(file('writing-rules.md'), /refer to the rule \("the box's cutoff, 72 hours today"\) and ask whether any known upcoming change to that rule affects the story/);
+  for (const name of ['skip-a-box.md', 'address-change.md']) {
+    const text = readFileSync(join(root, 'examples/pellwick/expected', name), 'utf8');
+    const criteria = text.split('## Acceptance criteria\n')[1].split('\n## ')[0];
+    assert.match(criteria, /box's cutoff, 72 hours before the ship date today/, name);
+    assert.doesNotMatch(criteria, /ships (in more than|within) 72 hours/, name);
+    assert.match(text.split('## Questions before building\n')[1], /Is any change to the box's cutoff, 72 hours today, planned while .+ live\?/, name);
+  }
+});
