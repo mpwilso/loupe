@@ -93,3 +93,19 @@ test('the trial run results table keeps its fixed columns and rows', () => {
   const expected = results.slice(2).map((row) => row.split('|')[2].trim());
   assert.deepEqual(expected, ['story', 'story', 'story', 'not ready']);
 });
+
+test('the baseline table matches the results table, and the comparison keeps its fixed rows', () => {
+  const [results, baseline, comparison, ...rest] = tables();
+  assert.deepEqual(rest, []);
+  assert.deepEqual(baseline.slice(0, 2), results.slice(0, 2));
+  assert.deepEqual(firstCells(baseline), inputs);
+  assert.deepEqual(comparison.slice(0, 2), ['| Measure | Loupe | Baseline |', '|---|---|---|']);
+  assert.deepEqual(firstCells(comparison), [
+    'Time to accepted story',
+    'Edits',
+    'Unsupported facts',
+    'Correct refusals',
+    'Questions a developer would still ask',
+  ]);
+  assert.ok(read('docs/trial-run.md').includes('```\nWrite a user story with acceptance criteria for this. Use the attached team files.\n```'));
+});

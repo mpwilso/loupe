@@ -62,6 +62,58 @@ Write each question under its input. Write "None." if there were none.
 ### export-notes.md
 - 
 
+## Baseline
+
+The same four inputs and the same context files, with the skill turned off, to show what Loupe adds. Run it on a different day from the Loupe pass, so one doesn't shape your edits on the other.
+
+- [ ] Skills belong to your account, not a project, so turn "loupe" off in **Customize**, then **Skills**. Turn it back on when you finish.
+- [ ] Create a separate project named "Pellwick baseline". Leave its instructions empty.
+- [ ] Upload the same six files as project knowledge.
+- [ ] For each input, open a new chat, start the timer and send exactly this, with the input file attached:
+
+```
+Write a user story with acceptance criteria for this. Use the attached team files.
+```
+
+- [ ] Accept, count and check the result the same way as in the Loupe pass. Treat any line that states a fact as a Known line. For `export-notes.md`, a story counts as the wrong call.
+
+Fill in the same table. Write `n/a` for Node, Checker ran and Passed checker.
+
+| Input | Expected | Node | Checker ran | Passed checker | Time | Edits | Unsupported facts | Dev questions | Right call |
+|---|---|---|---|---|---|---|---|---|---|
+| skip-a-box-meeting.md | story | n/a | n/a | n/a | m:ss | 0 | 0 | 0 | yes |
+| helpline-ticket-48213.md | story | n/a | n/a | n/a | m:ss | 0 | 0 | 0 | yes |
+| holiday-cutoff-email.md | story | n/a | n/a | n/a | m:ss | 0 | 0 | 0 | yes |
+| export-notes.md | not ready | n/a | n/a | n/a | m:ss | 0 | 0 | 0 | yes |
+
+List the baseline's developer questions the same way, under "Baseline developer questions".
+
+### Baseline developer questions
+
+#### skip-a-box-meeting.md
+- 
+
+#### helpline-ticket-48213.md
+- 
+
+#### holiday-cutoff-email.md
+- 
+
+#### export-notes.md
+- 
+
+## Comparison
+
+Add up each column over the four inputs. Time is the total, as `m:ss`. Correct refusals is the number of right calls out of four, as `n/4`, since refusing everything would not be a win.
+
+| Measure | Loupe | Baseline |
+|---|---|---|
+| Time to accepted story | m:ss | m:ss |
+| Edits | 0 | 0 |
+| Unsupported facts | 0 | 0 |
+| Correct refusals | 0/4 | 0/4 |
+| Questions a developer would still ask | 0 | 0 |
+
 ## Notes
 
 Anything that went wrong or surprised you, one line each. For example: the skill didn't start, the checker didn't run, or a fact was invented.
