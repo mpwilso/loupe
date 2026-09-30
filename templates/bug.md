@@ -1,3 +1,12 @@
+---
+name: bug
+patterns:
+  - ^Steps:$
+  - ^Expected: \S
+  - ^Actual: \S
+  - ^Environment: \S
+  - ^Impact: \S
+---
 # [Short title: what is broken, for whom]
 
 ## The story
@@ -7,12 +16,13 @@ Steps:
 Expected: [What should happen.]
 Actual: [What happens instead.]
 Environment: [Where it happens: application, browser or device, account type.]
+Impact: [Who is affected and how many, in plain words.]
 
 ## Acceptance criteria
 - Given [a starting situation], when [someone does something], then [what they see or get].
 
 ## Known
-- [A fact you can point to, with where it came from.]
+- [A fact you can point to.] ([Where it came from, for example: Dana, meeting 2026-09-22])
 
 ## Unknown
 - [Something nobody knows yet. Write "None." if there is nothing.]

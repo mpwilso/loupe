@@ -10,7 +10,7 @@ Product owners and product managers write with it. Developers, testers and anyon
 2. Takes the input: meeting transcripts, notes, incidents, requirement sessions.
 3. Checks readiness. It needs: who's affected, the problem, the desired outcome, which system or application, and known constraints. Below that bar it writes no story; it asks the few specific questions that get the user over it.
 4. Writes the story in the team's template, every time in the same shape.
-5. Says what it knows, what it doesn't and what it's assuming, one line each.
+5. Says what it knows, what it doesn't and what it's assuming, one line each. Every known fact shows its source.
 6. Rates its confidence: high, medium or low, with why, and what would raise it.
 7. Estimates the work in hours, as a range for a developer who knows the system, with its basis. Once the team has history, it calibrates against it.
 8. Asks now the questions a developer would ask later.

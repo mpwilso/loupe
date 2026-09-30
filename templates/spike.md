@@ -1,3 +1,10 @@
+---
+name: spike
+patterns:
+  - ^Question: \S
+  - ^Time box: \S
+  - ^Done when: \S
+---
 # [Short title: the question to answer]
 
 ## The story
@@ -9,7 +16,7 @@ Done when: [What the team will have in hand, for example a written recommendatio
 - Given [a starting situation], when [someone does something], then [what they see or get].
 
 ## Known
-- [A fact you can point to, with where it came from.]
+- [A fact you can point to.] ([Where it came from, for example: Dana, meeting 2026-09-22])
 
 ## Unknown
 - [Something nobody knows yet. Write "None." if there is nothing.]

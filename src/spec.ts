@@ -18,9 +18,32 @@ export function format(problem: Problem): string {
   return problem.line ? `line ${problem.line}: ${problem.text}` : problem.text;
 }
 
-// Runs a checker over each path given on the command line and sets the exit code.
-export function runCli(check: (text: string) => { errors: Problem[]; warnings: Problem[] }, usage: string): void {
-  const paths = process.argv.slice(2);
+export type Field = { line: number; value: string; items: string[] };
+
+// Front matter: "key: value" lines, and "  - item" lines under a key with no value, between two "---" lines.
+// Returns the index of the closing "---", or -1 when there is no front matter.
+export function frontMatter(lines: string[]): { end: number; fields: Map<string, Field> } {
+  const fields = new Map<string, Field>();
+  const end = lines[0]?.trim() === '---' ? lines.indexOf('---', 1) : -1;
+  let last: Field | undefined;
+  for (let i = 1; i < end; i++) {
+    const item = /^\s+-\s+(.*\S)/.exec(lines[i]);
+    const pair = /^(\w+):\s*(.*?)\s*$/.exec(lines[i]);
+    if (item && last) last.items.push(item[1]);
+    else if (pair) {
+      last = { line: i + 1, value: pair[2], items: [] };
+      fields.set(pair[1], last);
+    }
+  }
+  return { end, fields };
+}
+
+// Runs a checker over each path and sets the exit code.
+export function runCli(
+  check: (text: string) => { errors: Problem[]; warnings: Problem[] },
+  usage: string,
+  paths = process.argv.slice(2),
+): void {
   if (paths.length === 0) {
     console.error(usage);
     process.exit(2);

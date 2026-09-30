@@ -6,18 +6,15 @@
     "pattern": "^# \\S",
     "message": "The first line must be the title, starting with \"# \"."
   },
+  "templates": {
+    "folder": "templates",
+    "fields": {
+      "name": "what the template is called, like \"user story\"",
+      "patterns": "a list of patterns; each must match a line of \"The story\""
+    }
+  },
   "sections": [
-    {
-      "heading": "## The story",
-      "name": "The story",
-      "kind": "text",
-      "forms": [
-        { "name": "user story", "lines": ["^As an? .+, I want .+, so that .+"] },
-        { "name": "job story", "lines": ["^When .+, I want to .+, so I can .+"] },
-        { "name": "bug", "lines": ["^Steps:$", "^Expected: \\S", "^Actual: \\S", "^Environment: \\S"] },
-        { "name": "spike", "lines": ["^Question: \\S", "^Time box: \\S", "^Done when: \\S"] }
-      ]
-    },
+    { "heading": "## The story", "name": "The story", "kind": "template" },
     {
       "heading": "## Acceptance criteria",
       "name": "Acceptance criteria",
@@ -25,7 +22,13 @@
       "itemPattern": "^(- |\\d+\\. )Given .+, when .+, then .+",
       "itemMessage": "Each acceptance criterion must read \"Given ..., when ..., then ...\"."
     },
-    { "heading": "## Known", "name": "Known", "kind": "list" },
+    {
+      "heading": "## Known",
+      "name": "Known",
+      "kind": "list",
+      "itemPattern": "^(- |\\d+\\. ).+ \\([^()]+\\)$",
+      "itemMessage": "This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown."
+    },
     { "heading": "## Unknown", "name": "Unknown", "kind": "list", "allowNone": true },
     { "heading": "## Assumed", "name": "Assumed", "kind": "list" },
     {
@@ -68,6 +71,9 @@
     "notAListItem": "{name} must be a list, one item per line, each starting with \"- \".",
     "tooManyItems": "{name} has {count} items; the limit is {limit}.",
     "extraLine": "{name} has an extra line. It should have exactly {count} lines.",
-    "noForm": "The story section doesn't follow any template. Use one of: {forms}."
+    "noTemplate": "The story section doesn't follow any template. Tried: {names}. For a team template, pass its folder with --templates <folder>.",
+    "templateMissingField": "The template's front matter is missing \"{field}\": {help}.",
+    "templateBadPattern": "\"{pattern}\" is not a valid pattern.",
+    "templateFolder": "Can't read the templates folder \"{folder}\"."
   }
 }

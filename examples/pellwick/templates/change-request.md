@@ -1,18 +1,22 @@
 ---
-name: job story
+name: change request
 patterns:
-  - ^When .+, I want to .+, so I can .+
+  - ^Change: \S
+  - ^Reason: \S
+  - ^Asked for by: \S
 ---
-# [Short title: what changes, for whom]
+# [Short title: what changes, and when]
 
 ## The story
-When [a situation], I want to [do something], so I can [the result].
+Change: [What changes, from what to what, and when.]
+Reason: [Why it is needed.]
+Asked for by: [Who asked, how and when.]
 
 ## Acceptance criteria
 - Given [a starting situation], when [someone does something], then [what they see or get].
 
 ## Known
-- [A fact you can point to.] ([Where it came from, for example: Dana, meeting 2026-09-22])
+- [A fact you can point to.] ([Where it came from, for example: Theo, email 2026-09-26])
 
 ## Unknown
 - [Something nobody knows yet. Write "None." if there is nothing.]

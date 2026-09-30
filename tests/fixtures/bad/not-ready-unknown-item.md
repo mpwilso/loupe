@@ -1,5 +1,6 @@
 # Not ready yet
 
+About: Notes from the hallway, 2026-09-24, on the finance export.
 Missing: which system or application, the budget.
 
 ## Questions

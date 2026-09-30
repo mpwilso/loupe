@@ -1,7 +1,7 @@
 // Checks a context file against the rules in spec/context-file.json.
 // Usage: node src/check-context.ts path/to/file.md ...
 // Set LOUPE_TODAY=YYYY-MM-DD to check staleness against a fixed date.
-import { fill, loadSpec, runCli, type Problem } from './spec.ts';
+import { fill, frontMatter, loadSpec, runCli, type Problem } from './spec.ts';
 
 type ContextSpec = {
   fields: Record<string, string>;
@@ -31,24 +31,10 @@ export function checkContext(text: string, today = new Date()): { errors: Proble
     }
   });
 
-  const end = lines[0]?.trim() === '---' ? lines.indexOf('---', 1) : -1;
+  const { end, fields } = frontMatter(lines);
   if (end < 0) {
     errors.unshift({ line: 1, text: M.noFrontMatter });
     return { errors, warnings };
-  }
-
-  // Front matter: "key: value" lines, and "  - item" lines under a key with no value.
-  type Field = { line: number; value: string; items: string[] };
-  const fields = new Map<string, Field>();
-  let last: Field | undefined;
-  for (let i = 1; i < end; i++) {
-    const item = /^\s+-\s+(.*\S)/.exec(lines[i]);
-    const pair = /^(\w+):\s*(.*?)\s*$/.exec(lines[i]);
-    if (item && last) last.items.push(item[1]);
-    else if (pair) {
-      last = { line: i + 1, value: pair[2], items: [] };
-      fields.set(pair[1], last);
-    }
   }
 
   for (const [field, help] of Object.entries(spec.fields)) {

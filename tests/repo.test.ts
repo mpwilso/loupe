@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { check } from '../src/check.ts';
+import { builtInFolder, check, loadTemplates } from '../src/check.ts';
 import { checkContext } from '../src/check-context.ts';
 import { format, loadSpec } from '../src/spec.ts';
 
@@ -13,9 +13,10 @@ const read = (path: string) => readFileSync(join(root, path), 'utf8');
 const list = (dir: string) => readdirSync(join(root, dir)).filter((f) => f.endsWith('.md')).map((f) => `${dir}/${f}`);
 const teams = readdirSync(join(root, 'examples'));
 
-test('every story template passes the checker', () => {
+test('every story template, built-in or team, passes the checker', () => {
   const templates = list('templates').filter((path) => !path.endsWith('definition-of-ready.md'));
   assert.equal(templates.length, 4);
+  for (const team of teams) if (existsSync(join(root, `examples/${team}/templates`))) templates.push(...list(`examples/${team}/templates`));
   for (const path of templates) assert.deepEqual(check(read(path)).errors.map(format), [], path);
 });
 
@@ -25,11 +26,13 @@ test('the definition of ready names all five things in the readiness bar', () =>
   for (const { label } of items) assert.ok(text.includes(label.replace(/^the /, '')), label);
 });
 
-test('every expected example passes the checker', () => {
+test('every expected example passes the checker, with its team templates', () => {
   for (const team of teams) {
+    const folder = join(root, `examples/${team}/templates`);
+    const templates = [...loadTemplates(builtInFolder), ...(existsSync(folder) ? loadTemplates(folder) : [])];
     const paths = list(`examples/${team}/expected`);
     assert.ok(paths.length > 0);
-    for (const path of paths) assert.deepEqual(check(read(path)).errors.map(format), [], path);
+    for (const path of paths) assert.deepEqual(check(read(path), templates).errors.map(format), [], path);
   }
 });
 

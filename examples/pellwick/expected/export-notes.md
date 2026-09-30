@@ -1,5 +1,6 @@
 # Not ready yet
 
+About: Notes from the hallway, 2026-09-24, about the finance export.
 Missing: the problem, the desired outcome, which system or application, known constraints.
 
 ## Questions

@@ -1,3 +1,8 @@
+---
+name: user story
+patterns:
+  - ^As an? .+, I want .+, so that .+
+---
 # [Short title: what changes, for whom]
 
 ## The story
@@ -7,7 +12,7 @@ As a [kind of user], I want [something], so that [the reason it matters].
 - Given [a starting situation], when [someone does something], then [what they see or get].
 
 ## Known
-- [A fact you can point to, with where it came from.]
+- [A fact you can point to.] ([Where it came from, for example: Dana, meeting 2026-09-22])
 
 ## Unknown
 - [Something nobody knows yet. Write "None." if there is nothing.]

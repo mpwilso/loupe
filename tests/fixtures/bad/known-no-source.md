@@ -7,13 +7,13 @@ As a subscriber, I want to see my next delivery date, so that I know when to exp
 - Given I have an active subscription, when I open my orders page, then I see the next delivery date.
 
 ## Known
-- The delivery date is stored with each order. (Sam, meeting 2026-09-01)
+- The delivery date is stored with each order.
 
 ## Unknown
 None.
 
 ## Assumed
-- The date uses the same format as the rest of the site, which is the day of the week followed by the month and the day, and the year is left out on purpose.
+- The date uses the same format as the rest of the site.
 
 ## Confidence
 High

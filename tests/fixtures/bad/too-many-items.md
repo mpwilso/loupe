@@ -7,12 +7,12 @@ As a subscriber, I want to see my next delivery date, so that I know when to exp
 - Given I have an active subscription, when I open my orders page, then I see the next delivery date.
 
 ## Known
-- Fact number 1.
-- Fact number 2.
-- Fact number 3.
-- Fact number 4.
-- Fact number 5.
-- Fact number 6.
+- Fact number 1. (Sam, meeting 2026-09-01)
+- Fact number 2. (Sam, meeting 2026-09-01)
+- Fact number 3. (Sam, meeting 2026-09-01)
+- Fact number 4. (Sam, meeting 2026-09-01)
+- Fact number 5. (Sam, meeting 2026-09-01)
+- Fact number 6. (Sam, meeting 2026-09-01)
 
 ## Unknown
 None.

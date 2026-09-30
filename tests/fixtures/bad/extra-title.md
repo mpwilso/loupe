@@ -8,7 +8,7 @@ As a subscriber, I want to see my next delivery date, so that I know when to exp
 
 # Known facts
 ## Known
-- The delivery date is stored with each order.
+- The delivery date is stored with each order. (Sam, meeting 2026-09-01)
 
 ## Unknown
 None.

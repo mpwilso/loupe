@@ -13,6 +13,10 @@
     },
     "preamble": [
       {
+        "pattern": "^About: \\S",
+        "message": "Right under the title, add one line that starts with \"About: \" and names the input this responds to."
+      },
+      {
         "pattern": "^Missing: (.+)\\.$",
         "message": "Under the title, add one line that starts with \"Missing: \" and names what is missing, ending with a period.",
         "listOf": "items",

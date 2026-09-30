@@ -1,6 +1,11 @@
 // Checks a story, or a "Not ready yet" response, against the rules in spec/.
-// Usage: node src/check.ts path/to/story.md
-import { escapeRegExp, fill, loadSpec, runCli, type Problem } from './spec.ts';
+// A file that starts with front matter is a template: its own example must fit its own patterns.
+// Usage: node src/check.ts [--templates <folder>] path/to/story.md ...
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
+import { escapeRegExp, fill, format, frontMatter, loadSpec, runCli, type Problem } from './spec.ts';
 
 type LineRule = {
   pattern: string;
@@ -14,15 +19,21 @@ type LineRule = {
 type Section = {
   heading: string;
   name: string;
-  kind: 'text' | 'list' | 'lines';
+  kind: 'template' | 'list' | 'lines';
   allowNone?: boolean;
   itemPattern?: string;
   itemMessage?: string;
   lines?: LineRule[];
-  forms?: { name: string; lines: string[] }[];
 };
 type Shape = { title: { pattern: string; message: string }; preamble?: LineRule[]; sections: Section[] };
-type StoryShape = Shape & { listItem: string; maxListItems: number; none: string; messages: Record<string, string> };
+type StoryShape = Shape & {
+  listItem: string;
+  maxListItems: number;
+  none: string;
+  templates: { folder: string; fields: Record<string, string> };
+  messages: Record<string, string>;
+};
+export type Template = { name: string; patterns: string[] };
 type Readiness = { items: { id: string; label: string }[]; notReady: Shape };
 type PlainLanguage = {
   bannedCharacters: { char: string; message: string }[];
@@ -38,13 +49,64 @@ const plain = loadSpec<PlainLanguage>('plain-language.json');
 const M = story.messages;
 const listItem = new RegExp(story.listItem);
 
-export function check(text: string): { errors: Problem[]; warnings: Problem[] } {
-  const lines = text.split(/\r?\n/);
-  const shape = new RegExp(readiness.notReady.title.pattern).test(lines[0] ?? '') ? readiness.notReady : story;
-  return { errors: [...checkShape(lines, shape), ...checkPlainLanguage(lines)], warnings: [] };
+// Reads a template file's front matter. A template is its name plus the patterns its story lines must match.
+export function readTemplate(text: string): { template?: Template; end: number; problems: Problem[] } {
+  const { end, fields } = frontMatter(text.split(/\r?\n/));
+  const problems: Problem[] = [];
+  const name = fields.get('name')?.value;
+  const patterns = fields.get('patterns')?.items ?? [];
+  for (const [field, help] of Object.entries(story.templates.fields)) {
+    if (field === 'name' ? !name : !patterns.length) {
+      problems.push({ line: fields.get(field)?.line ?? 1, text: fill(M.templateMissingField, { field, help }) });
+    }
+  }
+  for (const pattern of patterns) {
+    try {
+      new RegExp(pattern);
+    } catch {
+      problems.push({ line: fields.get('patterns')?.line, text: fill(M.templateBadPattern, { pattern }) });
+    }
+  }
+  return { template: problems.length || !name ? undefined : { name, patterns }, end, problems };
 }
 
-function checkShape(lines: string[], shape: Shape): Problem[] {
+// Loads every template in a folder. Markdown files without front matter, like the definition of ready, are skipped.
+export function loadTemplates(folder: string): Template[] {
+  let files: string[];
+  try {
+    files = readdirSync(folder).filter((f) => f.endsWith('.md')).sort();
+  } catch {
+    throw new Error(fill(M.templateFolder, { folder }));
+  }
+  const templates: Template[] = [];
+  for (const file of files) {
+    const { template, end, problems } = readTemplate(readFileSync(join(folder, file), 'utf8'));
+    if (end < 0) continue;
+    if (!template) throw new Error(problems.map((p) => `${join(folder, file)}: ${format(p)}`).join('\n'));
+    templates.push(template);
+  }
+  return templates;
+}
+
+export const builtInFolder = fileURLToPath(new URL(`../${story.templates.folder}/`, import.meta.url));
+const builtIn = loadTemplates(builtInFolder);
+
+export function check(text: string, templates = builtIn): { errors: Problem[]; warnings: Problem[] } {
+  let lines = text.split(/\r?\n/);
+  let offset = 0;
+  if (lines[0]?.trim() === '---') {
+    const { template, end, problems } = readTemplate(text);
+    if (!template) return { errors: problems, warnings: [] };
+    templates = [template];
+    offset = end + 1;
+    lines = lines.slice(offset);
+  }
+  const shape = new RegExp(readiness.notReady.title.pattern).test(lines[0] ?? '') ? readiness.notReady : story;
+  const errors = [...checkShape(lines, shape, templates), ...checkPlainLanguage(lines)];
+  return { errors: errors.map((e) => (e.line ? { ...e, line: e.line + offset } : e)), warnings: [] };
+}
+
+function checkShape(lines: string[], shape: Shape, templates: Template[]): Problem[] {
   const problems: Problem[] = [];
   const add = (line: number | undefined, message: string) => problems.push({ line, text: message });
   if (!new RegExp(shape.title.pattern).test(lines[0] ?? '')) add(1, shape.title.message);
@@ -78,7 +140,7 @@ function checkShape(lines: string[], shape: Shape): Problem[] {
     seen.add(block.heading);
     if (index < furthest) add(block.line, fill(M.outOfOrder, { heading: block.heading, order }));
     furthest = Math.max(furthest, index);
-    checkSection(shape.sections[index], block.line, block.body, add);
+    checkSection(shape.sections[index], block.line, block.body, templates, add);
   }
   for (const section of shape.sections) {
     if (!seen.has(section.heading)) add(undefined, fill(M.missingSection, { heading: section.heading }));
@@ -88,7 +150,7 @@ function checkShape(lines: string[], shape: Shape): Problem[] {
 
 type Add = (line: number | undefined, message: string) => void;
 
-function checkSection(section: Section, headingLine: number, body: Entry[], add: Add): void {
+function checkSection(section: Section, headingLine: number, body: Entry[], templates: Template[], add: Add): void {
   const { name } = section;
   if (body.length === 0) {
     add(headingLine, fill(section.allowNone ? M.emptyNoneAllowed : M.emptySection, { name }));
@@ -96,13 +158,12 @@ function checkSection(section: Section, headingLine: number, body: Entry[], add:
   }
   checkListLengths(name, body, add);
 
-  if (section.kind === 'text' && section.forms) {
-    const fits = section.forms.some((form) =>
-      form.lines.every((pattern) => body.some((entry) => new RegExp(pattern).test(entry.text))),
-    );
+  if (section.kind === 'template') {
+    const fits = templates.some((t) => t.patterns.every((p) => body.some((entry) => new RegExp(p).test(entry.text))));
     if (!fits) {
-      const names = section.forms.map((f) => f.name);
-      add(headingLine, fill(M.noForm, { forms: `${names.slice(0, -1).join(', ')} or ${names.at(-1)}` }));
+      const names = templates.map((t) => t.name);
+      const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names.join('');
+      add(headingLine, fill(M.noTemplate, { names: list }));
     }
   } else if (section.kind === 'list') {
     const none = body.find((entry) => entry.text === story.none);
@@ -197,4 +258,14 @@ function checkPlainLanguage(lines: string[]): Problem[] {
   return problems;
 }
 
-if (import.meta.main) runCli(check, 'Usage: node src/check.ts path/to/story.md');
+if (import.meta.main) {
+  const usage = 'Usage: node src/check.ts [--templates <folder>] path/to/story.md ...';
+  try {
+    const { values, positionals } = parseArgs({ options: { templates: { type: 'string', multiple: true } }, allowPositionals: true });
+    const templates = [...builtIn, ...(values.templates ?? []).flatMap(loadTemplates)];
+    runCli((text) => check(text, templates), usage, positionals);
+  } catch (error) {
+    console.error((error as Error).message);
+    process.exit(2);
+  }
+}
