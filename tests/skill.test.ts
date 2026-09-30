@@ -239,3 +239,11 @@ test('setup turns a team form into a template with placeholders, not values, and
   assert.ok(setup.includes('`[High, Medium or Low]` and `[N to M hours]`, never values'));
   assert.match(setup, /Keep the team's own labels/);
 });
+
+// Trial 3: the refusal did not run the checker.
+test('every response is checked, a "Not ready yet" response too, and ends with the Checked with Node line', () => {
+  const story = storyMode();
+  assert.match(story, /Every response is checked\. A "Not ready yet" response runs the checker too, and ends with the `Checked with Node` line, the same as a story\./);
+  assert.match(story, /node SKILL\/src\/run\.js check response\.md/);
+  assert.doesNotMatch(story, /check story\.md/);
+});

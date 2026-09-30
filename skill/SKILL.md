@@ -21,13 +21,13 @@ Loupe writes stories a developer can build without a second meeting. It has two 
 
 ## Write a story
 
-Write the story once, then run the checker at most twice.
+Write the response once, then run the checker at most twice. Every response is checked. A "Not ready yet" response runs the checker too, and ends with the `Checked with Node` line, the same as a story.
 
 1. Read the input and the team's context files where they are, in the project's knowledge. Don't copy them anywhere.
 2. Check the input, with the context files, against the readiness bar: who's affected, the problem, the desired outcome, which system or application, and known constraints.
-3. Below the bar, write only a "Not ready yet" response, shaped like `SKILL/examples/not-ready.md`. Ask the few questions that would get the user over the bar.
-4. At or above the bar, pick the template from the team's `story-style.md`. Read that one template, either built in (`SKILL/templates/`) or the team's own, and `SKILL/writing-rules.md`. Write the story once, in the shape of `SKILL/examples/story.md`, and save it as `story.md`.
-5. Run `node SKILL/src/run.js check story.md`. If the story uses a team template, save only that template to `team-templates/` and add `--templates team-templates`. Fix only the lines the checker reports, and run it once more.
+3. Below the bar, write only a "Not ready yet" response, shaped like `SKILL/examples/not-ready.md`, and save it as `response.md`. Ask the few questions that would get the user over the bar. Go to step 5.
+4. At or above the bar, pick the template from the team's `story-style.md`. Read that one template, either built in (`SKILL/templates/`) or the team's own, and `SKILL/writing-rules.md`. Write the story once, in the shape of `SKILL/examples/story.md`, and save it as `response.md`.
+5. Run `node SKILL/src/run.js check response.md`. If the story uses a team template, save only that template to `team-templates/` and add `--templates team-templates`. Fix only the lines the checker reports, and run it once more.
 6. Check the truth. The checker checks shape, not truth, so this step is yours. Reread every Known line against the source it cites. If the source doesn't say it, move the line to Assumed or Unknown, and run the checker again.
 7. Never run `check-context` in this mode. It belongs to setup.
 
