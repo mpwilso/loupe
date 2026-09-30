@@ -8,10 +8,14 @@ First question: Both switches fall inside the December freeze dates. Does the fr
 Change: Move the box cutoff from 72 to 96 hours before the ship date, from 1 December. Go back to 72 hours on 5 January.
 Reason: December volume nearly doubles, and the warehouse can't pick and pack everything inside 72 hours.
 Asked for by: Theo Park, warehouse operations, by email on 2026-09-26.
+Done when:
+- The cutoff is 96 hours before the ship date from 1 December, and 72 hours again from 5 January.
+- Subscribers see the cutoff on the "change my box" page, the same way as today.
 
 ## Acceptance criteria
 - Given it is between 1 December and 5 January, when a subscriber opens the "change my box" page, then it shows a cutoff of 96 hours before the ship date.
 - Given a box ships within 96 hours during that period, when the subscriber tries to change it, then the change is blocked.
+- Given a box was created before 1 December and ships after it, when the subscriber opens the "change my box" page, then it shows that box's cutoff. To confirm: whether it keeps 72 hours or moves to 96.
 - Given it is 5 January or later, when a subscriber opens the "change my box" page, then the cutoff is back to 72 hours.
 
 ## Not included

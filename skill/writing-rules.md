@@ -15,7 +15,7 @@ Apply these to every sentence as you write it:
 - Invent nothing. A gap goes in Unknown, Assumed or a question.
 - No contradictions inside a story. If the team's template has its own done section, such as `Done when:`, fill it only with what the input settles. Anything undecided goes in the acceptance criteria marked "To confirm", never stated as settled in the done section.
   - Bad: `Done when: every box, old or new, uses the 96-hour cutoff from 1 December.` The input says no one knows about boxes that already exist.
-  - Good: `Done when: boxes created from 1 December get the 96-hour cutoff.` Old boxes go in a criterion ending "To confirm: whether boxes created before 1 December keep 72 hours."
+  - Good: `Done when: the cutoff is 96 hours from 1 December and 72 hours again from 5 January.` Old boxes go in a criterion ending "To confirm: whether boxes created before 1 December keep 72 hours."
 
 ## Around the change
 - Check the team's definition of done and conventions for anything this story triggers, such as telling support. If the input doesn't cover it, ask.

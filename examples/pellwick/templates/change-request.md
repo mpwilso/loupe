@@ -4,6 +4,7 @@ patterns:
   - ^Change: \S
   - ^Reason: \S
   - ^Asked for by: \S
+  - ^Done when:$
 ---
 # [Short title: what changes, and when]
 
@@ -11,6 +12,8 @@ patterns:
 Change: [What changes, from what to what, and when.]
 Reason: [Why it is needed.]
 Asked for by: [Who asked, how and when.]
+Done when:
+- [Only what the input settles. Anything undecided goes in the acceptance criteria, marked "To confirm".]
 
 ## Acceptance criteria
 - Given [a starting situation], when [someone does something], then [what they see or get].

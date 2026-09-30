@@ -154,3 +154,21 @@ test('direction.md keeps "Before release" to story-specific actions and sets the
   assert.doesNotMatch(direction, /definition-of-done items it triggers/);
   assert.match(direction, /^- Time to write a story: about a minute or two, fully checked\.$/m);
 });
+
+test('the trial run names its projects by trial number, not a fixed trial', () => {
+  const trial = read('docs/trial-run.md');
+  assert.doesNotMatch(trial, /trial 2/i);
+  for (const pass of ['baseline', 'setup', 'Loupe']) assert.ok(trial.includes(`"Pellwick trial N ${pass}"`), pass);
+});
+
+// The team's form has "Done when", so the reference template keeps it, and one example shows the rule in use.
+test('the change request template keeps "Done when", and the holiday story fills it only with settled facts', () => {
+  const template = read('examples/pellwick/templates/change-request.md');
+  assert.match(template, /^  - \^Done when:\$$/m);
+  assert.match(template, /^Done when:\n- \[.+\]$/m);
+  const story = read('examples/pellwick/expected/holiday-cutoff.md');
+  const done = story.split('Done when:\n')[1]?.split('\n\n')[0] ?? '';
+  assert.ok(done.length > 0, 'the holiday story has a "Done when" section');
+  assert.doesNotMatch(done, /created before|To confirm/, 'nothing undecided in "Done when"');
+  assert.match(story.split('## Acceptance criteria\n')[1].split('\n## ')[0], /created before 1 December.+To confirm: /);
+});

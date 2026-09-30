@@ -1,6 +1,6 @@
 # Trial run
 
-Trial 2 runs three passes by hand in claude.ai, each in its own Claude Project, on five Pellwick inputs. Record the results in the tables below. These numbers become the README's proof strip, so fill the tables in exactly as described, and score every output with [scoring.md](scoring.md).
+Each trial runs three passes by hand in claude.ai, each in its own Claude Project, on five Pellwick inputs. Replace N with the trial's number. Record the results in the tables below. These numbers become the README's proof strip, so fill the tables in exactly as described, and score every output with [scoring.md](scoring.md).
 
 Claude only ever sees the kit's `raw/` folder and what Loupe makes from it. The kit's `templates/` and `context/` folders are there only as the reference for scoring pass B. Never upload them to any project.
 
@@ -32,7 +32,7 @@ Skills belong to your account, not a project. Upload `loupe-skill.zip` once, as 
 ## Pass A: baseline
 
 - [ ] Switch the "loupe" skill off.
-- [ ] Create a project named "Pellwick trial 2 baseline". Leave its instructions empty.
+- [ ] Create a project named "Pellwick trial N baseline". Leave its instructions empty.
 - [ ] Upload only the files in the kit's `raw/` folder as project knowledge. Don't upload `templates/` or `context/`: they teach Loupe's story shape, and the baseline must not see it.
 - [ ] For each input, send exactly this, with the input attached:
 
@@ -53,7 +53,7 @@ Write `n/a` for Skill used, Node, Checker ran and Passed checker.
 ## Pass B: setup
 
 - [ ] Switch the "loupe" skill on.
-- [ ] Create a project named "Pellwick trial 2 setup". Paste the project instructions from claude-project.md, step 3, word for word.
+- [ ] Create a project named "Pellwick trial N setup". Paste the project instructions from claude-project.md, step 3, word for word.
 - [ ] Upload only the files in the kit's `raw/` folder as project knowledge. Don't upload `templates/` or `context/`.
 - [ ] Open a new chat, start the timer and send "Set up the team from the files in this project." Answer its questions with "Only what the files say." Stop the timer when it hands over the context files.
 - [ ] Loupe should also turn the team's plain change request form, `raw/change-request-template.md`, into a template it can check. If it doesn't offer, don't ask. Record that it didn't.
@@ -76,7 +76,7 @@ List each dropped or added fact here, one line each.
 ## Pass C: Loupe
 
 - [ ] Keep the "loupe" skill on.
-- [ ] Create a project named "Pellwick trial 2 Loupe". Paste the project instructions from claude-project.md, step 3, word for word.
+- [ ] Create a project named "Pellwick trial N Loupe". Paste the project instructions from claude-project.md, step 3, word for word.
 - [ ] Upload only what pass B produced: its context files and its change request template, if it wrote one. Don't upload `raw/`, or the kit's `templates/` or `context/`.
 - [ ] Paste each input with no other words. Note **Skill used**: `yes` if Claude shows it read the loupe skill, otherwise `no`. A run where the skill didn't start counts as a failure: write `no` for Passed checker and Right call.
 - [ ] Note the Node version from the "Checked with Node" line or the "Not checked:" line, or `none` if neither appears.
