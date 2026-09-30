@@ -228,3 +228,7 @@ test('a bug always asks about records the bug already damaged', () => {
   const bug = readFileSync(join(root, 'examples/pellwick/expected/payment-failed-banner.md'), 'utf8');
   assert.match(bug.split('## Questions before building')[1], /already stuck .+ one-time repair\?/);
 });
+
+test('nothing comes before the summary, and nothing but the story sits inside it', () => {
+  assert.match(file('SKILL.md'), /no narration before the three lines, and no chat notes between the title and the end of the story/);
+});

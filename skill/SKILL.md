@@ -41,7 +41,7 @@ Confidence: the level and one short reason, or "None, no story" when not ready
 First question: the first, most build-blocking question, word for word
 ```
 
-Keep the lines at the top of the saved file too. The checker checks they agree with what follows. After the story, add at most one line, and only if the user needs to act, then the checker's `Checked with Node` line. That line goes in the chat only, never in the story file. Never show a story or response that fails the checker.
+Write no narration before the three lines, and no chat notes between the title and the end of the story. Keep the lines at the top of the saved file too. The checker checks they agree with what follows. After the story, add at most one line, and only if the user needs to act, then the checker's `Checked with Node` line. That line goes in the chat only, never in the story file. Never show a story or response that fails the checker.
 
 ## Not in this version
 
