@@ -1,6 +1,6 @@
 ---
 name: loupe
-description: Writes user stories, bug reports and tickets from meeting notes, tickets or emails. Use when a product manager sets up their team or needs a story. Not for fiction or creative writing.
+description: Writes user stories with acceptance criteria, bug reports, Jira tickets and change requests from meeting notes or emails. Use when a product manager sets up a team or needs a story. Not for fiction.
 ---
 
 # Loupe

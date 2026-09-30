@@ -40,20 +40,20 @@ Skills belong to your account, not a project. Upload `loupe-skill.zip` once, as 
 Write a user story with acceptance criteria for this. Use the attached team files.
 ```
 
-Write `n/a` for Node, Checker ran and Passed checker.
+Write `n/a` for Skill used, Node, Checker ran and Passed checker.
 
-| Input | Expected | Node | Checker ran | Passed checker | Write time | Steps shown | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| skip-a-box-meeting.md | story | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
-| helpline-ticket-48213.md | story | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
-| holiday-cutoff-email.md | story | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
-| export-notes.md | not ready | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
-| slack-thread-address-change.md | story | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| Input | Expected | Skill used | Node | Checker ran | Passed checker | Write time | Steps shown | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| skip-a-box-meeting.md | story | n/a | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| helpline-ticket-48213.md | story | n/a | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| holiday-cutoff-email.md | story | n/a | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| export-notes.md | not ready | n/a | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| slack-thread-address-change.md | story | n/a | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
 
 ## Pass B: setup
 
 - [ ] Switch the "loupe" skill on.
-- [ ] Create a project named "Pellwick trial 2 setup" with the instructions from claude-project.md, step 3.
+- [ ] Create a project named "Pellwick trial 2 setup". Paste the project instructions from claude-project.md, step 3, word for word.
 - [ ] Upload only the files in the kit's `raw/` folder as project knowledge. Don't upload `templates/` or `context/`.
 - [ ] Open a new chat, start the timer and send "Set up the team from the files in this project." Answer its questions with "Only what the files say." Stop the timer when it hands over the context files.
 - [ ] Loupe should also turn the team's plain change request form, `raw/change-request-template.md`, into a template it can check. If it doesn't offer, don't ask. Record that it didn't.
@@ -76,17 +76,18 @@ List each dropped or added fact here, one line each.
 ## Pass C: Loupe
 
 - [ ] Keep the "loupe" skill on.
-- [ ] Create a project named "Pellwick trial 2 Loupe" with the instructions from claude-project.md, step 3.
+- [ ] Create a project named "Pellwick trial 2 Loupe". Paste the project instructions from claude-project.md, step 3, word for word.
 - [ ] Upload only what pass B produced: its context files and its change request template, if it wrote one. Don't upload `raw/`, or the kit's `templates/` or `context/`.
-- [ ] Paste each input with no other words. Note the Node version from the "Checked with Node" line or the "Not checked:" line, or `none` if neither appears.
+- [ ] Paste each input with no other words. Note **Skill used**: `yes` if Claude shows it read the loupe skill, otherwise `no`. A run where the skill didn't start counts as a failure: write `no` for Passed checker and Right call.
+- [ ] Note the Node version from the "Checked with Node" line or the "Not checked:" line, or `none` if neither appears.
 
-| Input | Expected | Node | Checker ran | Passed checker | Write time | Steps shown | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| skip-a-box-meeting.md | story | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
-| helpline-ticket-48213.md | story | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
-| holiday-cutoff-email.md | story | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
-| export-notes.md | not ready | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
-| slack-thread-address-change.md | story | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| Input | Expected | Skill used | Node | Checker ran | Passed checker | Write time | Steps shown | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| skip-a-box-meeting.md | story | yes | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| helpline-ticket-48213.md | story | yes | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| holiday-cutoff-email.md | story | yes | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| export-notes.md | not ready | yes | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| slack-thread-address-change.md | story | yes | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
 
 ## Missed developer questions
 

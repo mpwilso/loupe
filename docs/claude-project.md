@@ -32,7 +32,7 @@ Every run of the repository's tests keeps the skill as a download for 7 days.
 3. Click **Set project instructions**, paste the text below, and click **Save instructions**.
 
 ```
-Use the loupe skill for everything in this project.
+For any story, bug report, ticket or change request, use the loupe skill.
 
 When I paste notes, a transcript, a ticket or an email, write a story with the loupe skill. If the input doesn't have enough to build from, write a "Not ready yet" response instead.
 

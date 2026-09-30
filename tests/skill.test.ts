@@ -88,14 +88,15 @@ test('SKILL.md front matter follows the documented rules', () => {
   assert.equal(name, 'loupe', 'the zip folder is named loupe, so the skill must be too');
 
   assert.ok(description.length > 0, 'description: not empty');
-  assert.ok(description.length <= 200, `description: ${description.length} characters; claude.ai allows 200`);
+  assert.ok(description.length < 200, `description: ${description.length} characters; keep it under 200`);
   assert.doesNotMatch(`${name} ${description}`, /<[^>]*>/, 'no XML tags');
   assert.doesNotMatch(description, /^(I|You|We)\b|\b(I can|you can)\b/i, 'description: third person');
   assert.match(description, /\bUse when\b/, 'description: says when to use it');
-  for (const term of ['user stories', 'bug reports', 'tickets', 'meeting notes', 'emails', 'product manager', 'sets up their team']) {
+  // The words product managers actually use when they ask for one.
+  for (const term of ['user stor', 'acceptance criteria', 'bug report', 'Jira ticket', 'change request', 'meeting notes', 'emails', 'product manager', 'sets up a team']) {
     assert.ok(description.includes(term), `description: names "${term}"`);
   }
-  assert.match(description, /Not for fiction or creative writing\.$/, 'description: rules out creative writing');
+  assert.match(description, /Not for fiction\.$/, 'description: rules out fiction');
 
   assert.ok(lines.length - end - 1 < 500, 'body: under 500 lines');
 });

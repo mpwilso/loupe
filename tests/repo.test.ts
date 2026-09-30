@@ -83,13 +83,13 @@ const tables = () => {
 };
 const firstCells = (rows: string[]) => rows.slice(2).map((row) => row.split('|')[1].trim());
 const inputs = ['skip-a-box-meeting.md', 'helpline-ticket-48213.md', 'holiday-cutoff-email.md', 'export-notes.md', 'slack-thread-address-change.md'];
-const resultHeader = '| Input | Expected | Node | Checker ran | Passed checker | Write time | Steps shown | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |';
+const resultHeader = '| Input | Expected | Skill used | Node | Checker ran | Passed checker | Write time | Steps shown | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |';
 
 test('the trial run tables keep their fixed columns and rows', () => {
   const [baseline, setup, loupe, comparison, ...rest] = tables();
   assert.deepEqual(rest, []);
   for (const results of [baseline, loupe]) {
-    assert.deepEqual(results.slice(0, 2), [resultHeader, '|---|---|---|---|---|---|---|---|---|---|---|---|---|']);
+    assert.deepEqual(results.slice(0, 2), [resultHeader, '|---|---|---|---|---|---|---|---|---|---|---|---|---|---|']);
     assert.deepEqual(firstCells(results), inputs);
     assert.deepEqual(results.slice(2).map((row) => row.split('|')[2].trim()), ['story', 'story', 'story', 'not ready', 'story']);
   }
@@ -127,4 +127,21 @@ test('every CI action is pinned to a commit, and the trial kit stays blind', () 
   assert.equal(workflow.match(/retention-days: 7\n/g)?.length, 2);
   assert.doesNotMatch(workflow, /examples\/pellwick\/expected/);
   for (const folder of ['context', 'templates', 'inputs', 'raw']) assert.ok(workflow.includes(`examples/pellwick/${folder}/\n`), folder);
+});
+
+// Trial 3: the skill did not start in 1 of 6 runs. The project instructions name it first, and the trial counts a run without it.
+const projectLine = 'For any story, bug report, ticket or change request, use the loupe skill.';
+
+test('the project instructions start by naming the loupe skill', () => {
+  const block = read('docs/claude-project.md').split('```\n')[1] ?? '';
+  assert.equal(block.split('\n')[0], projectLine);
+});
+
+test('every Loupe pass pastes the project instructions, and a run without the skill fails', () => {
+  const [baseline, , loupe] = tables();
+  assert.deepEqual(baseline.slice(2).map((row) => row.split('|')[3].trim()), ['n/a', 'n/a', 'n/a', 'n/a', 'n/a']);
+  assert.deepEqual(loupe.slice(2).map((row) => row.split('|')[3].trim()), ['yes', 'yes', 'yes', 'yes', 'yes']);
+  const trial = read('docs/trial-run.md');
+  for (const pass of ['## Pass B', '## Pass C']) assert.match(trial.split(pass)[1].split('\n## ')[0], /Paste the project instructions from claude-project\.md, step 3/, pass);
+  assert.match(trial, /A run where the skill didn't start counts as a failure/);
 });
