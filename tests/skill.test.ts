@@ -99,6 +99,14 @@ test('the skill says the checker cannot check truth, so Claude rereads every Kno
   assert.match(skill, /checker checks shape, not truth/);
 });
 
+test('the skill holds the judgment rules for estimates, missing behavior and confidence, and stays short', () => {
+  const skill = file('SKILL.md');
+  assert.match(skill, /basis cites only the input or the context files/);
+  assert.match(skill, /Never invent expected behavior/);
+  for (const level of ['High means', 'Medium means', 'Low means']) assert.ok(skill.includes(level), level);
+  assert.ok(skill.split('\n').length <= 80, 'SKILL.md: keep it to about 80 lines');
+});
+
 test('the packaged checkers need no packages and no network', () => {
   const allowed = new Set(['node:fs', 'node:path', 'node:url', 'node:util']);
   for (const name of ['src/check.ts', 'src/check-context.ts', 'src/spec.ts']) {

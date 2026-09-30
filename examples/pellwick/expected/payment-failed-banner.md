@@ -34,13 +34,13 @@ Impact: Subscribers who update their card after a failed charge. 24 have written
 - The fix is in the web app only, since Stockroom already shows the right status.
 
 ## Confidence
-Medium
-Why: Dana reproduced the bug in staging, but the cause is not found yet.
+Low
+Why: Dana reproduced the bug in staging, but the cause is not found yet, and the cause decides what the fix is.
 How to raise it: A developer finds where the account page reads payment status and confirms the cause.
 
 ## Estimate
-4 to 10 hours
-Basis: A display fix in the web app once the cause is known. The upper end covers tracing late status updates.
+4 to 16 hours
+Basis: No one has sized it, so the range is wide. It covers a display fix in the web app and tracing late status updates.
 
 ## Questions before building
 - What should the account page show during the wait of up to 10 minutes before the payment status arrives?

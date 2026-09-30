@@ -23,13 +23,13 @@ Asked for by: Theo Park, warehouse operations, by email on 2026-09-26.
 - Stockroom needs no code change, since it reads the same subscription data as the web app.
 
 ## Confidence
-Medium
-Why: The change, the reason and the dates are clear, but no one knows if boxes that already exist pick up the new cutoff.
+Low
+Why: The change, the reason and the dates are clear, but no one knows if boxes that already exist pick up the new cutoff. If not, updating them is extra work.
 How to raise it: Sam changes the setting in staging and checks the cutoff on a box created before the change.
 
 ## Estimate
-4 to 8 hours
-Basis: No one has sized it. The range covers changing one setting twice and testing both switches in staging. It does not cover updating boxes that already exist.
+4 to 12 hours
+Basis: No one has sized it, so the range is wide. The range covers changing one setting twice and testing both switches in staging. It does not cover updating boxes that already exist.
 
 ## Questions before building
 - Both switches fall inside the December freeze dates. Does the freeze cover this change?

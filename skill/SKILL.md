@@ -53,6 +53,9 @@ Copy this checklist and tick it off:
    - Invent nothing. A gap goes in Unknown, Assumed or a question.
    - At most five items in any list. Each question is one item with one question mark. Questions that would stop the build come first. If more than five would, end the list with exactly `More open questions than fit here. Consider a spike first.` and don't rate confidence High.
    - Plain words, no em dashes, at most 30 words per sentence, and spell out each acronym the first time.
+   - The estimate's basis cites only the input or the context files. If there is none, say so, widen the range and don't rate confidence High.
+   - If the input doesn't say what should happen in a case, the acceptance criterion says so and asks the user to confirm. Never invent expected behavior.
+   - Confidence: High means nothing a developer needs is unknown. Medium means some unknowns, none of which would stop the build. Low means an unknown could change what gets built.
 5. Save it as `team/stories/<short-name>.md` and run `node SKILL/src/check.ts team/stories/<short-name>.md`. The checker finds `team/templates/` by itself. Fix every line it reports and run it again, until it prints nothing and exits with 0.
 6. Check the truth. The checker checks shape, not truth, so this step is yours. Reread every Known line against the source it cites. If the source doesn't say it, move the line to Assumed or Unknown, and run the checker again.
 7. Show the user the story only after both pass. Never show a story or response that fails the checker.
