@@ -42,5 +42,5 @@ Basis: No one has sized it, so the range is wide. The range covers changing one 
 - Both switches fall inside the December freeze dates. Does the freeze cover this change?
 - Should the switch on 1 December and back on 5 January happen on its own, or does someone do it by hand? Sam asked.
 - At what time of day, and in which time zone, does each switch happen?
-- The skip-a-box story uses 72 hours. Should skipping follow the same setting, so it gets the holiday cutoff too?
-- Do subscribers need notice? A box they could change on one day may lock a day earlier than they expect.
+- If a subscriber has the "change my box" page open when the cutoff switches, which cutoff applies to their change?
+- Support must be told about any change they will see. Who tells agents about the 96-hour cutoff before 1 December? (Conventions context file)

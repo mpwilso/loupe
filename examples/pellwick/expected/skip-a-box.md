@@ -44,5 +44,5 @@ Basis: Sam said "a couple of days if billing behaves" in the meeting on 2026-09-
 - Can a subscriber undo a skip before the cutoff? Dana wants it, Sam says it adds work, and no one decided.
 - If billing does charge a skipped box, is fixing that part of this story or a separate one?
 - Which system decides the "next regular delivery date"? The web app and Stockroom sometimes disagree. (Priorities context file)
-- After a skip, the following box becomes the next box. Can the subscriber skip that one too?
+- If the 72-hour cutoff passes while the subscriber has the page open, what happens when they choose "Skip this box"?
 More open questions than fit here. Consider a spike first.
