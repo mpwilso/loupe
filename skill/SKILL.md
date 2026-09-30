@@ -11,7 +11,7 @@ In the commands below, `SKILL` is the path of the folder holding this file. The 
 
 ## Start of both modes: can the checker run?
 
-Run `node --version`. If Node is missing or older than 22.18, or a checker fails to start, tell the user plainly. Show any draft under a first line that reads exactly `Not checked: <the reason>`, and never say or imply that it passed. The checker rejects that line, so an unchecked draft can never pass by accident.
+Run `node --version`. If Node is missing or older than 22.18, or a checker fails to start, tell the user plainly. Show any draft under a line that reads exactly `Not checked: <the reason>, Node <version or "not found">`, and never say or imply that it passed. The checker rejects that line, so an unchecked draft can never pass by accident. When the checker does run, end your reply with `Checked with Node <version>.` as its last line. That line goes in the chat only, never in the story file.
 
 ## Set up a team
 
@@ -71,7 +71,7 @@ Confidence: the level and one short reason, or "None, no story" when not ready
 First question: the first, most build-blocking question, word for word
 ```
 
-Keep the lines at the top of the saved file too. The checker checks they agree with what follows. After the story, add at most one line, and only if the user needs to act. See both examples.
+Keep the lines at the top of the saved file too. The checker checks they agree with what follows. After the story, add at most one line, and only if the user needs to act, then the "Checked with Node" line. See both examples.
 
 ## Not in this version
 

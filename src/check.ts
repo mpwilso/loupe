@@ -34,6 +34,7 @@ type StoryShape = Shape & {
   maxListItems: number;
   none: string;
   unchecked: { pattern: string; message?: string };
+  chatOnly: { pattern: string; message?: string };
   summary: {
     lines: LineRule[];
     calls: { story: string; notReady: string; unchecked: string };
@@ -148,7 +149,10 @@ export function check(text: string, templates = builtIn): { errors: Problem[]; w
   if (!offset && !hasSummary) add(1, story.summary.lines[0].message);
   const head = hasSummary ? lines.slice(3).findIndex((line) => line.trim()) + 3 : 0;
   const summary = lines.slice(0, hasSummary ? 3 : 0).map((text, i) => ({ line: i + 1, text: text.trim() }));
-  const body = lines.slice(head);
+  // "Checked with Node" is for the chat. In the file it is reported, then blanked so the shape is judged without it.
+  const chatOnly = new RegExp(story.chatOnly.pattern);
+  const chat = lines.flatMap((text, i) => (i >= head && chatOnly.test(text) ? [{ line: i + 1, text: story.chatOnly.message ?? '' }] : []));
+  const body = lines.slice(head).map((text) => (chatOnly.test(text) ? '' : text));
 
   // A draft marked "Not checked:" can never pass. When the mark is the first line, the rest is checked as usual.
   const unchecked = new RegExp(story.unchecked.pattern);
@@ -160,7 +164,7 @@ export function check(text: string, templates = builtIn): { errors: Problem[]; w
   if (hasSummary) checkLines(summary, story.summary.lines, 'The summary', 1, add);
   if (hasSummary) checkSummary(summary, rest, notReady, skip > 0, add);
   const inBody = [...marks, ...checkShape(rest, shape, templates).map((e) => (e.line ? { ...e, line: e.line + skip } : e))];
-  const errors = [...found, ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines)];
+  const errors = [...found, ...chat.filter((e) => e.text), ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines)];
   return { errors: errors.map((e) => (e.line ? { ...e, line: e.line + offset } : e)), warnings: [] };
 }
 

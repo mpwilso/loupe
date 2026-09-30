@@ -107,7 +107,8 @@ test('every file SKILL.md points to is in the zip, one level down', () => {
 test('both modes start by checking the checker can run, and say so when it cannot', () => {
   const skill = file('SKILL.md');
   assert.equal(skill.match(/- \[ \] Run node --version/g)?.length, 2);
-  assert.ok(skill.includes('`Not checked: <the reason>`'));
+  assert.ok(skill.includes('`Not checked: <the reason>, Node <version or "not found">`'));
+  assert.ok(skill.includes('`Checked with Node <version>.`'));
 });
 
 test('the skill says the checker cannot check truth, so Claude rereads every Known line', () => {

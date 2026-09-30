@@ -19,6 +19,10 @@
     "questions": { "story": "## Questions before building", "notReady": "## Questions" },
     "questionMessage": "\"First question:\" must repeat the first item under {heading}, word for word."
   },
+  "chatOnly": {
+    "pattern": "^Checked with Node",
+    "message": "\"Checked with Node\" belongs in the chat, after the story, not in the story file."
+  },
   "unchecked": {
     "pattern": "^Not checked:",
     "message": "This draft was never checked. Run the checker on it, fix what it reports, then remove the \"Not checked:\" line."

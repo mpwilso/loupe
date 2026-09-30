@@ -81,6 +81,7 @@ const bad: Record<string, string> = {
   'summary-level-mismatch':
     'line 2: The summary\'s confidence must start with the level under Confidence, then a reason, like "High, because ...".',
   'summary-question-mismatch': 'line 3: "First question:" must repeat the first item under ## Questions before building, word for word.',
+  'checked-line-in-file': 'line 37: "Checked with Node" belongs in the chat, after the story, not in the story file.',
   'not-ready-extra-section': 'line 14: "## Known" is not an allowed section. The sections are: "## Questions".',
 };
 
