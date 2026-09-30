@@ -36,4 +36,4 @@ Basis: No one has sized it. The range covers changing one setting twice and test
 - Should the switch on 1 December and back on 5 January happen on its own, or does someone do it by hand? Sam asked.
 - At what time of day, and in which time zone, does each switch happen?
 - The skip-a-box story uses 72 hours. Should skipping follow the same setting, so it gets the holiday cutoff too?
-- Who needs telling before 1 December? A subscriber's box may lock a day earlier than they expect, and agents tell subscribers no inside the cutoff today.
+- Do subscribers need notice? A box they could change on one day may lock a day earlier than they expect.

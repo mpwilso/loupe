@@ -10,7 +10,7 @@ import { escapeRegExp, fill, format, frontMatter, loadSpec, runCli, type Problem
 
 type LineRule = {
   pattern: string;
-  message: string;
+  message?: string;
   ascending?: [number, number];
   ascendingMessage?: string;
   listOf?: 'items';
@@ -25,31 +25,47 @@ type Section = {
   itemPattern?: string;
   itemMessage?: string;
   lines?: LineRule[];
+  questionMarks?: { count: number; message: string };
   overflow?: { line: string; message: string; confidence: string; notLevel: string; confidenceMessage: string };
 };
-type Shape = { title: { pattern: string; message: string }; preamble?: LineRule[]; sections: Section[] };
+type Shape = { title: { pattern: string; message?: string }; preamble?: LineRule[]; sections: Section[] };
 type StoryShape = Shape & {
   listItem: string;
   maxListItems: number;
   none: string;
   templates: { folder: string; fields: Record<string, string> };
   messages: Record<string, string>;
+  errors: Record<string, string>;
 };
 export type Template = { name: string; patterns: string[] };
-type Readiness = { items: { id: string; label: string }[]; notReady: Shape };
+type Readiness = { items: { id: string; label: string }[]; notReady: Shape & { detect: string } };
 type PlainLanguage = {
-  bannedCharacters: { char: string; message: string }[];
+  bannedCharacters: { char: string; message?: string }[];
   bannedPhrases: { match: string; flags: string; message: string; list: string[] };
   acronyms: { match: string; spelledOut: string[]; allow: string[]; message: string };
   sentences: { split: string; maxWords: number; message: string };
 };
 type Entry = { line: number; text: string };
 
-const story = loadSpec<StoryShape>('story-shape.json');
-const readiness = loadSpec<Readiness>('readiness.json');
-const plain = loadSpec<PlainLanguage>('plain-language.json');
-const M = story.messages;
-const listItem = new RegExp(story.listItem);
+export type Specs = { story: StoryShape; readiness: Readiness; plain: PlainLanguage };
+export const specs: Specs = {
+  story: loadSpec('story-shape.json'),
+  readiness: loadSpec('readiness.json'),
+  plain: loadSpec('plain-language.json'),
+};
+let story: StoryShape;
+let readiness: Readiness;
+let plain: PlainLanguage;
+let M: Record<string, string>;
+let listItem: RegExp;
+
+// Swaps in other rules. Tests use it to switch rules off; nothing else should.
+export function setSpecs(next: Specs): void {
+  ({ story, readiness, plain } = next);
+  M = story.messages;
+  listItem = new RegExp(story.listItem);
+}
+setSpecs(specs);
 
 // Reads a template file's front matter. A template is its name plus the patterns its story lines must match.
 export function readTemplate(text: string): { template?: Template; end: number; problems: Problem[] } {
@@ -69,7 +85,7 @@ export function readTemplate(text: string): { template?: Template; end: number; 
       problems.push({ line: fields.get('patterns')?.line, text: fill(M.templateBadPattern, { pattern }) });
     }
   }
-  return { template: problems.length || !name ? undefined : { name, patterns }, end, problems };
+  return { template: problems.length || !name ? undefined : { name, patterns }, end, problems: problems.filter((p) => p.text) };
 }
 
 // Loads every template in a folder. Markdown files without front matter, like the definition of ready, are skipped.
@@ -78,7 +94,7 @@ export function loadTemplates(folder: string): Template[] {
   try {
     files = readdirSync(folder).filter((f) => f.endsWith('.md')).sort();
   } catch {
-    throw new Error(fill(M.templateFolder, { folder }));
+    throw new Error(fill(story.errors.templateFolder, { folder }));
   }
   const templates: Template[] = [];
   for (const file of files) {
@@ -101,7 +117,7 @@ export function findTeamTemplates(storyPath: string): string | undefined {
   }
 }
 
-export const builtInFolder = fileURLToPath(new URL(`../${story.templates.folder}/`, import.meta.url));
+export const builtInFolder = fileURLToPath(new URL(`../${specs.story.templates.folder}/`, import.meta.url));
 const builtIn = loadTemplates(builtInFolder);
 
 export function check(text: string, templates = builtIn): { errors: Problem[]; warnings: Problem[] } {
@@ -114,14 +130,14 @@ export function check(text: string, templates = builtIn): { errors: Problem[]; w
     offset = end + 1;
     lines = lines.slice(offset);
   }
-  const shape = new RegExp(readiness.notReady.title.pattern).test(lines[0] ?? '') ? readiness.notReady : story;
+  const shape = new RegExp(readiness.notReady.detect, 'i').test(lines[0] ?? '') ? readiness.notReady : story;
   const errors = [...checkShape(lines, shape, templates), ...checkPlainLanguage(lines)];
   return { errors: errors.map((e) => (e.line ? { ...e, line: e.line + offset } : e)), warnings: [] };
 }
 
 function checkShape(lines: string[], shape: Shape, templates: Template[]): Problem[] {
   const problems: Problem[] = [];
-  const add = (line: number | undefined, message: string) => problems.push({ line, text: message });
+  const add = (line: number | undefined, message = '') => void (message && problems.push({ line, text: message }));
   if (!new RegExp(shape.title.pattern).test(lines[0] ?? '')) add(1, shape.title.message);
 
   const preamble: Entry[] = [];
@@ -162,7 +178,7 @@ function checkShape(lines: string[], shape: Shape, templates: Template[]): Probl
   return problems;
 }
 
-type Add = (line: number | undefined, message: string) => void;
+type Add = (line: number | undefined, message?: string) => void;
 
 // A list may end with one fixed line saying more questions are open than fit. It needs a full list, and rules out top confidence.
 function checkOverflow(shape: Shape, blocks: { heading: string; body: Entry[] }[], add: Add): void {
@@ -203,7 +219,10 @@ function checkSection(section: Section, headingLine: number, body: Entry[], temp
       for (const entry of body) {
         if (!listItem.test(entry.text)) add(entry.line, fill(M.notAListItem, { name }));
         else if (section.itemPattern && !new RegExp(section.itemPattern).test(entry.text)) {
-          add(entry.line, section.itemMessage ?? '');
+          add(entry.line, section.itemMessage);
+        } else if (section.questionMarks) {
+          const marks = entry.text.split('?').length - 1;
+          if (marks !== section.questionMarks.count) add(entry.line, fill(section.questionMarks.message, { name, count: marks }));
         }
       }
     }
@@ -228,12 +247,13 @@ function checkListLengths(name: string, body: Entry[], add: Add): void {
 }
 
 // Walks the rules in order. A line that fits a later rule means this rule's line is missing.
+// A rule without a message is switched off: it takes any line that doesn't belong to a later rule.
 function checkLines(body: Entry[], rules: LineRule[], name: string, anchor: number, add: Add): void {
   let next = 0;
   rules.forEach((rule, i) => {
     const entry = body[next];
     const match = entry && new RegExp(rule.pattern).exec(entry.text);
-    if (!entry || !match) {
+    if (!entry || !match || !rule.message) {
       add(entry?.line ?? anchor, rule.message);
       const fitsLater = entry && rules.slice(i + 1).some((r) => new RegExp(r.pattern).test(entry.text));
       if (entry && !fitsLater) next++;
@@ -242,12 +262,12 @@ function checkLines(body: Entry[], rules: LineRule[], name: string, anchor: numb
     next++;
     if (rule.ascending) {
       const [low, high] = rule.ascending.map((group) => Number(match[group]));
-      if (low > high) add(entry.line, fill(rule.ascendingMessage ?? '', { low, high }));
+      if (low > high) add(entry.line, fill(rule.ascendingMessage, { low, high }));
     }
     if (rule.listOf) {
       const labels = readiness[rule.listOf].map((item) => item.label);
       for (const item of match[1].split(rule.separator ?? ', ')) {
-        if (!labels.includes(item)) add(entry.line, fill(rule.unknownMessage ?? '', { item, labels: labels.join(', ') }));
+        if (!labels.includes(item)) add(entry.line, fill(rule.unknownMessage, { item, labels: labels.join(', ') }));
       }
     }
   });
@@ -266,7 +286,7 @@ function checkPlainLanguage(lines: string[]): Problem[] {
   lines.forEach((text, i) => {
     const line = i + 1;
     for (const banned of plain.bannedCharacters) {
-      if (text.includes(banned.char)) problems.push({ line, text: banned.message });
+      if (text.includes(banned.char)) problems.push({ line, text: banned.message ?? '' });
     }
     for (const { phrase, re } of phraseRules) {
       if (re.test(text)) problems.push({ line, text: fill(phrases.message, { phrase }) });
@@ -285,7 +305,7 @@ function checkPlainLanguage(lines: string[]): Problem[] {
       }
     }
   });
-  return problems;
+  return problems.filter((p) => p.text);
 }
 
 if (import.meta.main) {

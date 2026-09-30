@@ -3,7 +3,7 @@
 // Set LOUPE_TODAY=YYYY-MM-DD to check staleness against a fixed date.
 import { fill, frontMatter, loadSpec, runCli, type Problem } from './spec.ts';
 
-type ContextSpec = {
+export type ContextSpec = {
   fields: Record<string, string>;
   dateField: string;
   datePattern: string;
@@ -14,11 +14,24 @@ type ContextSpec = {
   messages: Record<string, string>;
 };
 
-const spec = loadSpec<ContextSpec>('context-file.json');
-const M = spec.messages;
+export const contextSpec = loadSpec<ContextSpec>('context-file.json');
+let spec: ContextSpec;
+let M: Record<string, string>;
+
+// Swaps in other rules. Tests use it to switch rules off; nothing else should.
+export function setContextSpec(next: ContextSpec): void {
+  spec = next;
+  M = spec.messages;
+}
+setContextSpec(contextSpec);
 const DAY = 24 * 60 * 60 * 1000;
 
 export function checkContext(text: string, today = new Date()): { errors: Problem[]; warnings: Problem[] } {
+  const { errors, warnings } = findProblems(text, today);
+  return { errors: errors.filter((p) => p.text), warnings: warnings.filter((p) => p.text) };
+}
+
+function findProblems(text: string, today: Date): { errors: Problem[]; warnings: Problem[] } {
   const errors: Problem[] = [];
   const warnings: Problem[] = [];
   const lines = text.split(/\r?\n/);
@@ -33,7 +46,7 @@ export function checkContext(text: string, today = new Date()): { errors: Proble
 
   const { end, fields } = frontMatter(lines);
   if (end < 0) {
-    errors.unshift({ line: 1, text: M.noFrontMatter });
+    errors.unshift({ line: 1, text: fill(M.noFrontMatter) });
     return { errors, warnings };
   }
 

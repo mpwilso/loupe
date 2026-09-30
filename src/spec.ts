@@ -6,8 +6,9 @@ export function loadSpec<T>(name: string): T {
   return JSON.parse(readFileSync(new URL(`../spec/${name}`, import.meta.url), 'utf8')) as T;
 }
 
-export function fill(template: string, vars: Record<string, string | number>): string {
-  return template.replace(/\{(\w+)\}/g, (whole, key: string) => (key in vars ? String(vars[key]) : whole));
+// A rule whose message is missing is switched off: fill gives an empty string, and checkers drop empty problems.
+export function fill(template: string | undefined, vars: Record<string, string | number> = {}): string {
+  return (template ?? '').replace(/\{(\w+)\}/g, (whole, key: string) => (key in vars ? String(vars[key]) : whole));
 }
 
 export function escapeRegExp(text: string): string {

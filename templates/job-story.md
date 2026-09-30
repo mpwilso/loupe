@@ -30,4 +30,4 @@ How to raise it: [What would make it higher.]
 Basis: [What the range is based on, for a developer who knows the system.]
 
 ## Questions before building
-- [A question a developer would ask later. Write "None." if there are none.]
+- [What would a developer ask later? Write "None." if there are none.]

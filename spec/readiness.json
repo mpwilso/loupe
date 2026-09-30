@@ -7,6 +7,7 @@
     { "id": "constraints", "label": "known constraints" }
   ],
   "notReady": {
+    "detect": "^#\\s*not ready",
     "title": {
       "pattern": "^# Not ready yet$",
       "message": "The first line must be exactly \"# Not ready yet\"."
@@ -25,7 +26,12 @@
       }
     ],
     "sections": [
-      { "heading": "## Questions", "name": "Questions", "kind": "list" }
+      {
+        "heading": "## Questions",
+        "name": "Questions",
+        "kind": "list",
+        "questionMarks": { "count": 1, "message": "Each item in {name} must ask one question, with exactly one question mark. This one has {count}." }
+      }
     ]
   }
 }

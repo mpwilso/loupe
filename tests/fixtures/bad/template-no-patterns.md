@@ -1,12 +1,12 @@
 ---
-name: user story
-patterns:
-  - ^As an? .+, I want .+, so that .+
+name: spike
 ---
-# [Short title: what changes, for whom]
+# [Short title: the question to answer]
 
 ## The story
-As a [kind of user], I want [something], so that [the reason it matters].
+Question: [The one question this spike answers.]
+Time box: [The most time to spend, for example 8 hours.]
+Done when: [What the team will have in hand, for example a written recommendation.]
 
 ## Acceptance criteria
 - Given [a starting situation], when [someone does something], then [what they see or get].

@@ -1,11 +1,9 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { checkContext } from '../src/check-context.ts';
 import { format } from '../src/spec.ts';
+import { fixture, secretLine, secrets, shortLookalikes, today, withLine } from './cases.ts';
 
-const fixture = (name: string) => readFileSync(new URL(`fixtures/${name}`, import.meta.url), 'utf8');
-const today = new Date('2026-09-30T00:00:00Z');
 const secret = (what: string) =>
   `line 8: This looks like ${what}. Remove it. Context files must never hold secrets or credentials.`;
 
@@ -17,6 +15,7 @@ const bad: Record<string, string> = {
   'sources-not-a-list': 'line 4: "sources" must list at least one place the facts came from.',
   password: secret('a password'),
   'private-key': secret('a private key'),
+  token: secret('a secret or token'),
   'too-long': 'The body has 309 words; the limit is 300. Keep only what a new team member needs.',
 };
 
@@ -46,35 +45,15 @@ test('the staleness limit comes from the spec: 90 days passes, 91 warns', () => 
   assert.equal(checkContext(text, new Date('2026-12-01T00:00:00Z')).warnings.length, 1);
 });
 
-// Fake secrets are built here while the test runs, so no file ever holds one and push protection never sees one.
-const mix = (length: number) => Array.from({ length }, (_, i) => 'Zq7Xk2Lm9Pw4Rt8Vn3Bc6Hd1Jf5Gs0Ya'[(i * 7) % 32]).join('');
-const withLine = (line: string) => `${fixture('good-context.md')}${line}\n`;
-
-const secrets: [string, string][] = [
-  ['a cloud access key', 'AKIA' + mix(16).toUpperCase()],
-  ['an API key', 'sk-' + mix(48)],
-  ['an API key', 'sk-proj-' + mix(40)],
-  ['an API key', 'AIza' + mix(35)],
-  ['a GitHub token', 'ghp_' + mix(36)],
-  ['a GitHub token', 'gho_' + mix(36)],
-  ['a GitHub token', 'github_pat_' + mix(22) + '_' + mix(59)],
-  ['a Slack token', 'xoxb-' + mix(12) + '-' + mix(24)],
-];
-
 for (const [what, value] of secrets) {
   test(`${what} that looks real (${value.slice(0, 4)}...) fails`, () => {
-    const { errors } = checkContext(withLine(`The staging key is ${value} if you need it.`), today);
+    const { errors } = checkContext(withLine(secretLine(value)), today);
     assert.deepEqual(errors.map(format), [secret(what)]);
   });
 }
 
 test('text that only looks a little like a key passes', () => {
-  for (const line of [
-    'The ghp_ prefix marks a GitHub token.',
-    'Keys start with sk- and are long.',
-    'Short ids like ' + 'ghp_' + mix(10) + ' or ' + 'sk-' + mix(10) + ' are fine.',
-    'The stock code AKIA' + mix(8).toUpperCase() + ' is too short.',
-  ]) {
+  for (const line of shortLookalikes) {
     assert.deepEqual(checkContext(withLine(line), today).errors, [], line);
   }
 });

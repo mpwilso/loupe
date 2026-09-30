@@ -6,10 +6,10 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { builtInFolder, check, findTeamTemplates, loadTemplates } from '../src/check.ts';
 import { format } from '../src/spec.ts';
+import { emDash, fixture } from './cases.ts';
 
 const root = new URL('..', import.meta.url);
 const cli = (...args: string[]) => spawnSync(process.execPath, ['src/check.ts', ...args], { cwd: root, encoding: 'utf8' });
-const fixture = (name: string) => readFileSync(new URL(`fixtures/${name}`, import.meta.url), 'utf8');
 const problems = (text: string) => check(text).errors.map(format);
 const noTeamTemplate =
   "line 3: The story section doesn't follow any template. Tried: bug, job story, spike and user story. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.\n";
@@ -38,6 +38,7 @@ const bad: Record<string, string> = {
     "line 10: This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown.",
   'bad-confidence-level': 'line 19: The first line of Confidence must be exactly High, Medium or Low.',
   'missing-why': 'line 20: Confidence needs a "Why:" line saying what the rating is based on.',
+  'missing-how': 'line 18: Confidence needs a "How to raise it:" line saying what would make it higher.',
   'extra-line': 'line 22: Confidence has an extra line. It should have exactly 3 lines.',
   'bad-estimate': 'line 24: The first line of Estimate must read "N to M hours", for example "4 to 8 hours".',
   'estimate-reversed': "line 24: The estimate says 8 to 4 hours. The first number can't be bigger than the second.",
@@ -45,6 +46,10 @@ const bad: Record<string, string> = {
   'banned-phrase': 'line 16: Replace "leverage" with a plainer word.',
   acronym: 'line 10: Spell out "OMS" the first time it appears, like this: "the full name (OMS)".',
   'long-sentence': 'line 16: This sentence has 34 words; the limit is 30. Split it up.',
+  'not-ready-bad-title': 'line 1: The first line must be exactly "# Not ready yet".',
+  'template-no-patterns':
+    'line 1: The template\'s front matter is missing "patterns": a list of patterns; each must match a line of "The story".',
+  'template-bad-pattern': 'line 3: "^Time box: (" is not a valid pattern.',
   'not-ready-no-about':
     'line 3: Right under the title, add one line that starts with "About: " and names the input this responds to.',
   'not-ready-no-missing-line':
@@ -58,6 +63,9 @@ const bad: Record<string, string> = {
     'line 30: The line "More open questions than fit here. Consider a spike first." must come last, after five questions.',
   'overflow-high-confidence':
     "line 19: Confidence can't be High while there are more open questions than fit. Lower it, or answer some questions first.",
+  'two-questions':
+    'line 28: Each item in Questions before building must ask one question, with exactly one question mark. This one has 2.',
+  'not-ready-two-questions': 'line 8: Each item in Questions must ask one question, with exactly one question mark. This one has 2.',
   'not-ready-extra-section': 'line 10: "## Known" is not an allowed section. The sections are: "## Questions".',
 };
 
@@ -67,10 +75,8 @@ for (const [name, message] of Object.entries(bad)) {
   });
 }
 
-// An em dash can't live in a tracked file, so this fixture is built here.
 test('a story with an em dash fails', () => {
-  const text = fixture('good-story.md').replace('Nothing needed.', 'Nothing\u2014needed.');
-  assert.deepEqual(problems(text), [
+  assert.deepEqual(problems(emDash()), [
     'line 21: Remove the em dash. Use a comma, a period or a new sentence instead.',
   ]);
 });
@@ -169,16 +175,6 @@ test('a template file is checked against its own patterns, with line numbers fro
   assert.deepEqual(problems(template), []);
   assert.deepEqual(problems(template.replace('Time box:', 'Timebox:')), [
     "line 10: The story section doesn't follow any template. Tried: spike. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.",
-  ]);
-});
-
-test('a template with no patterns, or a broken pattern, fails with a plain message', () => {
-  const template = readFileSync(new URL('../templates/spike.md', import.meta.url), 'utf8');
-  assert.deepEqual(problems(template.replace(/patterns:\n(  - .*\n)+/, '')), [
-    'line 1: The template\'s front matter is missing "patterns": a list of patterns; each must match a line of "The story".',
-  ]);
-  assert.deepEqual(problems(template.replace('^Time box: \\S', '^Time box: (')), [
-    'line 3: "^Time box: (" is not a valid pattern.',
   ]);
 });
 
