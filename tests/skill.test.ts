@@ -272,3 +272,15 @@ test('every estimate says whether the team estimating rule is included', () => {
     assert.match(basis, /Stockroom 50% (not )?included/, `${name}: ${basis}`);
   }
 });
+
+// Trial 3: "Before release" listed all three definition-of-done items every time.
+test('"Before release" lists only actions specific to this story', () => {
+  assert.match(file('writing-rules.md'), /then only the actions specific to this story, such as telling support about a named change.+Leave out items that apply to every story, like testing in staging\. If nothing specific applies, write `None\.`/);
+  for (const name of md('templates').filter((n) => n !== 'definition-of-ready.md')) {
+    assert.match(file(`templates/${name}`), /^Before release: \[Actions specific to this story, such as telling support about a named change, separated by semicolons, or None\.\]$/m, name);
+  }
+  for (const name of md('examples/pellwick/expected').filter((n) => n !== 'export-notes.md')) {
+    const line = readFileSync(join(root, 'examples/pellwick/expected', name), 'utf8').match(/^Before release: .*$/m)?.[0] ?? '';
+    assert.doesNotMatch(line, /staging|a tester/i, `${name}: ${line}`);
+  }
+});

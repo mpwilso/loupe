@@ -39,4 +39,4 @@ Basis: [What the range is based on, for a developer who knows the system.]
 ## Questions before building
 - [What would a developer ask later? Write "None." if there are none.]
 
-Before release: [The definition-of-done items this story triggers, separated by semicolons, or None.]
+Before release: [Actions specific to this story, such as telling support about a named change, separated by semicolons, or None.]

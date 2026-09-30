@@ -4,7 +4,7 @@
   "none": "None.",
   "closing": {
     "pattern": "^Before release: \\S",
-    "message": "End the story with one line: \"Before release:\" and the definition-of-done items this story triggers, separated by semicolons, or \"None.\"",
+    "message": "End the story with one line: \"Before release:\" and the actions specific to this story, separated by semicolons, or \"None.\"",
     "separator": "; ",
     "max": 3,
     "maxMessage": "\"Before release:\" lists {count} items; the limit is {max}."

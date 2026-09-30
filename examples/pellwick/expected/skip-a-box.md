@@ -50,4 +50,4 @@ Basis: Sam said "a couple of days if billing behaves" in the meeting on 2026-09-
 - If the 72-hour cutoff passes while the subscriber has the page open, what happens when they try to skip?
 More open questions than fit here. Consider a spike first.
 
-Before release: test in staging; a tester checks the acceptance criteria; tell support that subscribers can skip online and how skips show in Stockroom.
+Before release: Tell support that subscribers can skip online and how skips show in Stockroom.

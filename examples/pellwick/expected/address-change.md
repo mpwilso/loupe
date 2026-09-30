@@ -45,4 +45,4 @@ Basis: No one has sized it, so the range is wide. Stockroom 50% not included, si
 - Should the subscriber get a confirmation after saving a new address?
 - Support must be told about any change they will see. Who tells them before this ships? (Conventions context file)
 
-Before release: test in staging; a tester checks the acceptance criteria; tell support that subscribers can change their address online.
+Before release: Tell support that subscribers can change their address online.

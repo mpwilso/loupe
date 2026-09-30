@@ -75,7 +75,7 @@ const bad: Record<string, string> = {
   'missing-not-included': 'The "## Not included" section is missing.',
   'too-many-not-included': 'line 14: Not included has 6 items; the limit is 5.',
   'missing-before-release':
-    'End the story with one line: "Before release:" and the definition-of-done items this story triggers, separated by semicolons, or "None."',
+    'End the story with one line: "Before release:" and the actions specific to this story, separated by semicolons, or "None."',
   'too-many-before-release': 'line 37: "Before release:" lists 4 items; the limit is 3.',
   'not-checked': 'line 5: This draft was never checked. Run the checker on it, fix what it reports, then remove the "Not checked:" line.',
   'no-summary':
