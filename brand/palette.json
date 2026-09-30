@@ -1,0 +1,11 @@
+{
+  "night": { "hex": "#10151C", "use": "Text on light pages, the social preview's background, and the \"You\" steps on light pages." },
+  "emerald": { "hex": "#1F8A6E", "use": "Known facts: box edges in the diagram. The open facet's stroke on light pages and in the small mark." },
+  "mint": { "hex": "#7BD9B8", "use": "The open facet's stroke on dark pages, and the \"Automatic\" steps. Too faint for strokes on light pages." },
+  "frost": { "hex": "#E9EEF0", "use": "Text on dark pages, and the \"You\" steps on dark pages." },
+  "facet-1": { "hex": "#0E5E4E", "use": "Facet 1, at the top, and the \"Loupe\" steps in the diagram." },
+  "facet-2": { "hex": "#1F8A6E", "use": "Facet 2." },
+  "facet-3": { "hex": "#2FA383", "use": "Facet 3." },
+  "facet-4": { "hex": "#57C29D", "use": "Facet 4." },
+  "facet-5": { "hex": "#7BD9B8", "use": "Facet 5. Facet 6 stays open: the unknown." }
+}

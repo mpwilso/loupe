@@ -172,3 +172,20 @@ test('the change request template keeps "Done when", and the holiday story fills
   assert.doesNotMatch(done, /created before|To confirm/, 'nothing undecided in "Done when"');
   assert.match(story.split('## Acceptance criteria\n')[1].split('\n## ')[0], /created before 1 December.+To confirm: /);
 });
+
+// When the repo goes public, a "v" tag builds the skill and attaches it to a GitHub Release.
+test('a tag starting with "v" tests, builds and releases the skill zip, with every action pinned', () => {
+  const path = '.github/workflows/release.yml';
+  assert.ok(existsSync(join(root, path)), path);
+  const workflow = read(path);
+  assert.match(workflow, /^on:\n  push:\n    tags: \['v\*'\]\n/m);
+  assert.match(workflow, /^permissions:\n  contents: write\n/m);
+  assert.ok(workflow.includes('scripts/test.sh'), 'tests run before the release');
+  assert.ok(workflow.includes('scripts/build-skill.sh'), 'builds the skill');
+  assert.match(workflow, /uses: softprops\/action-gh-release@[0-9a-f]{40} # v\d/);
+  assert.match(workflow, /files: dist\/loupe-skill\.zip\n/);
+  assert.match(workflow, /fail_on_unmatched_files: true\n/);
+  for (const file of readdirSync(join(root, '.github/workflows'))) {
+    for (const [, action] of read(`.github/workflows/${file}`).matchAll(/uses: (\S+)/g)) assert.match(action, /@[0-9a-f]{40}$/, `${file}: ${action}`);
+  }
+});
