@@ -33,6 +33,8 @@ const file = (name: string) => entries.find((e) => e.name === `loupe/${name}`)?.
 const sources: Record<string, string> = {
   'SKILL.md': 'skill/SKILL.md',
   'writing-rules.md': 'skill/writing-rules.md',
+  'src/run.js': 'src/run.js',
+  'src/node-version.js': 'src/node-version.js',
   'src/check.ts': 'src/check.ts',
   'src/check-context.ts': 'src/check-context.ts',
   'src/spec.ts': 'src/spec.ts',
@@ -105,17 +107,24 @@ test('every file SKILL.md points to is in the zip, one level down', () => {
   assert.doesNotMatch(file('SKILL.md'), /\\/, 'forward slashes only');
 });
 
-test('both modes start by checking the checker can run, and say so when it cannot', () => {
+const storyMode = () => file('SKILL.md').split('## Write a story')[1].split('\n## ')[0];
+
+test('the checker, not a separate step, reports the Node version, and an unchecked draft says so', () => {
   const skill = file('SKILL.md');
-  assert.equal(skill.match(/- \[ \] Run node --version/g)?.length, 2);
-  assert.ok(skill.includes('`Not checked: <the reason>, Node <version or "not found">`'));
+  assert.doesNotMatch(skill, /node --version/);
+  assert.doesNotMatch(skill, /node SKILL\/src\/check/, 'every checker runs through run.js');
+  assert.ok(skill.includes('`Not checked: <the reason>`'));
   assert.ok(skill.includes('`Checked with Node <version>.`'));
 });
 
-test('the skill says the checker cannot check truth, so Claude rereads every Known line', () => {
-  const skill = file('SKILL.md');
-  assert.ok(skill.includes('- [ ] Reread every Known line against its source'));
-  assert.match(skill, /checker checks shape, not truth/);
+test('story mode reads context files where they are, never runs check-context, and keeps the truth check', () => {
+  const story = storyMode();
+  assert.match(story, /Don't copy them anywhere/);
+  assert.match(story, /save only that template/);
+  assert.match(story, /Never run `check-context` in this mode/);
+  assert.equal(story.match(/node SKILL\/src\/run\.js check-context/g), null);
+  assert.match(story, /checker checks shape, not truth/);
+  assert.match(story, /Reread every Known line against the source it cites/);
 });
 
 test('the skill holds the judgment rules for estimates, missing behavior and confidence, and stays short', () => {
@@ -137,7 +146,7 @@ test('the skill asks about what happens around the change, and never answers it 
 
 test('the packaged checkers need no packages and no network', () => {
   const allowed = new Set(['node:fs', 'node:path', 'node:url', 'node:util']);
-  for (const name of ['src/check.ts', 'src/check-context.ts', 'src/spec.ts']) {
+  for (const name of ['src/run.js', 'src/node-version.js', 'src/check.ts', 'src/check-context.ts', 'src/spec.ts']) {
     for (const [, from] of file(name).matchAll(/^import .* from '([^']+)';$/gm)) {
       assert.ok(from.startsWith('./') || allowed.has(from), `${name} imports ${from}`);
     }
@@ -152,7 +161,14 @@ function both(checker: string, paths: string[]) {
     const { status, stdout, stderr } = spawnSync(process.execPath, [script, ...paths], { cwd: root, encoding: 'utf8', env });
     return { status, stdout, stderr };
   };
-  return { repo: run(join(root, checker)), packaged: run(join(unzipped, 'loupe', checker)) };
+  // The skill runs its checkers through run.js, so the packaged side does too.
+  const name = checker.replace(/^src\/|\.ts$/g, '');
+  const packaged = spawnSync(process.execPath, [join(unzipped, 'loupe/src/run.js'), name, ...paths], {
+    cwd: root,
+    encoding: 'utf8',
+    env: { ...process.env, LOUPE_TODAY: '2026-09-30' },
+  });
+  return { repo: run(join(root, checker)), packaged: { status: packaged.status, stdout: packaged.stdout, stderr: packaged.stderr } };
 }
 
 test('the packaged checkers pass every file in examples/, the same as the repo checkers', () => {
@@ -169,7 +185,7 @@ test('the packaged checkers pass every file in examples/, the same as the repo c
     assert.ok(paths.length > 0);
     const { repo, packaged } = both(checker, paths);
     assert.deepEqual(packaged, repo, checker);
-    assert.deepEqual(packaged, { status: 0, stdout: '', stderr: '' }, checker);
+    assert.deepEqual(packaged, { status: 0, stdout: `Checked with Node ${process.version}.\n`, stderr: '' }, checker);
   }
 });
 

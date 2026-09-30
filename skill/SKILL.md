@@ -5,53 +5,30 @@ description: Writes user stories, bug reports and tickets from meeting notes, ti
 
 # Loupe
 
-Loupe writes stories a developer can build without a second meeting. It has two modes: set up a team, and write a story. The checkers in this folder decide what is good enough. Nothing reaches the user until it passes.
+Loupe writes stories a developer can build without a second meeting. It has two modes: set up a team, and write a story. Read only the files the current mode needs.
 
-In the commands below, `SKILL` is the path of the folder holding this file. The checkers need Node 22.18 or newer, no packages and no network.
-
-## Start of both modes: can the checker run?
-
-Run `node --version`. If Node is missing or older than 22.18, or a checker fails to start, tell the user plainly. Show any draft under a line that reads exactly `Not checked: <the reason>, Node <version or "not found">`, and never say or imply that it passed. The checker rejects that line, so an unchecked draft can never pass by accident. When the checker does run, end your reply with `Checked with Node <version>.` as its last line. That line goes in the chat only, never in the story file.
+`SKILL` below is the path of the folder holding this file. Run the checkers with `node SKILL/src/run.js`. They need no packages and no network. A pass ends with the line `Checked with Node <version>.` If a checker won't start, or prints a line starting `Not checked:`, show the draft under that line, or under `Not checked: <the reason>` if it printed nothing. Never say or imply that it passed.
 
 ## Set up a team
-
-Copy this checklist and tick it off:
-
-```
-- [ ] Run node --version and confirm the checker can run
-- [ ] Interview the product manager
-- [ ] Read what they share
-- [ ] Write the context files
-- [ ] Check each file until it passes
-- [ ] Hand the files over
-```
 
 1. Interview the product manager. Ask at most five questions per turn. Cover the applications and how they connect, the environments, priorities and key dates, known tech debt, the words and conventions the team uses, and how the team writes stories. Ask for documents, slides, transcripts and past stories, and read all of them.
 2. Write one short file per topic: `applications.md`, `environments.md`, `priorities.md` (with tech debt), `conventions.md` and `story-style.md`. The format is in `SKILL/spec/context-file.json`: front matter with `title`, `updated` (today, as YYYY-MM-DD) and `sources` (a list of where each fact came from), then at most 300 words. See `SKILL/examples/context-file.md`.
 3. Never write secrets, credentials or customer data. If the product manager shares any, tell them plainly and leave them out.
-4. Save the files in `team/context/` and run `node SKILL/src/check-context.ts team/context/*.md`. Fix every line it reports and run it again, until it prints nothing and exits with 0.
-5. If the team has its own story template, save it in `team/templates/` with front matter like `SKILL/templates/user-story.md`, and check it the same way with `node SKILL/src/check.ts`.
+4. Save the files in `team/context/` and run `node SKILL/src/run.js check-context team/context/*.md`. Fix every line it reports and run it again, until it passes.
+5. If the team has its own story template, save it in `team/templates/` with front matter like `SKILL/templates/user-story.md`, and check it with `node SKILL/src/run.js check`.
 6. Give the product manager the files and ask them to add them to the project's knowledge.
 
 ## Write a story
 
-```
-- [ ] Run node --version and confirm the checker can run
-- [ ] Gather the input, context files and team templates
-- [ ] Check the input against the readiness bar
-- [ ] Write the story, or a "Not ready yet" response
-- [ ] Run the checker, fix, rerun until it passes
-- [ ] Reread every Known line against its source
-- [ ] Show the user
-```
+Write the story once, then run the checker at most twice.
 
-1. Save the team's context files in `team/context/` and any team templates in `team/templates/`, exactly as they appear in the project's knowledge.
-2. Check the input, with the context files, against the readiness bar in `SKILL/templates/definition-of-ready.md`: who's affected, the problem, the desired outcome, which system or application, and known constraints.
+1. Read the input and the team's context files where they are, in the project's knowledge. Don't copy them anywhere.
+2. Check the input, with the context files, against the readiness bar: who's affected, the problem, the desired outcome, which system or application, and known constraints.
 3. Below the bar, write only a "Not ready yet" response, shaped like `SKILL/examples/not-ready.md`. Ask the few questions that would get the user over the bar.
-4. At or above the bar, write the story in the team's template, chosen by the team's `story-style.md`. The built-in templates are in `SKILL/templates/`. Follow the shape of `SKILL/examples/story.md`, and read and follow every rule in `SKILL/writing-rules.md` before you write.
-5. Save it as `team/stories/<short-name>.md` and run `node SKILL/src/check.ts team/stories/<short-name>.md`. The checker finds `team/templates/` by itself. Fix every line it reports and run it again, until it prints nothing and exits with 0.
+4. At or above the bar, pick the template from the team's `story-style.md`. Read that one template, either built in (`SKILL/templates/`) or the team's own, and `SKILL/writing-rules.md`. Write the story once, in the shape of `SKILL/examples/story.md`, and save it as `story.md`.
+5. Run `node SKILL/src/run.js check story.md`. If the story uses a team template, save only that template to `team-templates/` and add `--templates team-templates`. Fix only the lines the checker reports, and run it once more.
 6. Check the truth. The checker checks shape, not truth, so this step is yours. Reread every Known line against the source it cites. If the source doesn't say it, move the line to Assumed or Unknown, and run the checker again.
-7. Show the user the story only after both pass. Never show a story or response that fails the checker.
+7. Never run `check-context` in this mode. It belongs to setup.
 
 ## What the user sees
 
@@ -63,7 +40,7 @@ Confidence: the level and one short reason, or "None, no story" when not ready
 First question: the first, most build-blocking question, word for word
 ```
 
-Keep the lines at the top of the saved file too. The checker checks they agree with what follows. After the story, add at most one line, and only if the user needs to act, then the "Checked with Node" line. See both examples.
+Keep the lines at the top of the saved file too. The checker checks they agree with what follows. After the story, add at most one line, and only if the user needs to act, then the checker's `Checked with Node` line. That line goes in the chat only, never in the story file. Never show a story or response that fails the checker.
 
 ## Not in this version
 

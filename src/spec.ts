@@ -39,7 +39,7 @@ export function frontMatter(lines: string[]): { end: number; fields: Map<string,
   return { end, fields };
 }
 
-// Runs a checker over each path and sets the exit code.
+// Runs a checker over each path and sets the exit code. A pass ends with the Node version it ran on.
 export function runCli(
   check: (text: string, path: string) => { errors: Problem[]; warnings: Problem[] },
   usage: string,
@@ -58,5 +58,6 @@ export function runCli(
     if (paths.length > 1) console.log(`${path}:`);
     for (const line of lines) console.log(paths.length > 1 ? `  ${line}` : line);
   }
+  if (!failed) console.log(`Checked with Node ${process.version}.`);
   process.exit(failed ? 1 : 0);
 }

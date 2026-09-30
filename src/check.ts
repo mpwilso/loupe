@@ -359,10 +359,10 @@ function checkPlainLanguage(lines: string[]): Problem[] {
   return problems.filter((p) => p.text);
 }
 
-if (import.meta.main) {
+export function main(args: string[]): void {
   const usage = 'Usage: node src/check.ts [--templates <folder>] path/to/story.md ...';
   try {
-    const { values, positionals } = parseArgs({ options: { templates: { type: 'string', multiple: true } }, allowPositionals: true });
+    const { values, positionals } = parseArgs({ args, options: { templates: { type: 'string', multiple: true } }, allowPositionals: true });
     const override = values.templates && [...builtIn, ...values.templates.flatMap(loadTemplates)];
     const forStory = (path: string) => {
       const folder = findTeamTemplates(path);
@@ -374,3 +374,5 @@ if (import.meta.main) {
     process.exit(2);
   }
 }
+
+if (import.meta.main) main(process.argv.slice(2));

@@ -6,9 +6,11 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { builtInFolder, check, findTeamTemplates, loadTemplates } from '../src/check.ts';
 import { format } from '../src/spec.ts';
+import { minimum, tooOld } from '../src/node-version.js';
 import { emDash, fixture } from './cases.ts';
 
 const root = new URL('..', import.meta.url);
+const checked = `Checked with Node ${process.version}.\n`;
 const cli = (...args: string[]) => spawnSync(process.execPath, ['src/check.ts', ...args], { cwd: root, encoding: 'utf8' });
 const problems = (text: string) => check(text).errors.map(format);
 const noTeamTemplate =
@@ -128,7 +130,7 @@ test('a Known item needs its source at the end, not in the middle', () => {
 test('the command line exits 0 on a pass and 1 with plain lines on a fail', () => {
   const pass = cli('tests/fixtures/good-story.md');
   assert.equal(pass.status, 0);
-  assert.equal(pass.stdout, '');
+  assert.equal(pass.stdout, checked);
   const fail = cli('tests/fixtures/bad/too-many-items.md');
   assert.equal(fail.status, 1);
   assert.equal(fail.stdout, 'line 17: Known has 6 items; the limit is 5.\n');
@@ -146,7 +148,7 @@ test('a story finds its team templates next to the context folder, with no flag'
   assert.equal(findTeamTemplates(story), join('examples', 'pellwick', 'templates'));
   const pass = cli(story);
   assert.equal(pass.status, 0);
-  assert.equal(pass.stdout, '');
+  assert.equal(pass.stdout, checked);
 });
 
 test('--templates overrides the team folder it would have found', () => {
@@ -198,4 +200,14 @@ test('a missing templates folder is a plain error, not a crash', () => {
   const run = cli('--templates', 'no/such/folder', 'tests/fixtures/good-story.md');
   assert.equal(run.status, 2);
   assert.equal(run.stderr, 'Can\'t read the templates folder "no/such/folder".\n');
+});
+
+test('a pass ends with the Node version, and too old a Node gets a plain "Not checked:" line', () => {
+  const run = spawnSync(process.execPath, ['src/run.js', 'check', 'tests/fixtures/good-story.md'], { cwd: root, encoding: 'utf8' });
+  assert.deepEqual([run.status, run.stdout], [0, checked]);
+  const fail = spawnSync(process.execPath, ['src/run.js', 'check', 'tests/fixtures/bad/too-many-items.md'], { cwd: root, encoding: 'utf8' });
+  assert.equal(fail.status, 1);
+  assert.doesNotMatch(fail.stdout, /Checked with Node/);
+  assert.deepEqual(['v20.20.2', 'v22.17.9', 'v22.18.0', 'v22.22.2', 'v24.21.0'].map(tooOld), [true, true, false, false, false]);
+  assert.equal(minimum, '22.18.0');
 });

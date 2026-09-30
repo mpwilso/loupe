@@ -78,7 +78,9 @@ function findProblems(text: string, today: Date): { errors: Problem[]; warnings:
   return { errors, warnings };
 }
 
-if (import.meta.main) {
+export function main(args: string[]): void {
   const today = process.env.LOUPE_TODAY ? new Date(`${process.env.LOUPE_TODAY}T00:00:00Z`) : new Date();
-  runCli((text) => checkContext(text, today), 'Usage: node src/check-context.ts path/to/file.md ...');
+  runCli((text) => checkContext(text, today), 'Usage: node src/check-context.ts path/to/file.md ...', args);
 }
+
+if (import.meta.main) main(process.argv.slice(2));

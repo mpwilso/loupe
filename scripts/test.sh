@@ -18,6 +18,7 @@ pass=0
 fail=0
 run() {
   if output=$(node "$@" 2>&1); then pass=$((pass + 1)); else fail=$((fail + 1)); echo "FAIL ${*: -1}"; fi
+  output=$(echo "$output" | grep -v '^Checked with Node ')
   [ -n "$output" ] && echo "$output" | sed 's/^/  /'
   return 0
 }

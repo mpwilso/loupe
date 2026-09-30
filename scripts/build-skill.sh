@@ -15,7 +15,7 @@ rm -rf "$dir"
 mkdir -p "$dir/src" "$dir/spec" "$dir/templates" "$dir/examples"
 
 cp skill/SKILL.md skill/writing-rules.md "$dir/"
-cp src/check.ts src/check-context.ts src/spec.ts "$dir/src/"
+cp src/run.js src/node-version.js src/check.ts src/check-context.ts src/spec.ts "$dir/src/"
 cp spec/*.json "$dir/spec/"
 cp templates/*.md "$dir/templates/"
 cp examples/pellwick/expected/skip-a-box.md "$dir/examples/story.md"
