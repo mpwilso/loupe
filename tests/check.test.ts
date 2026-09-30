@@ -63,6 +63,8 @@ const bad: Record<string, string> = {
     'line 35: The line "More open questions than fit here. Consider a spike first." must come last, after five questions.',
   'overflow-too-few':
     'line 37: The line "More open questions than fit here. Consider a spike first." must come last, after five questions.',
+  'overflow-unknown-none':
+    'line 20: Unknown says "None." but the questions end with the spike line. List each build-blocking question that didn\'t fit under Unknown, one line each.',
   'overflow-high-confidence':
     "line 26: Confidence can't be High while there are more open questions than fit. Lower it, or answer some questions first.",
   'two-questions':

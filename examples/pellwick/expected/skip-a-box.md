@@ -26,6 +26,9 @@ As a subscriber, I want to skip my next box from my account, so that I don't pay
 ## Unknown
 - Whether the billing job leaves out a box whose date moved. Sam has not checked yet.
 - How many subscribers who cancel to avoid a box would skip instead.
+- Whether a subscriber can also skip the box after one they already skipped.
+- Where skipping sits: the account home page, the "change my box" page, or both.
+- Whether a subscriber can skip a box whose payment has already failed.
 
 ## Assumed
 - The web app can write the "Skipped by customer" note, so Stockroom needs no code change.

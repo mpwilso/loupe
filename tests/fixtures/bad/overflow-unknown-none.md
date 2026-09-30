@@ -1,5 +1,5 @@
 Call: Story written
-Confidence: High, based on the checks above.
+Confidence: Medium, based on the checks above.
 First question: Which date shows when a box was skipped?
 
 # Show the next delivery date on the orders page
@@ -17,13 +17,13 @@ None.
 - The delivery date is stored with each order. (Sam, meeting 2026-09-01)
 
 ## Unknown
-- Whether the date shows the weekday.
+None.
 
 ## Assumed
 - The date uses the same format as the rest of the site.
 
 ## Confidence
-High
+Medium
 Why: The data exists and the page already loads the order.
 How to raise it: Nothing needed.
 

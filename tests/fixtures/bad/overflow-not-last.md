@@ -17,7 +17,7 @@ None.
 - The delivery date is stored with each order. (Sam, meeting 2026-09-01)
 
 ## Unknown
-None.
+- Whether the date shows the weekday.
 
 ## Assumed
 - The date uses the same format as the rest of the site.

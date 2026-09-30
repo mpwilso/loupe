@@ -26,7 +26,7 @@ type Section = {
   itemMessage?: string;
   lines?: LineRule[];
   questionMarks?: { count: number; message: string };
-  overflow?: { line: string; message: string; confidence: string; notLevel: string; confidenceMessage: string };
+  overflow?: { line: string; message: string; confidence: string; notLevel: string; confidenceMessage: string; unknown: string; unknownMessage?: string };
 };
 type Shape = { title: { pattern: string; message?: string }; preamble?: LineRule[]; sections: Section[] };
 type StoryShape = Shape & {
@@ -243,6 +243,9 @@ function checkOverflow(shape: Shape, blocks: { heading: string; body: Entry[] }[
     const heading = shape.sections.find((s) => s.name === rule.confidence)?.heading;
     const level = blocks.find((b) => b.heading === heading)?.body[0];
     if (level?.text === rule.notLevel) add(level.line, rule.confidenceMessage);
+    const unknownHeading = shape.sections.find((s) => s.name === rule.unknown)?.heading;
+    const unknown = blocks.find((b) => b.heading === unknownHeading)?.body[0];
+    if (unknown?.text === story.none) add(unknown.line, rule.unknownMessage);
   }
 }
 
