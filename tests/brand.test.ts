@@ -112,3 +112,69 @@ test('the brand notes show every palette color and its use, and the light and da
   }
   for (const file of ['mark.svg', 'lockup-light.svg', 'lockup-dark.svg']) assert.ok(notes.includes(file), file);
 });
+
+// The diagram uses a monospace font, so a line's width is its length times the font's character width.
+// Common monospace fonts use about 0.6 of the font size per character; 0.62 leaves a margin.
+const CHAR = 0.62;
+type Box = { x: number; y: number; w: number; h: number; what: string };
+const overlaps = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const inside = (a: Box, b: Box) => a.x >= b.x && a.y >= b.y && a.x + a.w <= b.x + b.w && a.y + a.h <= b.y + b.h;
+const num = (value: string | undefined) => Number(value ?? 0);
+
+function layout(path: string) {
+  const svg = parseSvg(read(path));
+  const [, , width, height] = svg.attrs.viewBox.split(' ').map(Number);
+  const boxOf = (rect: (typeof svg)['children'][number], what: string): Box => ({ x: num(rect.attrs.x), y: num(rect.attrs.y), w: num(rect.attrs.width), h: num(rect.attrs.height), what });
+  const lines = (text: (typeof svg)['children'][number]): Box[] => {
+    const size = num(text.attrs['font-size']);
+    const spans = text.children.length ? text.children : [text];
+    return spans.map((span) => {
+      const x = num(span.attrs.x ?? text.attrs.x);
+      const w = span.text.length * CHAR * size;
+      const left = (text.attrs['text-anchor'] ?? 'start') === 'middle' ? x - w / 2 : x;
+      return { x: left, y: num(span.attrs.y ?? text.attrs.y) - 0.8 * size, w, h: 1.05 * size, what: span.text };
+    });
+  };
+  const steps = walk(svg).filter((n) => n.name === 'g' && /\bbox\b/.test(n.attrs.class ?? ''));
+  const boxes = steps.map((g) => ({ g, box: boxOf(g.children.find((c) => c.name === 'rect')!, g.children.find((c) => c.name === 'text')!.children.map((s) => s.text).join(' ')) }));
+  const swatches = walk(svg).filter((n) => n.name === 'rect' && n.attrs.class === 'swatch').map((r) => boxOf(r, 'legend swatch'));
+  const loose = walk(svg).filter((n) => n.name === 'text' && !steps.some((g) => g.children.includes(n))).flatMap(lines);
+  return { svg, width, height, boxes, swatches, loose, lines };
+}
+
+for (const theme of ['light', 'dark']) {
+  const path = `docs/img/how-it-works-${theme}.svg`;
+
+  test(`${path}: no text overflows its box, and no boxes overlap`, () => {
+    const { width, height, boxes, swatches, loose, lines } = layout(path);
+    const all = [...boxes.map((b) => b.box), ...swatches];
+    assert.ok(boxes.length >= 7, 'every step has a box');
+    for (const { g, box } of boxes) {
+      const pad = { x: box.x + 8, y: box.y + 4, w: box.w - 16, h: box.h - 8, what: 'padding' };
+      for (const line of lines(g.children.find((c) => c.name === 'text')!)) assert.ok(inside(line, pad), `"${line.what}" overflows its box`);
+    }
+    for (const [i, a] of all.entries()) {
+      assert.ok(inside(a, { x: 0, y: 0, w: width, h: height, what: 'the image' }), `${a.what} is outside the image`);
+      for (const b of all.slice(i + 1)) assert.ok(!overlaps(a, b), `"${a.what}" overlaps "${b.what}"`);
+    }
+    for (const line of loose) {
+      assert.ok(inside(line, { x: 0, y: 0, w: width, h: height, what: 'the image' }), `"${line.what}" is outside the image`);
+      for (const box of all) assert.ok(!overlaps(line, box), `"${line.what}" overlaps "${box.what}"`);
+    }
+  });
+
+  test(`${path}: every step is colored by who does it, with a legend`, () => {
+    const { svg, boxes } = layout(path);
+    const text = walk(svg).filter((n) => n.name === 'text' || n.name === 'tspan').map((n) => n.text).join(' ');
+    for (const label of ['You', 'Loupe (the model)', 'Automatic (the checker)']) assert.ok(text.includes(label), label);
+    const legend = Object.fromEntries(walk(svg).filter((n) => n.attrs.class === 'swatch').map((r) => [r.attrs['data-owner'], r.attrs.fill]));
+    assert.deepEqual(Object.keys(legend).sort(), ['automatic', 'loupe', 'you']);
+    for (const { g, box } of boxes.filter(({ g }) => g.attrs['data-owner'])) {
+      assert.equal(g.children.find((c) => c.name === 'rect')!.attrs.fill, legend[g.attrs['data-owner']], box.what);
+    }
+    const flow = boxes.map((b) => b.box.what).join(' | ');
+    for (const words of ['context files', 'every fact with its source', 'note, transcript, ticket or email', 'Readiness check', 'Not ready yet', "team's template", 'until it passes', 'reread against its source', 'You get the story']) {
+      assert.ok(flow.includes(words), `the diagram says "${words}"`);
+    }
+  });
+}
