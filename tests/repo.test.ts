@@ -82,26 +82,23 @@ const tables = () => {
   return found;
 };
 const firstCells = (rows: string[]) => rows.slice(2).map((row) => row.split('|')[1].trim());
-const inputs = ['skip-a-box-meeting.md', 'helpline-ticket-48213.md', 'holiday-cutoff-email.md', 'export-notes.md'];
-const resultHeader = '| Input | Expected | Node | Checker ran | Passed checker | Time | Edits | Unsupported facts | Dev questions | Right call |';
+const inputs = ['skip-a-box-meeting.md', 'helpline-ticket-48213.md', 'holiday-cutoff-email.md', 'export-notes.md', 'slack-thread-address-change.md'];
+const resultHeader = '| Input | Expected | Node | Checker ran | Passed checker | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |';
 
-test('the trial run results table keeps its fixed columns and rows', () => {
-  const [results] = tables();
-  assert.deepEqual(results.slice(0, 2), [resultHeader, '|---|---|---|---|---|---|---|---|---|---|']);
-  assert.deepEqual(firstCells(results), inputs);
-  for (const input of inputs) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
-  const expected = results.slice(2).map((row) => row.split('|')[2].trim());
-  assert.deepEqual(expected, ['story', 'story', 'story', 'not ready']);
-});
-
-test('the baseline table matches the results table, and the comparison keeps its fixed rows', () => {
-  const [results, baseline, comparison, ...rest] = tables();
+test('the trial run tables keep their fixed columns and rows', () => {
+  const [baseline, setup, loupe, comparison, ...rest] = tables();
   assert.deepEqual(rest, []);
-  assert.deepEqual(baseline.slice(0, 2), results.slice(0, 2));
-  assert.deepEqual(firstCells(baseline), inputs);
+  for (const results of [baseline, loupe]) {
+    assert.deepEqual(results.slice(0, 2), [resultHeader, '|---|---|---|---|---|---|---|---|---|---|---|']);
+    assert.deepEqual(firstCells(results), inputs);
+    assert.deepEqual(results.slice(2).map((row) => row.split('|')[2].trim()), ['story', 'story', 'story', 'not ready', 'story']);
+  }
+  for (const input of inputs) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
+  assert.deepEqual(firstCells(setup), ['Time', 'Context files written', 'Every file passed check-context', 'Facts dropped', 'Facts added']);
   assert.deepEqual(comparison.slice(0, 2), ['| Measure | Loupe | Baseline |', '|---|---|---|']);
   assert.deepEqual(firstCells(comparison), [
     'Time to accepted story',
+    'Review time',
     'Edits',
     'Unsupported facts',
     'Correct refusals',
