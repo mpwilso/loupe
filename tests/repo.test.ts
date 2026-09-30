@@ -70,11 +70,26 @@ test('the CI test step keeps pipefail when it pipes its output', () => {
   assert.ok(/^\s*shell: bash\s*$/m.test(text) || text.includes('set -o pipefail'), `The test step pipes its output but has no "shell: bash" or "set -o pipefail":\n${text}`);
 });
 
-// The README's proof strip is built from this table, so its columns and rows must not drift.
-test('the trial run table keeps its fixed columns and rows', () => {
-  const rows = read('docs/trial-run.md').split('\n').filter((line) => line.startsWith('|'));
-  assert.deepEqual(rows.slice(0, 2), ['| Input | Time | Edits | Dev questions | Passed checker |', '|---|---|---|---|---|']);
-  const inputs = rows.slice(2).map((row) => row.split('|')[1].trim());
-  assert.deepEqual(inputs, ['skip-a-box-meeting.md', 'helpline-ticket-48213.md', 'holiday-cutoff-email.md']);
+// The README's proof strip is built from these tables, so their columns and rows must not drift.
+const tables = () => {
+  const found: string[][] = [];
+  let current: string[] | undefined;
+  for (const line of read('docs/trial-run.md').split('\n')) {
+    if (!line.startsWith('|')) current = undefined;
+    else if (current) current.push(line);
+    else found.push((current = [line]));
+  }
+  return found;
+};
+const firstCells = (rows: string[]) => rows.slice(2).map((row) => row.split('|')[1].trim());
+const inputs = ['skip-a-box-meeting.md', 'helpline-ticket-48213.md', 'holiday-cutoff-email.md', 'export-notes.md'];
+const resultHeader = '| Input | Expected | Node | Checker ran | Passed checker | Time | Edits | Unsupported facts | Dev questions | Right call |';
+
+test('the trial run results table keeps its fixed columns and rows', () => {
+  const [results] = tables();
+  assert.deepEqual(results.slice(0, 2), [resultHeader, '|---|---|---|---|---|---|---|---|---|---|']);
+  assert.deepEqual(firstCells(results), inputs);
   for (const input of inputs) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
+  const expected = results.slice(2).map((row) => row.split('|')[2].trim());
+  assert.deepEqual(expected, ['story', 'story', 'story', 'not ready']);
 });

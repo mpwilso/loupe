@@ -1,6 +1,8 @@
 # Trial run
 
-Run the skill by hand in claude.ai on three Pellwick inputs, and record the results in the table below. These numbers become the README's proof strip, so fill the table in exactly as described.
+Run the skill by hand in claude.ai on four Pellwick inputs, and record the results in the tables below. These numbers become the README's proof strip, so fill the tables in exactly as described.
+
+Three inputs should give a story. One, `export-notes.md`, should not: success there means no story, only a "Not ready yet" response that asks the right questions.
 
 ## Before you start
 
@@ -13,29 +15,36 @@ Run the skill by hand in claude.ai on three Pellwick inputs, and record the resu
 
 - [ ] Open a new chat in the project. Use one chat per input.
 - [ ] Start a timer and paste the whole input file.
-- [ ] Read what Claude gives you as if you were the team's product manager. Ask for changes until you would hand the story to a developer.
-- [ ] Stop the timer when you accept the story.
+- [ ] Note the Node version the skill reports, and whether it says the checker ran.
+- [ ] Read what Claude gives you as if you were the team's product manager. Ask for changes until you would hand it to a developer.
+- [ ] Stop the timer when you accept it.
 - [ ] Count the edits. One edit is one change you asked Claude to make, or one line you changed yourself. Asking Claude a question that changes nothing is not an edit.
-- [ ] Read the accepted story as the developer who has to build it. Write down every question you would still ask before starting. Leave out anything the story already answers.
+- [ ] Check every Known line against the source it cites. Count the lines the source doesn't actually say.
+- [ ] Read the result as the developer who has to build it. Write down every question you would still ask. For `export-notes.md`, write down every question the response should have asked finance but didn't.
 
 ## Results
 
-Fill in one row per input. Keep the rows in this order and the columns as they are.
+One row per input. Keep the rows in this order and the columns as they are.
 
-- **Time**: minutes and seconds from pasting the input to accepting the story, as `m:ss`, for example `6:40`.
-- **Edits**: a whole number. Write `0` if you accepted it as it came.
-- **Dev questions**: a whole number, the count of questions a developer would still ask. List each one under "Developer questions" below.
-- **Passed checker**: `yes` if Claude said the checker passed before it showed you the story, otherwise `no`.
+- **Node**: the version the skill reported, like `v22.18.0`, or `none` if it found no Node.
+- **Checker ran**: `yes` or `no`.
+- **Passed checker**: `yes` if the skill said the checker passed before it showed you the result, otherwise `no`.
+- **Time**: minutes and seconds from pasting the input to accepting the result, as `m:ss`, for example `6:40`.
+- **Edits**: a whole number. `0` if you accepted it as it came.
+- **Unsupported facts**: a whole number, the Known lines whose source doesn't say them. `0` for a "Not ready yet" response.
+- **Dev questions**: a whole number. List each one under "Developer questions" below.
+- **Right call**: `yes` if it wrote a story where one was expected, or refused where a refusal was expected. Otherwise `no`.
 
 Date: YYYY-MM-DD
 Commit: 
 Model: 
 
-| Input | Time | Edits | Dev questions | Passed checker |
-|---|---|---|---|---|
-| skip-a-box-meeting.md | m:ss | 0 | 0 | yes |
-| helpline-ticket-48213.md | m:ss | 0 | 0 | yes |
-| holiday-cutoff-email.md | m:ss | 0 | 0 | yes |
+| Input | Expected | Node | Checker ran | Passed checker | Time | Edits | Unsupported facts | Dev questions | Right call |
+|---|---|---|---|---|---|---|---|---|---|
+| skip-a-box-meeting.md | story | v0.0.0 | yes | yes | m:ss | 0 | 0 | 0 | yes |
+| helpline-ticket-48213.md | story | v0.0.0 | yes | yes | m:ss | 0 | 0 | 0 | yes |
+| holiday-cutoff-email.md | story | v0.0.0 | yes | yes | m:ss | 0 | 0 | 0 | yes |
+| export-notes.md | not ready | v0.0.0 | yes | yes | m:ss | 0 | 0 | 0 | yes |
 
 ## Developer questions
 
@@ -48,6 +57,9 @@ Write each question under its input. Write "None." if there were none.
 - 
 
 ### holiday-cutoff-email.md
+- 
+
+### export-notes.md
 - 
 
 ## Notes
