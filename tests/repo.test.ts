@@ -47,11 +47,17 @@ test('every example context file passes, with no warnings on the day it was writ
   }
 });
 
-test('no tracked file contains an em dash', () => {
+// Text only: a binary file, like the demo GIF, can hold the em dash's three bytes by chance.
+// Like git, a file with a NUL byte counts as binary.
+const hasEmDash = (bytes: Buffer) => !bytes.includes(0) && bytes.toString('utf8').includes('\u2014');
+
+test('no tracked text file contains an em dash', () => {
   const files = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean);
   assert.ok(files.length > 0);
-  const offenders = files.filter((path) => read(path).includes('\u2014'));
+  const offenders = files.filter((path) => hasEmDash(readFileSync(join(root, path))));
   assert.deepEqual(offenders, []);
+  assert.ok(hasEmDash(Buffer.from('A pause\u2014then more.')), 'text with an em dash is caught');
+  assert.ok(!hasEmDash(Buffer.concat([Buffer.from('GIF89a\0'), Buffer.from('\u2014')])), 'binary bytes are not text');
 });
 
 // Without pipefail, "scripts/test.sh | tee" takes tee's exit code, so failing tests would pass CI.

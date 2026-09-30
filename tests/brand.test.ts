@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { inflateSync } from 'node:zlib';
 import { CENTER, CYCLE_SECONDS, FACETS, OPEN_STROKE, VERTICES, palette, render, wordmark } from '../scripts/brand.ts';
-import { parseSvg, walk } from './svg.ts';
+import { parseSvg, strokes, walk } from './svg.ts';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
@@ -292,5 +292,14 @@ test('the diagram marks known steps with Emerald edges, and the unknown path wit
     assert.deepEqual([rect(note).attrs.stroke, rect(note).attrs.fill, rect(note).attrs['stroke-dasharray']], [OPEN_STROKE[theme], 'none', '4 3'], theme);
     const text = walk(svg).filter((n) => n.name === 'text').map((n) => n.attrs.fill).filter(Boolean);
     assert.ok(text.includes(theme === 'light' ? hex('night') : hex('frost')), `${theme}: page text`);
+  }
+});
+
+test('every letter of the wordmark has the same stroke weight: each within 12% of the median', () => {
+  const widths = strokes(wordmark.d, wordmark.capHeight);
+  const sorted = Object.values(widths).sort((a, b) => a - b);
+  const median = sorted[2];
+  for (const [name, width] of Object.entries(widths)) {
+    assert.ok(Math.abs(width - median) / median <= 0.12, `${name} is ${width} wide against a median of ${median}: ${JSON.stringify(widths)}`);
   }
 });
