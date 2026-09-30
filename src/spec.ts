@@ -44,6 +44,7 @@ export function runCli(
   check: (text: string, path: string) => { errors: Problem[]; warnings: Problem[] },
   usage: string,
   paths = process.argv.slice(2),
+  onFail?: string,
 ): void {
   if (paths.length === 0) {
     console.error(usage);
@@ -59,5 +60,6 @@ export function runCli(
     for (const line of lines) console.log(paths.length > 1 ? `  ${line}` : line);
   }
   if (!failed) console.log(`Checked with Node ${process.version}.`);
+  else if (onFail) console.log(onFail);
   process.exit(failed ? 1 : 0);
 }

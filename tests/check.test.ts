@@ -11,6 +11,7 @@ import { emDash, fixture } from './cases.ts';
 
 const root = new URL('..', import.meta.url);
 const checked = `Checked with Node ${process.version}.\n`;
+const rerun = 'Fix every line above and run the checker again. After five failed runs, show the draft under "Failed the checker after five runs:" and these messages.\n';
 const cli = (...args: string[]) => spawnSync(process.execPath, ['src/check.ts', ...args], { cwd: root, encoding: 'utf8' });
 const problems = (text: string) => check(text).errors.map(format);
 const noTeamTemplate =
@@ -78,10 +79,12 @@ const bad: Record<string, string> = {
     'End the story with one line: "Before release:" and the actions specific to this story, separated by semicolons, or "None."',
   'too-many-before-release': 'line 37: "Before release:" lists 4 items; the limit is 3.',
   'not-checked': 'line 5: This draft was never checked. Run the checker on it, fix what it reports, then remove the "Not checked:" line.',
+  'failed-checker':
+    'line 5: This draft failed the checker. Fix what it reports and run the checker again, then remove the "Failed the checker after five runs:" line.',
   'no-summary':
-    'line 1: Start with three summary lines. The first must read "Call: Story written", "Call: Not ready yet" or "Call: Not checked".',
+    'line 1: Start with three summary lines. The first must read "Call: Story written", "Call: Not ready yet", "Call: Not checked" or "Call: Failed the checker".',
   'bad-call':
-    'line 1: Start with three summary lines. The first must read "Call: Story written", "Call: Not ready yet" or "Call: Not checked".',
+    'line 1: Start with three summary lines. The first must read "Call: Story written", "Call: Not ready yet", "Call: Not checked" or "Call: Failed the checker".',
   'bad-summary-confidence': 'line 2: The second summary line must start with "Confidence: ".',
   'bad-first-question': 'line 3: The third summary line must start with "First question: ".',
   'call-mismatch': 'line 1: The summary says "Call: Not ready yet", but this is a story. Write "Call: Story written".',
@@ -140,7 +143,7 @@ test('the command line exits 0 on a pass and 1 with plain lines on a fail', () =
   assert.equal(pass.stdout, checked);
   const fail = cli('tests/fixtures/bad/too-many-items.md');
   assert.equal(fail.status, 1);
-  assert.equal(fail.stdout, 'line 17: Known has 6 items; the limit is 5.\n');
+  assert.equal(fail.stdout, `line 17: Known has 6 items; the limit is 5.\n${rerun}`);
 });
 
 test('the built-in templates come from the files in templates/', () => {
@@ -165,7 +168,7 @@ test('--templates overrides the team folder it would have found', () => {
   try {
     const fail = cli('--templates', empty, story);
     assert.equal(fail.status, 1);
-    assert.equal(fail.stdout, noTeamTemplate);
+    assert.equal(fail.stdout, noTeamTemplate + rerun);
   } finally {
     rmSync(empty, { recursive: true });
   }
@@ -181,7 +184,7 @@ test('a team story whose templates folder is missing fails with a plain message'
     assert.equal(findTeamTemplates(story), undefined);
     const fail = cli(story);
     assert.equal(fail.status, 1);
-    assert.equal(fail.stdout, noTeamTemplate);
+    assert.equal(fail.stdout, noTeamTemplate + rerun);
   } finally {
     rmSync(team, { recursive: true });
   }
@@ -222,4 +225,32 @@ test('a pass ends with the Node version, and too old a Node gets a plain "Not ch
 test('a story that keeps a template placeholder fails', () => {
   const text = fixture('good-story.md').replace('\nHigh\n', '\n[High, Medium or Low]\n');
   assert.deepEqual(problems(text), ['line 26: The first line of Confidence must be exactly High, Medium or Low.']);
+});
+
+// Trial 5: a draft that failed the checker was shown as "Not checked", which is only for a checker that can't run.
+test('"Not checked" and "Failed the checker" can\'t be swapped', () => {
+  const unchecked = fixture('bad/not-checked.md');
+  const failed = fixture('bad/failed-checker.md');
+  assert.deepEqual(problems(unchecked.replace('Call: Not checked', 'Call: Failed the checker')), [
+    'line 1: The summary says "Call: Failed the checker", but this is an unchecked draft. Write "Call: Not checked".',
+    'line 5: This draft was never checked. Run the checker on it, fix what it reports, then remove the "Not checked:" line.',
+  ]);
+  assert.deepEqual(problems(failed.replace('Call: Failed the checker', 'Call: Not checked')), [
+    'line 1: The summary says "Call: Not checked", but this is a draft that failed the checker. Write "Call: Failed the checker".',
+    'line 5: This draft failed the checker. Fix what it reports and run the checker again, then remove the "Failed the checker after five runs:" line.',
+  ]);
+  assert.deepEqual(problems(failed.replace('Call: Failed the checker', 'Call: Story written')).slice(0, 1), [
+    'line 1: The summary says "Call: Story written", but this is a draft that failed the checker. Write "Call: Failed the checker".',
+  ]);
+});
+
+test('the checker\'s help says to rerun up to five times, and when each label applies', () => {
+  const help = cli().stderr;
+  assert.match(help, /^Usage: node src\/check\.ts/);
+  assert.match(help, /Fix every line it reports and run it again, up to five runs\./);
+  assert.match(help, /"Failed the checker after five runs:"/);
+  assert.match(help, /"Not checked:" is only for when the checker can't start or Node is too old\./);
+  const fail = cli('tests/fixtures/bad/too-many-items.md');
+  assert.equal(fail.status, 1);
+  assert.match(fail.stdout, /\nFix every line above and run the checker again\. After five failed runs, show the draft under "Failed the checker after five runs:" and these messages\.\n$/);
 });

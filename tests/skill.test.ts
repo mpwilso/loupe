@@ -323,3 +323,13 @@ test('writing-rules.md starts with a short plain-language checklist, stated once
   }
   assert.doesNotMatch(rules, /at most 30 words per sentence/);
 });
+
+test('story mode reruns the checker up to five times, and keeps "Not checked" for a checker that can\'t run', () => {
+  const skill = file('SKILL.md');
+  const story = storyMode();
+  assert.match(story, /Fix every line the checker reports and run it again, until it passes, up to five runs\./);
+  assert.match(story, /If it still fails after five runs, show the draft with the line `Failed the checker after five runs:` and the remaining messages right under the summary, and `Call: Failed the checker`\. Never call it passed\./);
+  assert.match(skill, /`Not checked:` is only for when a checker can't start or Node is too old\./);
+  assert.doesNotMatch(skill, /at most twice|once more/);
+  assert.match(skill, /Call: Story written, Not ready yet, Not checked or Failed the checker/);
+});

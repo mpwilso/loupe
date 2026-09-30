@@ -37,10 +37,11 @@ type StoryShape = Shape & {
   maxListItems: number;
   none: string;
   unchecked: { pattern: string; message?: string };
+  failed: { pattern: string; message?: string };
   chatOnly: { pattern: string; message?: string };
   summary: {
     lines: LineRule[];
-    calls: { story: string; notReady: string; unchecked: string };
+    calls: { story: string; notReady: string; unchecked: string; failed: string };
     callMessage?: string;
     noStory: string;
     noStoryMessage?: string;
@@ -157,16 +158,19 @@ export function check(text: string, templates = builtIn): { errors: Problem[]; w
   const chat = lines.flatMap((text, i) => (i >= head && chatOnly.test(text) ? [{ line: i + 1, text: story.chatOnly.message ?? '' }] : []));
   const body = lines.slice(head).map((text) => (chatOnly.test(text) ? '' : text));
 
-  // A draft marked "Not checked:" can never pass. When the mark is the first line, the rest is checked as usual.
-  const unchecked = new RegExp(story.unchecked.pattern);
-  const marks = body.flatMap((text, i) => (unchecked.test(text) ? [{ line: i + 1, text: story.unchecked.message ?? '' }] : []));
+  // A draft marked "Not checked:" or "Failed the checker after five runs:" can never pass. When the mark is the first line, the rest is checked as usual.
+  const kinds = { unchecked: story.unchecked, failed: story.failed } as const;
+  const marks = body.flatMap((text, i) =>
+    Object.entries(kinds).flatMap(([kind, rule]) => (new RegExp(rule.pattern).test(text) ? [{ line: i + 1, text: rule.message ?? '', kind }] : [])),
+  );
   const skip = marks[0]?.line === 1 ? 1 : 0;
+  const mark = skip ? (marks[0].kind as keyof typeof kinds) : undefined;
   const rest = body.slice(skip);
   const notReady = new RegExp(readiness.notReady.detect, 'i').test(rest[0] ?? '');
   const shape = notReady ? readiness.notReady : story;
   if (hasSummary) checkLines(summary, story.summary.lines, 'The summary', 1, add);
-  if (hasSummary) checkSummary(summary, rest, notReady, skip > 0, add);
-  const inBody = [...marks, ...checkShape(rest, shape, templates, offset > 0).map((e) => (e.line ? { ...e, line: e.line + skip } : e))];
+  if (hasSummary) checkSummary(summary, rest, notReady, mark, add);
+  const inBody = [...marks.map(({ line, text }) => ({ line, text })), ...checkShape(rest, shape, templates, offset > 0).map((e) => (e.line ? { ...e, line: e.line + skip } : e))];
   const errors = [...found, ...chat.filter((e) => e.text), ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines)];
   return { errors: errors.map((e) => (e.line ? { ...e, line: e.line + offset } : e)), warnings: [] };
 }
@@ -227,11 +231,12 @@ function checkShape(lines: string[], shape: Shape, templates: Template[], templa
 type Add = (line: number | undefined, message?: string) => void;
 
 // The summary must agree with what follows: the call, the confidence level and the first question.
-function checkSummary(summary: Entry[], rest: string[], notReady: boolean, unchecked: boolean, add: Add): void {
+function checkSummary(summary: Entry[], rest: string[], notReady: boolean, mark: 'unchecked' | 'failed' | undefined, add: Add): void {
   const S = story.summary;
   const [call, confidence, question] = summary.map((entry) => entry.text.replace(/^[^:]*: /, ''));
-  const expected = unchecked ? S.calls.unchecked : notReady ? S.calls.notReady : S.calls.story;
-  const what = unchecked ? 'an unchecked draft' : notReady ? 'a "Not ready yet" response' : 'a story';
+  const expected = mark ? S.calls[mark] : notReady ? S.calls.notReady : S.calls.story;
+  const marked = { unchecked: 'an unchecked draft', failed: 'a draft that failed the checker' };
+  const what = mark ? marked[mark] : notReady ? 'a "Not ready yet" response' : 'a story';
   if (Object.values(S.calls).includes(call) && call !== expected) add(1, fill(S.callMessage, { call, what, expected }));
 
   const after = (heading: string) => rest.slice(rest.findIndex((line) => line.trim() === heading) + 1).find((line) => line.trim())?.trim();
@@ -384,7 +389,13 @@ function checkPlainLanguage(lines: string[]): Problem[] {
 }
 
 export function main(args: string[]): void {
-  const usage = 'Usage: node src/check.ts [--templates <folder>] path/to/story.md ...';
+  const usage = [
+    'Usage: node src/check.ts [--templates <folder>] path/to/story.md ...',
+    'Fix every line it reports and run it again, up to five runs.',
+    'If it still fails after five runs, show the draft under "Failed the checker after five runs:" and the remaining messages.',
+    '"Not checked:" is only for when the checker can\'t start or Node is too old.',
+  ].join('\n');
+  const onFail = 'Fix every line above and run the checker again. After five failed runs, show the draft under "Failed the checker after five runs:" and these messages.';
   try {
     const { values, positionals } = parseArgs({ args, options: { templates: { type: 'string', multiple: true } }, allowPositionals: true });
     const override = values.templates && [...builtIn, ...values.templates.flatMap(loadTemplates)];
@@ -392,7 +403,7 @@ export function main(args: string[]): void {
       const folder = findTeamTemplates(path);
       return folder ? [...builtIn, ...loadTemplates(folder)] : builtIn;
     };
-    runCli((text, path) => check(text, override ?? forStory(path)), usage, positionals);
+    runCli((text, path) => check(text, override ?? forStory(path)), usage, positionals, onFail);
   } catch (error) {
     console.error((error as Error).message);
     process.exit(2);

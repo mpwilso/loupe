@@ -12,13 +12,13 @@
   "summary": {
     "lines": [
       {
-        "pattern": "^Call: (Story written|Not ready yet|Not checked)$",
-        "message": "Start with three summary lines. The first must read \"Call: Story written\", \"Call: Not ready yet\" or \"Call: Not checked\"."
+        "pattern": "^Call: (Story written|Not ready yet|Not checked|Failed the checker)$",
+        "message": "Start with three summary lines. The first must read \"Call: Story written\", \"Call: Not ready yet\", \"Call: Not checked\" or \"Call: Failed the checker\"."
       },
       { "pattern": "^Confidence: \\S", "message": "The second summary line must start with \"Confidence: \"." },
       { "pattern": "^First question: \\S", "message": "The third summary line must start with \"First question: \"." }
     ],
-    "calls": { "story": "Story written", "notReady": "Not ready yet", "unchecked": "Not checked" },
+    "calls": { "story": "Story written", "notReady": "Not ready yet", "unchecked": "Not checked", "failed": "Failed the checker" },
     "callMessage": "The summary says \"Call: {call}\", but this is {what}. Write \"Call: {expected}\".",
     "noStory": "None, no story",
     "noStoryMessage": "A \"Not ready yet\" response has no confidence. Write \"Confidence: None, no story\".",
@@ -33,6 +33,10 @@
   "unchecked": {
     "pattern": "^Not checked:",
     "message": "This draft was never checked. Run the checker on it, fix what it reports, then remove the \"Not checked:\" line."
+  },
+  "failed": {
+    "pattern": "^Failed the checker after five runs:",
+    "message": "This draft failed the checker. Fix what it reports and run the checker again, then remove the \"Failed the checker after five runs:\" line."
   },
   "title": {
     "pattern": "^# \\S",
