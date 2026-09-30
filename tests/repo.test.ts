@@ -285,3 +285,21 @@ test('the trial 6 plan has every step, scripted messages, pass lines and a scori
   const others = list('examples/pellwick/context').filter((p) => !p.endsWith('/learned.md')).map(read);
   assert.deepEqual(checkContext(empty, new Date('2026-10-01T00:00:00Z'), { learned: true, others }), { errors: [], warnings: [] });
 });
+
+// M3 is described as built, with its manual step; M4 and M5 stay planned. The README waits for trial 6.
+test('the docs describe the learning loop as it works, including the manual swap', () => {
+  const direction = read('docs/direction.md');
+  const learns = direction.split('\n').find((line) => line.startsWith('9. Learns'))!;
+  assert.doesNotMatch(learns, /planned/);
+  assert.match(learns, /learned\.md/);
+  assert.match(learns, /nothing without (a|the user's) yes/);
+  assert.match(learns, /replaces learned\.md in the project's files/);
+  assert.match(direction, /planned \(M5\)/);
+  assert.match(direction, /A VS Code version is planned/);
+  const guide = read('docs/claude-project.md');
+  const section = guide.split('## Keeping Loupe up to date\n')[1]?.split('\n## ')[0] ?? '';
+  assert.ok(section, 'the setup guide has the section');
+  for (const phrase of [/learned\.md/, /Save these to learned\.md\?/, /delete the old learned\.md/i, /upload the new one/i]) assert.match(section, phrase);
+  assert.doesNotMatch(guide, /doesn't learn from your corrections yet/);
+  assert.doesNotMatch(section, /automatic/i);
+});

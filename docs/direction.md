@@ -20,7 +20,7 @@ Product owners and product managers write with it. Developers, testers and anyon
 6. Rates its confidence: high, medium or low, with why, and what would raise it.
 7. Estimates the work in hours, as a range for a developer who knows the system, with its basis. Calibrating against the team's history is planned (M5).
 8. Asks now the questions a developer would ask later. Questions that would stop the build come first, and if more than five would, it says so, suggests a spike first and won't rate its confidence High.
-9. Learns (planned, M3). Accepted stories and the user's corrections will update the context files, so nobody repeats themselves.
+9. Learns. When the user corrects a story or answers one of its questions, it proposes exact entries for learned.md, a context file it owns, each with its source, and saves nothing without a yes. A skill can't edit the project's files, so it hands back the updated learned.md, and the PM replaces learned.md in the project's files. Every later story reads it, so nobody repeats themselves.
 
 ## The story, always in this shape
 Title
