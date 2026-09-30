@@ -1,0 +1,73 @@
+{
+  "listItem": "^(- |\\d+\\. )",
+  "maxListItems": 5,
+  "none": "None.",
+  "title": {
+    "pattern": "^# \\S",
+    "message": "The first line must be the title, starting with \"# \"."
+  },
+  "sections": [
+    {
+      "heading": "## The story",
+      "name": "The story",
+      "kind": "text",
+      "forms": [
+        { "name": "user story", "lines": ["^As an? .+, I want .+, so that .+"] },
+        { "name": "job story", "lines": ["^When .+, I want to .+, so I can .+"] },
+        { "name": "bug", "lines": ["^Steps:$", "^Expected: \\S", "^Actual: \\S", "^Environment: \\S"] },
+        { "name": "spike", "lines": ["^Question: \\S", "^Time box: \\S", "^Done when: \\S"] }
+      ]
+    },
+    {
+      "heading": "## Acceptance criteria",
+      "name": "Acceptance criteria",
+      "kind": "list",
+      "itemPattern": "^(- |\\d+\\. )Given .+, when .+, then .+",
+      "itemMessage": "Each acceptance criterion must read \"Given ..., when ..., then ...\"."
+    },
+    { "heading": "## Known", "name": "Known", "kind": "list" },
+    { "heading": "## Unknown", "name": "Unknown", "kind": "list", "allowNone": true },
+    { "heading": "## Assumed", "name": "Assumed", "kind": "list" },
+    {
+      "heading": "## Confidence",
+      "name": "Confidence",
+      "kind": "lines",
+      "lines": [
+        { "pattern": "^(High|Medium|Low)$", "message": "The first line of Confidence must be exactly High, Medium or Low." },
+        { "pattern": "^Why: \\S", "message": "Confidence needs a \"Why:\" line saying what the rating is based on." },
+        { "pattern": "^How to raise it: \\S", "message": "Confidence needs a \"How to raise it:\" line saying what would make it higher." }
+      ]
+    },
+    {
+      "heading": "## Estimate",
+      "name": "Estimate",
+      "kind": "lines",
+      "lines": [
+        {
+          "pattern": "^(\\d+) to (\\d+) hours$",
+          "message": "The first line of Estimate must read \"N to M hours\", for example \"4 to 8 hours\".",
+          "ascending": [1, 2],
+          "ascendingMessage": "The estimate says {low} to {high} hours. The first number can't be bigger than the second."
+        },
+        { "pattern": "^Basis: \\S", "message": "Estimate needs a \"Basis:\" line saying what the hours are based on." }
+      ]
+    },
+    { "heading": "## Questions before building", "name": "Questions before building", "kind": "list", "allowNone": true }
+  ],
+  "messages": {
+    "extraTitle": "Only the first line can be a title. Start section headings with \"## \".",
+    "strayText": "This text sits above the first section. Only the title goes there.",
+    "unknownSection": "\"{heading}\" is not an allowed section. The sections are: {order}.",
+    "duplicateSection": "\"{heading}\" appears more than once.",
+    "outOfOrder": "\"{heading}\" is out of order. The sections must be: {order}.",
+    "missingSection": "The \"{heading}\" section is missing.",
+    "emptySection": "{name} is empty.",
+    "emptyNoneAllowed": "{name} is empty. List the items, or write \"None.\"",
+    "noneNotAllowed": "{name} can't be \"None.\" It needs at least one item.",
+    "noneMixed": "{name} says \"None.\" but also lists items. Use one or the other.",
+    "notAListItem": "{name} must be a list, one item per line, each starting with \"- \".",
+    "tooManyItems": "{name} has {count} items; the limit is {limit}.",
+    "extraLine": "{name} has an extra line. It should have exactly {count} lines.",
+    "noForm": "The story section doesn't follow any template. Use one of: {forms}."
+  }
+}

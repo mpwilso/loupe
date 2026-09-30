@@ -1,0 +1,30 @@
+{
+  "fields": {
+    "title": "a short name for the file",
+    "updated": "the date the facts were last checked, like 2026-09-30",
+    "sources": "a list of where the facts came from"
+  },
+  "dateField": "updated",
+  "datePattern": "^\\d{4}-\\d{2}-\\d{2}$",
+  "listField": "sources",
+  "staleAfterDays": 90,
+  "maxBodyWords": 300,
+  "secrets": [
+    { "what": "a private key", "pattern": "-----BEGIN [A-Z ]*PRIVATE KEY-----" },
+    { "what": "a password", "pattern": "\\b(password|passwd|pwd)\\s*[=:]\\s*\\S", "flags": "i" },
+    { "what": "a secret or token", "pattern": "\\b(secret|token|api_?key)\\s*[=:]\\s*\\S", "flags": "i" },
+    { "what": "a cloud access key", "pattern": "\\bAKIA[0-9A-Z]{16}\\b" },
+    { "what": "an API key", "pattern": "\\b(sk-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{35})" },
+    { "what": "a GitHub token", "pattern": "\\b(gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{22,})" },
+    { "what": "a Slack token", "pattern": "\\bxox[abprs]-[A-Za-z0-9-]{10,}" }
+  ],
+  "messages": {
+    "noFrontMatter": "The file must start with front matter between two \"---\" lines.",
+    "missingField": "The front matter is missing \"{field}\": {help}.",
+    "badDate": "\"{field}\" must be a real date like 2026-09-30.",
+    "noSources": "\"{field}\" must list at least one place the facts came from.",
+    "tooLong": "The body has {count} words; the limit is {limit}. Keep only what a new team member needs.",
+    "secret": "This looks like {what}. Remove it. Context files must never hold secrets or credentials.",
+    "stale": "Last updated {date}, {days} days ago. Check the facts are still true, then update the date."
+  }
+}

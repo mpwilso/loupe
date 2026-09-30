@@ -1,0 +1,41 @@
+{
+  "bannedCharacters": [
+    { "char": "\u2014", "message": "Remove the em dash. Use a comma, a period or a new sentence instead." }
+  ],
+  "bannedPhrases": {
+    "match": "\\b{phrase}",
+    "flags": "i",
+    "message": "Replace \"{phrase}\" with a plainer word.",
+    "list": [
+      "leverage",
+      "seamless",
+      "robust",
+      "utilize",
+      "in order to",
+      "synergy",
+      "best-in-class",
+      "world-class",
+      "cutting-edge",
+      "going forward",
+      "at the end of the day",
+      "circle back",
+      "low-hanging fruit",
+      "paradigm",
+      "holistic",
+      "deep dive",
+      "empower",
+      "value-add"
+    ]
+  },
+  "acronyms": {
+    "match": "\\b([A-Z]{2,})s?\\b",
+    "spelledOut": ["\\b{acronym}s? \\(", "\\({acronym}s?\\)"],
+    "allow": ["API", "UI", "URL", "ID", "PDF", "CSV"],
+    "message": "Spell out \"{acronym}\" the first time it appears, like this: \"the full name ({acronym})\"."
+  },
+  "sentences": {
+    "split": "(?<=[.!?])\\s+",
+    "maxWords": 30,
+    "message": "This sentence has {count} words; the limit is {limit}. Split it up."
+  }
+}

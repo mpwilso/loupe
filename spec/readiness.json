@@ -1,0 +1,27 @@
+{
+  "items": [
+    { "id": "who", "label": "who's affected" },
+    { "id": "problem", "label": "the problem" },
+    { "id": "outcome", "label": "the desired outcome" },
+    { "id": "system", "label": "which system or application" },
+    { "id": "constraints", "label": "known constraints" }
+  ],
+  "notReady": {
+    "title": {
+      "pattern": "^# Not ready yet$",
+      "message": "The first line must be exactly \"# Not ready yet\"."
+    },
+    "preamble": [
+      {
+        "pattern": "^Missing: (.+)\\.$",
+        "message": "Under the title, add one line that starts with \"Missing: \" and names what is missing, ending with a period.",
+        "listOf": "items",
+        "separator": ", ",
+        "unknownMessage": "\"{item}\" is not one of the five things a story needs: {labels}."
+      }
+    ],
+    "sections": [
+      { "heading": "## Questions", "name": "Questions", "kind": "list" }
+    ]
+  }
+}

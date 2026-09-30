@@ -1,0 +1,28 @@
+# Show the next delivery date on the orders page
+
+## The story
+As a subscriber, I want to see my next delivery date, so that I know when to expect it.
+
+## Acceptance criteria
+- The orders page shows the next delivery date.
+
+## Known
+- The delivery date is stored with each order.
+
+## Unknown
+None.
+
+## Assumed
+- The date uses the same format as the rest of the site.
+
+## Confidence
+High
+Why: The data exists and the page already loads the order.
+How to raise it: Nothing needed.
+
+## Estimate
+2 to 4 hours
+Basis: A similar field was added to this page last month.
+
+## Questions before building
+None.
