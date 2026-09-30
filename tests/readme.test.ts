@@ -163,6 +163,10 @@ test('what the trials changed: five bullets in a fixed order, each linking the t
   }
 });
 
+test('the limits say exactly who ran and scored the trials', () => {
+  assert.ok(section('Limits').includes('- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4 and 5. A separate reviewer scored trials 2 and 3 blind.'));
+});
+
 test('setup says what you need, and leads with the release download', () => {
   const setup = section('Setup');
   assert.match(setup, /^\nYou need a Claude account with Skills and code execution turned on\.\n/);
