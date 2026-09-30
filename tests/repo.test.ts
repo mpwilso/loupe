@@ -69,3 +69,12 @@ test('the CI test step keeps pipefail when it pipes its output', () => {
   if (!text.includes('|')) return;
   assert.ok(/^\s*shell: bash\s*$/m.test(text) || text.includes('set -o pipefail'), `The test step pipes its output but has no "shell: bash" or "set -o pipefail":\n${text}`);
 });
+
+// The README's proof strip is built from this table, so its columns and rows must not drift.
+test('the trial run table keeps its fixed columns and rows', () => {
+  const rows = read('docs/trial-run.md').split('\n').filter((line) => line.startsWith('|'));
+  assert.deepEqual(rows.slice(0, 2), ['| Input | Time | Edits | Dev questions | Passed checker |', '|---|---|---|---|---|']);
+  const inputs = rows.slice(2).map((row) => row.split('|')[1].trim());
+  assert.deepEqual(inputs, ['skip-a-box-meeting.md', 'helpline-ticket-48213.md', 'holiday-cutoff-email.md']);
+  for (const input of inputs) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
+});
