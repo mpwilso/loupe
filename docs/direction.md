@@ -49,7 +49,7 @@ The core: the story shape, templates, readiness bar, checker and context-file fo
 A finished story exports as a Parallax intent, so a story can go straight into governed development.
 
 ## How we'll know it works
-- Time to write a story: about a minute or two, fully checked.
+- Time to write a story: about one to three minutes, fully checked.
 - Time from input to accepted story. Target: under 10 minutes.
 - Share of stories accepted without edits.
 - Questions raised later, in development, testing or acceptance, that the story should have caught. The goal is zero.

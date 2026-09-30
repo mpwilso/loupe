@@ -113,7 +113,7 @@ test('the trial run tables keep their fixed columns and rows', () => {
     'Correct refusals',
     'Questions a developer would still ask',
   ]);
-  assert.match(read('docs/trial-run.md'), /target for Loupe is about a minute or two, fully checked/);
+  assert.match(read('docs/trial-run.md'), /target for Loupe is about one to three minutes, fully checked/);
   assert.doesNotMatch(read('docs/trial-run.md'), /60 seconds|1:00/);
   for (const results of [baseline, loupe]) for (const row of results.slice(2)) assert.equal(row.split('|').length, resultHeader.split('|').length, row);
   assert.ok(read('docs/trial-run.md').includes('```\nWrite a user story with acceptance criteria for this. Use the attached team files.\n```'));
@@ -152,7 +152,7 @@ test('direction.md keeps "Before release" to story-specific actions and sets the
   const direction = read('docs/direction.md');
   assert.match(direction, /^Before release: only the actions specific to this story, such as telling support about a named change, or "None\."$/m);
   assert.doesNotMatch(direction, /definition-of-done items it triggers/);
-  assert.match(direction, /^- Time to write a story: about a minute or two, fully checked\.$/m);
+  assert.match(direction, /^- Time to write a story: about one to three minutes, fully checked\.$/m);
 });
 
 test('the trial run names its projects by trial number, not a fixed trial', () => {
