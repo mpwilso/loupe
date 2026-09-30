@@ -9,10 +9,6 @@
 
 Loupe is a Claude skill for product managers. It turns meeting notes, tickets and emails into stories a developer can build without a second meeting. Product owners and product managers write with it. Developers, testers and anyone else who reads a story get one that says what's known, unknown and assumed.
 
-<img src="docs/img/loupe-demo.gif" width="100%" alt="A Slack thread pasted into a Claude project becomes a checked story with known facts, sources, confidence, an estimate and questions.">
-
-A Slack thread goes in, and a checked story comes out.
-
 Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials changed](#what-the-trials-changed), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).
 
 ## Why it exists
@@ -149,7 +145,7 @@ Loupe learns your team once, from your own documents. Each input then gets a rea
 
 You need a Claude account with Skills and code execution turned on.
 
-1. **Get the skill.** On GitHub, open **Actions**, click the latest run of **tests** on the **master** branch and download **loupe-skill**, or `loupe-skill.zip` from the latest release, once one is published.
+1. **Get the skill.** Download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest). Or, under **Actions**, download **loupe-skill** from the latest **tests** run on **master**.
 2. **Turn on code execution.** In Claude's settings, turn on "Code execution and file creation". The checker needs it.
 3. **Upload the skill.** In Claude, open Customize, then Skills, and upload the zip. Each teammate does this once.
 4. **Create the project.** Make a Claude Project and paste the project instructions from [docs/claude-project.md](docs/claude-project.md).
