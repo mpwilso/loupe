@@ -155,15 +155,16 @@ test('what the trials changed: five bullets in a fixed order, each linking the t
   }
 });
 
-test('setup says what you need, and leads with the download that exists today', () => {
+test('setup says what you need, and leads with the release download', () => {
   const setup = section('Setup');
   assert.match(setup, /^\nYou need a Claude account with Skills and code execution turned on\.\n/);
   const step = setup.split('\n').find((line) => line.startsWith('1. '))!;
-  assert.ok(step.indexOf('Actions') < step.indexOf('release'), 'Actions first');
-  assert.ok(step.includes('or `loupe-skill.zip` from the latest release, once one is published.'));
+  // The release is the main route; the Actions download is the shorter second one.
+  assert.ok(step.startsWith('1. **Get the skill.** Download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest).'), step);
+  assert.ok(step.indexOf('latest release') < step.indexOf('Actions'), 'the release first');
   // The branch and workflow names a reader will see on GitHub.
   const workflow = readFileSync(join(root, '.github/workflows/tests.yml'), 'utf8').match(/^name: (.+)$/m)![1];
-  assert.ok(step.includes(`the latest run of **${workflow}** on the **master** branch`), step);
+  assert.ok(step.includes(`the latest **${workflow}** run on **master**`), step);
 });
 
 test('under the hood: the repo map is real, and the documented checker command passes', () => {
