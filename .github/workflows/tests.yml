@@ -62,5 +62,6 @@ jobs:
             examples/pellwick/templates/
             examples/pellwick/inputs/
             examples/pellwick/raw/
+            docs/trials/trial-6-plan.md
           if-no-files-found: error
           retention-days: 7

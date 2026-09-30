@@ -138,6 +138,10 @@ test('every CI action is pinned to a commit, and the trial kit stays blind', () 
   assert.equal(workflow.match(/retention-days: 7\n/g)?.length, 2);
   assert.doesNotMatch(workflow, /examples\/pellwick\/expected/);
   for (const folder of ['context', 'templates', 'inputs', 'raw']) assert.ok(workflow.includes(`examples/pellwick/${folder}/\n`), folder);
+  // The trial 6 plan travels with the kit, and its inputs are in the kit's inputs/ folder.
+  assert.ok(workflow.includes('docs/trials/trial-6-plan.md\n'), 'the trial 6 plan');
+  const plan = read('docs/trials/trial-6-plan.md');
+  for (const [, input] of plan.matchAll(/`inputs\/([\w.-]+\.md)`/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
 });
 
 // Trial 3: the skill did not start in 1 of 6 runs. The project instructions name it first, and the trial counts a run without it.
@@ -214,7 +218,9 @@ test('the setup guide gets the skill from the latest release, and nowhere else',
 
 // The trials folder explains itself: what the trials are, who "the advisor" is, and one line per trial.
 test('the trials README lists and links every trial record, in order, and defines the advisor', () => {
-  const records = readdirSync(join(root, 'docs/trials')).filter((f) => f !== 'README.md').sort();
+  const files = readdirSync(join(root, 'docs/trials'));
+  const records = files.filter((f) => /^\d{4}-\d{2}-\d{2}-trial-\d+\.md$/.test(f)).sort();
+  assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-6-plan.md'], 'records, the index and plans only');
   assert.deepEqual(records, [1, 2, 3, 4, 5].map((n) => `2026-09-30-trial-${n}.md`), 'every record is named by its trial number');
   const index = read('docs/trials/README.md');
   const lines = index.split('\n').filter((line) => line.startsWith('- '));
@@ -260,4 +266,22 @@ test('SECURITY.md says how to report a problem privately, and that there is no b
   const text = read('SECURITY.md');
   assert.match(text, /\*\*Report a vulnerability\*\*/);
   assert.match(text, /There is no bug bounty\./);
+});
+
+// Trial 6 is planned, not run: every step has scripted messages to paste and a pass line to score against.
+test('the trial 6 plan has every step, scripted messages, pass lines and a scoring sheet', () => {
+  const plan = read('docs/trials/trial-6-plan.md');
+  for (const step of ['A', 'B', 'C', 'D', 'E', 'F', 'G']) {
+    const body = plan.split(`## Step ${step}:`)[1]?.split('\n## ')[0] ?? '';
+    assert.ok(body, `step ${step}`);
+    assert.match(body, /\*\*Pass:\*\*/, `step ${step} has a pass line`);
+    if (step !== 'C' && step !== 'D') assert.match(body, /```\n[^`]+\n```/, `step ${step} has a message to paste`);
+    assert.match(plan, new RegExp(`^\\| ${step} \\| .+ \\| +\\| +\\|$`, 'm'), `step ${step} is on the scoring sheet`);
+  }
+  assert.match(plan, /This is a plan, not a record/);
+  assert.match(plan, /jane\.doe@example\.com/, 'step G uses a fake customer email');
+  // The empty learned.md the trial starts from passes check-context as written.
+  const empty = plan.match(/```\n(---\ntitle: Learned[\s\S]*?)```/)?.[1] ?? '';
+  const others = list('examples/pellwick/context').filter((p) => !p.endsWith('/learned.md')).map(read);
+  assert.deepEqual(checkContext(empty, new Date('2026-10-01T00:00:00Z'), { learned: true, others }), { errors: [], warnings: [] });
 });
