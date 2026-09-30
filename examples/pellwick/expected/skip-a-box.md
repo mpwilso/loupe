@@ -11,8 +11,6 @@ As a subscriber, I want to skip my next box from my account, so that I don't pay
 
 ## Not included
 - Skipping any box other than the next one. Priya decided on the next box only for now. (meeting 2026-09-22)
-- Undoing a skip. Dana wants it and Sam says it adds work, but no one decided, so it waits. (meeting 2026-09-22)
-- Fixing billing if it charges a skipped box. Sam's size assumes billing behaves. (meeting 2026-09-22)
 
 ## Known
 - Skips were the top Helpline reason in August: 610 of 4,100 tickets, about three minutes of agent time each. Customers who cancel to avoid a box are lost about half the time. (Dana, meeting 2026-09-22)
@@ -35,12 +33,12 @@ How to raise it: Sam skips a box in staging and confirms the billing job does no
 
 ## Estimate
 12 to 20 hours
-Basis: Sam said "a couple of days if billing behaves" in the meeting on 2026-09-22, read here as two working days. Nothing under Not included is covered.
+Basis: Sam said "a couple of days if billing behaves" in the meeting on 2026-09-22, read here as two working days. It assumes billing needs no change, and it does not include undo.
 
 ## Questions before building
 - Does skipping count as a payments change under the December freeze, since it affects charging?
+- Can a subscriber undo a skip before the cutoff? Dana wants it, Sam says it adds work, and no one decided.
+- If billing does charge a skipped box, is fixing that part of this story or a separate one?
 - Which system decides the "next regular delivery date"? The web app and Stockroom sometimes disagree. (Priorities context file)
 - After a skip, the following box becomes the next box. Can the subscriber skip that one too?
-- Where does "Skip this box" go: the account home page, the "change my box" page, or both?
-- Can a subscriber skip a box whose payment has already failed?
 More open questions than fit here. Consider a spike first.

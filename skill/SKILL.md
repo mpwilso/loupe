@@ -49,7 +49,7 @@ Copy this checklist and tick it off:
 2. Check the input, with the context files, against the readiness bar in `SKILL/templates/definition-of-ready.md`: who's affected, the problem, the desired outcome, which system or application, and known constraints.
 3. Below the bar, write only a "Not ready yet" response, shaped like `SKILL/examples/not-ready.md`. Ask the few questions that would get the user over the bar.
 4. At or above the bar, write the story in the team's template, chosen by the team's `story-style.md`. The built-in templates are in `SKILL/templates/`. Follow the shape of `SKILL/examples/story.md`:
-   - Not included lists only what the input or context files leave out on purpose, such as a scope decision in a meeting. Otherwise write "None."
+   - Not included lists only what someone decided to leave out, citing where it was decided. If no one decided, it goes in Questions before building. With nothing decided, write "None."
    - Every Known line ends with its source in parentheses: the input or a context file.
    - Invent nothing. A gap goes in Unknown, Assumed or a question.
    - At most five items in any list. Each question is one item with one question mark. Questions that would stop the build come first. If more than five would, end the list with exactly `More open questions than fit here. Consider a spike first.` and don't rate confidence High.
