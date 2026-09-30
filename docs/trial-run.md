@@ -22,6 +22,8 @@ Skills belong to your account, not a project. Upload `loupe-skill.zip` once, as 
 
 - [ ] Open a new chat in the pass's project. Use one chat per input.
 - [ ] Start a timer and paste the whole input file from the kit's `inputs/` folder.
+- [ ] Note the **Write time**, from sending the input to the finished story or response. The target for Loupe is under 60 seconds, as `m:ss` under `1:00`.
+- [ ] Note the **Steps shown**: what Claude reports it did, as `N files, N commands`, for example "Created 2 files, ran 2 commands" is `2 files, 2 commands`.
 - [ ] Stop the timer when you would hand the result to a developer. Ask for changes first if you need them. That is **Time**.
 - [ ] Start a second timer and check the output carefully against its input, using scoring.md. Stop it when you finish. That is **Review time**: how long you take to check it, not how long Claude takes to write it.
 - [ ] Count the edits. One edit is one change you asked Claude to make, or one line you changed yourself. Asking Claude a question that changes nothing is not an edit.
@@ -40,13 +42,13 @@ Write a user story with acceptance criteria for this. Use the attached team file
 
 Write `n/a` for Node, Checker ran and Passed checker.
 
-| Input | Expected | Node | Checker ran | Passed checker | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |
-|---|---|---|---|---|---|---|---|---|---|---|
-| skip-a-box-meeting.md | story | n/a | n/a | n/a | m:ss | m:ss | 0 | 0 | 0 | yes |
-| helpline-ticket-48213.md | story | n/a | n/a | n/a | m:ss | m:ss | 0 | 0 | 0 | yes |
-| holiday-cutoff-email.md | story | n/a | n/a | n/a | m:ss | m:ss | 0 | 0 | 0 | yes |
-| export-notes.md | not ready | n/a | n/a | n/a | m:ss | m:ss | 0 | 0 | 0 | yes |
-| slack-thread-address-change.md | story | n/a | n/a | n/a | m:ss | m:ss | 0 | 0 | 0 | yes |
+| Input | Expected | Node | Checker ran | Passed checker | Write time | Steps shown | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| skip-a-box-meeting.md | story | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| helpline-ticket-48213.md | story | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| holiday-cutoff-email.md | story | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| export-notes.md | not ready | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| slack-thread-address-change.md | story | n/a | n/a | n/a | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
 
 ## Pass B: setup
 
@@ -78,13 +80,13 @@ List each dropped or added fact here, one line each.
 - [ ] Upload only what pass B produced: its context files and its change request template, if it wrote one. Don't upload `raw/`, or the kit's `templates/` or `context/`.
 - [ ] Paste each input with no other words. Note the Node version from the "Checked with Node" line or the "Not checked:" line, or `none` if neither appears.
 
-| Input | Expected | Node | Checker ran | Passed checker | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |
-|---|---|---|---|---|---|---|---|---|---|---|
-| skip-a-box-meeting.md | story | v0.0.0 | yes | yes | m:ss | m:ss | 0 | 0 | 0 | yes |
-| helpline-ticket-48213.md | story | v0.0.0 | yes | yes | m:ss | m:ss | 0 | 0 | 0 | yes |
-| holiday-cutoff-email.md | story | v0.0.0 | yes | yes | m:ss | m:ss | 0 | 0 | 0 | yes |
-| export-notes.md | not ready | v0.0.0 | yes | yes | m:ss | m:ss | 0 | 0 | 0 | yes |
-| slack-thread-address-change.md | story | v0.0.0 | yes | yes | m:ss | m:ss | 0 | 0 | 0 | yes |
+| Input | Expected | Node | Checker ran | Passed checker | Write time | Steps shown | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| skip-a-box-meeting.md | story | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| helpline-ticket-48213.md | story | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| holiday-cutoff-email.md | story | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| export-notes.md | not ready | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
+| slack-thread-address-change.md | story | v0.0.0 | yes | yes | m:ss | 0 files, 0 commands | m:ss | m:ss | 0 | 0 | 0 | yes |
 
 ## Missed developer questions
 
@@ -110,6 +112,7 @@ Add up each column over the five inputs. Times are totals, as `m:ss`. Correct re
 
 | Measure | Loupe | Baseline |
 |---|---|---|
+| Write time | m:ss | m:ss |
 | Time to accepted story | m:ss | m:ss |
 | Review time | m:ss | m:ss |
 | Edits | 0 | 0 |

@@ -83,13 +83,13 @@ const tables = () => {
 };
 const firstCells = (rows: string[]) => rows.slice(2).map((row) => row.split('|')[1].trim());
 const inputs = ['skip-a-box-meeting.md', 'helpline-ticket-48213.md', 'holiday-cutoff-email.md', 'export-notes.md', 'slack-thread-address-change.md'];
-const resultHeader = '| Input | Expected | Node | Checker ran | Passed checker | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |';
+const resultHeader = '| Input | Expected | Node | Checker ran | Passed checker | Write time | Steps shown | Time | Review time | Edits | Unsupported facts | Dev questions | Right call |';
 
 test('the trial run tables keep their fixed columns and rows', () => {
   const [baseline, setup, loupe, comparison, ...rest] = tables();
   assert.deepEqual(rest, []);
   for (const results of [baseline, loupe]) {
-    assert.deepEqual(results.slice(0, 2), [resultHeader, '|---|---|---|---|---|---|---|---|---|---|---|']);
+    assert.deepEqual(results.slice(0, 2), [resultHeader, '|---|---|---|---|---|---|---|---|---|---|---|---|---|']);
     assert.deepEqual(firstCells(results), inputs);
     assert.deepEqual(results.slice(2).map((row) => row.split('|')[2].trim()), ['story', 'story', 'story', 'not ready', 'story']);
   }
@@ -105,6 +105,7 @@ test('the trial run tables keep their fixed columns and rows', () => {
   ]);
   assert.deepEqual(comparison.slice(0, 2), ['| Measure | Loupe | Baseline |', '|---|---|---|']);
   assert.deepEqual(firstCells(comparison), [
+    'Write time',
     'Time to accepted story',
     'Review time',
     'Edits',
@@ -112,6 +113,8 @@ test('the trial run tables keep their fixed columns and rows', () => {
     'Correct refusals',
     'Questions a developer would still ask',
   ]);
+  assert.match(read('docs/trial-run.md'), /target for Loupe is under 60 seconds/);
+  for (const results of [baseline, loupe]) for (const row of results.slice(2)) assert.equal(row.split('|').length, resultHeader.split('|').length, row);
   assert.ok(read('docs/trial-run.md').includes('```\nWrite a user story with acceptance criteria for this. Use the attached team files.\n```'));
 });
 
