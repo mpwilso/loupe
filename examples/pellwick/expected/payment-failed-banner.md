@@ -52,7 +52,7 @@ Basis: No one has sized it, so the range is wide. It covers a display fix in the
 ## Questions before building
 - What should the account page show during the wait of up to 10 minutes before the payment status arrives?
 - When the payment status arrives, should the banner clear without a reload?
-- Once fixed, do accounts that are already stuck clear on their own, or do they need a one-time fix?
+- Once the fix ships, do accounts already stuck with the banner clear on their own, or do they need a one-time repair?
 - If the payment status takes longer than 10 minutes to arrive, what should the account page show then?
 - Support must be told about any change they will see. Who tells agents the banner now clears once the new card is charged? (Conventions context file)
 

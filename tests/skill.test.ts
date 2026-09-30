@@ -222,3 +222,9 @@ test('screen details the input does not state are flagged for confirmation, with
   assert.match(rules, /- Bad: `Given .+`/);
   assert.match(rules, /- Good: `Given .+ To confirm: .+`/);
 });
+
+test('a bug always asks about records the bug already damaged', () => {
+  assert.match(file('writing-rules.md'), /For a bug, always ask whether records already affected fix themselves once the fix ships, or need a one-time repair/);
+  const bug = readFileSync(join(root, 'examples/pellwick/expected/payment-failed-banner.md'), 'utf8');
+  assert.match(bug.split('## Questions before building')[1], /already stuck .+ one-time repair\?/);
+});
