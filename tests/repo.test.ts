@@ -185,8 +185,13 @@ test('a tag starting with "v" tests, builds and releases the skill zip, with eve
   assert.ok(existsSync(join(root, path)), path);
   const workflow = read(path);
   assert.match(workflow, /^on:\n  push:\n    tags: \['v\*'\]\n/m);
-  assert.match(workflow, /^permissions:\n  contents: write\n/m);
-  assert.ok(workflow.includes('scripts/test.sh'), 'tests run before the release');
+  // The write token belongs to the release job alone, and that job waits for the tests and never installs packages.
+  assert.match(workflow, /^permissions:\n  contents: read\n/m);
+  const [tests, release] = workflow.split(/^  release:\n/m);
+  assert.ok(tests.includes('scripts/test.sh') && release.includes('needs: test'), 'tests run before the release');
+  assert.match(release, /^    permissions:\n      contents: write\n/m);
+  assert.doesNotMatch(release, /npm (ci|install)/, 'no package installs where the write token is');
+  assert.equal(workflow.match(/contents: write/g)?.length, 1);
   assert.ok(workflow.includes('scripts/build-skill.sh'), 'builds the skill');
   assert.match(workflow, /uses: softprops\/action-gh-release@[0-9a-f]{40} # v\d/);
   assert.match(workflow, /files: dist\/loupe-skill\.zip\n/);
@@ -223,4 +228,35 @@ test('the trials README lists and links every trial record, in order, and define
     const text = read(`docs/trials/${record}`);
     if (/\bthe advisor\b/i.test(text)) assert.ok(index.includes('the advisor'), record);
   }
+});
+
+// Once public, anyone can fork the repo and open a pull request that runs these workflows.
+function workflowProblems(name: string, text: string): string[] {
+  const found: string[] = [];
+  if (!/^permissions:\n(  \w[\w-]*: (read|write|none)\n)+/m.test(text) && !/^permissions: \{\}$/m.test(text)) found.push(`${name}: no top-level permissions block`);
+  for (const [, action] of text.matchAll(/uses: (\S+)(.*)/g)) {
+    if (!/@[0-9a-f]{40}$/.test(action)) found.push(`${name}: ${action} is not pinned to a 40-character commit SHA`);
+  }
+  for (const [line] of text.matchAll(/^.*uses: \S+@[0-9a-f]{40}.*$/gm)) if (!/ # v\d/.test(line)) found.push(`${name}: no version comment on ${line.trim()}`);
+  if (/pull_request_target|workflow_run/.test(text)) found.push(`${name}: a trigger that runs fork code with more than read access`);
+  if (/\$\{\{\s*github\.event\./.test(text)) found.push(`${name}: a github.event value in the workflow; pass it through env instead`);
+  return found;
+}
+
+test('every workflow has a top-level permissions block, pins each action to a commit, and stays safe for fork pull requests', () => {
+  const files = readdirSync(join(root, '.github/workflows'));
+  assert.ok(files.length >= 2);
+  for (const file of files) assert.deepEqual(workflowProblems(file, read(`.github/workflows/${file}`)), []);
+  assert.deepEqual(workflowProblems('bad.yml', 'on: pull_request_target\njobs:\n  a:\n    steps:\n      - uses: actions/checkout@v7\n      - run: echo "${{ github.event.pull_request.title }}"\n'), [
+    'bad.yml: no top-level permissions block',
+    'bad.yml: actions/checkout@v7 is not pinned to a 40-character commit SHA',
+    'bad.yml: a trigger that runs fork code with more than read access',
+    'bad.yml: a github.event value in the workflow; pass it through env instead',
+  ]);
+});
+
+test('SECURITY.md says how to report a problem privately, and that there is no bug bounty', () => {
+  const text = read('SECURITY.md');
+  assert.match(text, /\*\*Report a vulnerability\*\*/);
+  assert.match(text, /There is no bug bounty\./);
 });
