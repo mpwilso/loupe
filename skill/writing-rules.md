@@ -6,6 +6,9 @@ Follow every rule when writing a story. The checker catches some of them, not al
 - Not included lists only what someone decided to leave out, citing where it was decided. If no one decided, it goes in Questions before building. With nothing decided, write "None."
 - Every Known line ends with its source in parentheses. For a fact from a context file, cite the original document the file names, then the file, like "(planning email 2026-09-18, via the Priorities context file)". If the file names several sources and doesn't say which, name them all.
 - Invent nothing. A gap goes in Unknown, Assumed or a question.
+- No contradictions inside a story. If the team's template has its own done section, such as `Done when:`, fill it only with what the input settles. Anything undecided goes in the acceptance criteria marked "To confirm", never stated as settled in the done section.
+  - Bad: `Done when: every box, old or new, uses the 96-hour cutoff from 1 December.` The input says no one knows about boxes that already exist.
+  - Good: `Done when: boxes created from 1 December get the 96-hour cutoff.` Old boxes go in a criterion ending "To confirm: whether boxes created before 1 December keep 72 hours."
 
 ## Around the change
 - Check the team's definition of done and conventions for anything this story triggers, such as telling support. If the input doesn't cover it, ask.

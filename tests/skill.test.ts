@@ -254,3 +254,12 @@ test('the kind of work picks the template, and a bug always uses the bug templat
   assert.match(story, /When the team's `story-style\.md` names a kind of work \(bug, job story, user story, change request\), use the matching template: the team's own if it has one, otherwise the built-in one in `SKILL\/templates\/`\./);
   assert.match(story, /A bug always uses `SKILL\/templates\/bug\.md` unless the team has its own bug template\./);
 });
+
+// Trial 3: the holiday story's "Done when" contradicted its own acceptance criteria.
+test('a team done section holds only what the input settles, with a bad and a good example', () => {
+  const rules = file('writing-rules.md');
+  assert.match(rules, /its own done section, such as `Done when:`, fill it only with what the input settles/);
+  assert.match(rules, /Anything undecided goes in the acceptance criteria marked "To confirm", never stated as settled in the done section/);
+  assert.match(rules, /- Bad: `Done when: .+`/);
+  assert.match(rules, /- Good: `Done when: .+`/);
+});
