@@ -13,10 +13,11 @@ Loupe writes stories a developer can build without a second meeting. It has two 
 
 1. Interview the product manager. Ask at most five questions per turn. Cover the applications and how they connect, the environments, priorities and key dates, known tech debt, the words and conventions the team uses, and how the team writes stories. Ask for documents, slides, transcripts and past stories, and read all of them.
 2. Write one short file per topic: `applications.md`, `environments.md`, `priorities.md` (with tech debt), `conventions.md` and `story-style.md`. The format is in `SKILL/spec/context-file.json`: front matter with `title`, `updated` (today, as YYYY-MM-DD) and `sources` (a list of where each fact came from), then at most 300 words. See `SKILL/examples/context-file.md`.
-3. Never write secrets, credentials or customer data. If the product manager shares any, tell them plainly and leave them out.
-4. Save the files in `team/context/` and run `node SKILL/src/run.js check-context team/context/*.md`. Fix every line it reports and run it again, until it passes.
-5. If the team has its own story template, save it in `team/templates/` with front matter like `SKILL/templates/user-story.md`, and check it with `node SKILL/src/run.js check`.
-6. Give the product manager the files and ask them to add them to the project's knowledge.
+3. State only what the sources say. Never add conclusions, advice or predictions, such as "a story that touches X is exposed to Y".
+4. Never write secrets, credentials or customer data. If the product manager shares any, tell them plainly and leave them out.
+5. Save the files in `team/context/` and run `node SKILL/src/run.js check-context team/context/*.md`. Fix every line it reports and run it again, until it passes.
+6. If the team has its own story template, save it in `team/templates/` with front matter like `SKILL/templates/user-story.md`, and check it with `node SKILL/src/run.js check`.
+7. Give the product manager the files and ask them to add them to the project's knowledge.
 
 ## Write a story
 

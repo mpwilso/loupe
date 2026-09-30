@@ -199,3 +199,8 @@ test('the packaged checkers fail every bad fixture, with the same messages as th
     for (const path of paths) assert.ok(packaged.stdout.includes(`${path}:\n`), `${path} did not fail`);
   }
 });
+
+test('setup mode writes only what the sources say', () => {
+  const setup = file('SKILL.md').split('## Set up a team')[1].split('\n## ')[0];
+  assert.match(setup, /State only what the sources say\. Never add conclusions, advice or predictions/);
+});
