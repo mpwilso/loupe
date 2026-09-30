@@ -145,7 +145,7 @@ Loupe learns your team once, from your own documents. Each input then gets a rea
 
 You need a Claude account with Skills and code execution turned on.
 
-1. **Get the skill.** Download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest). Or, under **Actions**, download **loupe-skill** from the latest **tests** run on **master**.
+1. **Get the skill.** Download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest).
 2. **Turn on code execution.** In Claude's settings, turn on "Code execution and file creation". The checker needs it.
 3. **Upload the skill.** In Claude, open Customize, then Skills, and upload the zip. Each teammate does this once.
 4. **Create the project.** Make a Claude Project and paste the project instructions from [docs/claude-project.md](docs/claude-project.md).
