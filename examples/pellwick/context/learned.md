@@ -2,23 +2,16 @@
 title: Learned
 updated: 2026-09-30
 sources:
-  - Meeting on skipping a box, 2026-09-22
-  - Email from Theo Park on the holiday cutoff, 2026-09-26
-  - Trial 3 review, 2026-09-30
+  - Corrections and answers the team approves, each named on its entry
 ---
 Loupe proposes each entry below after a correction or an answer, and a person approves it before it is saved.
 
-- Skip: move the next box to the delivery date after it, without cancelling, as agents do in Stockroom today.
+- A box's date can only move once, so after one skip or date change Stockroom won't move that box again and agents tell the customer no.
   kind: fact
-  source: Dana Ruiz, meeting on skip-a-box, 2026-09-22
-  replaces: "Skip: leave out one box without cancelling."
-- Subscribers are charged on the ship date.
+  source: Priya Raman, correction on skip-a-box, 2026-09-30
+- The billing job charges each box on the ship date stored for that box, so a skipped box is charged on its new date and never on the old one.
   kind: fact
-  source: Sam Okafor, meeting on skip-a-box, 2026-09-22
-- The warehouse asked for the box cutoff to be 96 hours before the ship date, not 72.
+  source: Sam Okafor, answer on skip-a-box, 2026-09-30
+- Stockroom decides a box's next regular delivery date, and the web app asks Stockroom for it and shows what Stockroom says.
   kind: fact
-  source: Theo Park, email on holiday-cutoff, 2026-09-26
-  applies: 1 December to 5 January
-- When a story depends on the box cutoff, ask whether it will be live during the holiday cutoff window.
-  kind: rule
-  source: Trial 3 reviewer, correction on skip-a-box, 2026-09-30
+  source: Sam Okafor, answer on skip-a-box, 2026-09-30
