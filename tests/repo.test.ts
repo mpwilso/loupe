@@ -202,13 +202,10 @@ test('a tag starting with "v" tests, builds and releases the skill zip, with eve
 });
 
 // The setup guide and the README send people to the same place for the skill.
-test('the setup guide gets the skill from the latest release, with Actions as the second option', () => {
+test('the setup guide gets the skill from the latest release, and nowhere else', () => {
   const step = read('docs/claude-project.md').split('## 1. Get the skill zip\n')[1].split('\n## ')[0];
-  const release = step.indexOf('[latest release](https://github.com/mpwilso/loupe/releases/latest)');
-  assert.ok(release >= 0, 'links the latest release');
-  assert.ok(release < step.indexOf('**Actions**'), 'the release first');
-  assert.match(step, /latest run of \*\*tests\*\* on \*\*master\*\*/);
-  assert.doesNotMatch(step, /main branch/);
+  assert.ok(step.includes('[latest release](https://github.com/mpwilso/loupe/releases/latest)'), 'links the latest release');
+  assert.doesNotMatch(step, /Actions|Artifacts/, 'no Actions route: artifacts last 7 days');
 });
 
 // The trials folder explains itself: what the trials are, who "the advisor" is, and one line per trial.

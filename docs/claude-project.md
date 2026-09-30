@@ -14,8 +14,6 @@ An organization owner can instead add the skill for everyone, from the organizat
 
 Download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest). This download is the skill. Don't unzip it. It holds one folder, `loupe/`.
 
-Or, for a build newer than the release: open the repository on GitHub, click **Actions**, click the latest run of **tests** on **master**, and download **loupe-skill** under **Artifacts**. Each run keeps it for 7 days.
-
 ## 2. Upload the skill (every teammate, once)
 
 1. In Claude, open **Customize**, then **Skills**.

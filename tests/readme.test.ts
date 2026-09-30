@@ -167,16 +167,12 @@ test('the limits say exactly who ran and scored the trials', () => {
   assert.ok(section('Limits').includes('- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4 and 5. A separate reviewer scored trials 2 and 3 blind.'));
 });
 
-test('setup says what you need, and leads with the release download', () => {
+test('setup says what you need, and gets the skill from the latest release, nothing else', () => {
   const setup = section('Setup');
   assert.match(setup, /^\nYou need a Claude account with Skills and code execution turned on\.\n/);
   const step = setup.split('\n').find((line) => line.startsWith('1. '))!;
-  // The release is the main route; the Actions download is the shorter second one.
-  assert.ok(step.startsWith('1. **Get the skill.** Download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest).'), step);
-  assert.ok(step.indexOf('latest release') < step.indexOf('Actions'), 'the release first');
-  // The branch and workflow names a reader will see on GitHub.
-  const workflow = readFileSync(join(root, '.github/workflows/tests.yml'), 'utf8').match(/^name: (.+)$/m)![1];
-  assert.ok(step.includes(`the latest **${workflow}** run on **master**`), step);
+  // Actions artifacts last 7 days, so the release is the one route that is always there.
+  assert.equal(step, '1. **Get the skill.** Download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest).');
 });
 
 test('under the hood: the repo map is real, and the documented checker command passes', () => {
