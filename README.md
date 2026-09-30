@@ -106,6 +106,7 @@ Before release: Tell support that subscribers can skip online and how skips show
 - **Guesses are marked "To confirm".** They are never stated as fact.
 - **A checker enforces the shape.** Loupe keeps fixing the story until it passes.
 - **It learns your team from your own documents.** It turns them into short context files, every fact with its source.
+- **It learns from corrections and answers.** Every learned fact names its source, and nothing is saved without your yes.
 
 ## Proof
 
@@ -123,6 +124,7 @@ From trials on one small invented team, a handful of inputs each; see [docs/tria
 - **Starts every time.** In trial 3 the skill didn't start in 1 of 6 runs, and a refusal skipped the checker. With project instructions added, all 6 runs in trial 4 used Loupe and passed the checker. ([trial 3](docs/trials/2026-09-30-trial-3.md), [trial 4](docs/trials/2026-09-30-trial-4.md))
 - **Rules it missed.** Trial 3 broke four rules, the team's and its own, such as using the user story template for a bug. After fixes, trial 4 got all four right. ([trial 3](docs/trials/2026-09-30-trial-3.md), [trial 4](docs/trials/2026-09-30-trial-4.md))
 - **One source per fact.** In trial 4, some facts cited a document that didn't hold them, because each context file listed its sources as a group. Each fact now carries its own source, and in trial 5 every citation checked out. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
+- **Learning that asks before saving.** Trial 6 found a learned fact with no person in its source, approved entries changed after the yes, and "remember this" saved to Claude's own memory with no source. After the fixes, trial 6b passed every step it reran. ([trial 6](docs/trials/2026-09-30-trial-6.md), [trial 6b](docs/trials/2026-09-30-trial-6b.md))
 
 ## How it works
 
@@ -138,8 +140,8 @@ Loupe learns your team once, from your own documents. Each input then gets a rea
 - Tested on one invented company.
 - About one to three minutes per story.
 - Skills on claude.ai belong to one person, so each teammate uploads it once.
-- It doesn't learn from corrections yet.
-- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4 and 5. A separate reviewer scored trials 2 and 3 blind.
+- Learning needs you to swap the updated learned.md into the project's files by hand, and it has been tested on the invented team and no other.
+- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6 and 6b. A separate reviewer scored trials 2 and 3 blind.
 
 ## Setup
 
@@ -183,6 +185,5 @@ Designed and directed by Matt Wilson, who set the quality bar, designed five tri
 
 ## What's next
 
-1. The learning loop: your corrections update the context files.
-2. A VS Code version with Jira, which never writes to the tracker without your approval.
-3. Estimates calibrated on your team's history.
+1. A VS Code version with Jira, which never writes to the tracker without your approval.
+2. Estimates calibrated on your team's history.

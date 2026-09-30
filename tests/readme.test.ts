@@ -115,6 +115,13 @@ test('the README opens with the lockup, both themes, the tagline, the paragraph 
   assert.ok(top.includes(`get one that says what's known, unknown and assumed.\n\n${jump}`), 'the paragraph, then the jump line');
 });
 
+test('what is different includes the learning loop, and what is next no longer lists it', () => {
+  assert.ok(section("What's different").includes('- **It learns from corrections and answers.** Every learned fact names its source, and nothing is saved without your yes.'));
+  const next = section("What's next");
+  assert.doesNotMatch(next, /learning loop/i);
+  assert.match(next, /^1\. A VS Code version/m);
+});
+
 test('the story section shows real lines from the example, then the whole story, collapsed', () => {
   const body = section('What a story looks like');
   assert.match(body, /^\nEvery story opens with three lines: the call \(written, or not ready yet\), how confident Loupe is, and the question to ask before anything else\.\n\n> /, 'one sentence, then the excerpt');
@@ -148,11 +155,12 @@ test('every proof line links its trial file, in plain words', () => {
   assert.ok(proof.includes('From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).'));
 });
 
-test('what the trials changed: five bullets in a fixed order, each linking the trial it came from and the next', () => {
+test('what the trials changed: six bullets in a fixed order, each linking the trial it came from and the next', () => {
   const items = section('What the trials changed').split('\n').filter((line) => line.startsWith('- '));
-  assert.deepEqual(items.map((item) => item.match(/^- \*\*(.+?)\*\*/)?.[1]), ['A fair baseline.', 'Guesses marked.', 'Starts every time.', 'Rules it missed.', 'One source per fact.']);
-  const links = items.map((item) => [...item.matchAll(/\[(trial \d)\]/g)].map((m) => m[1]).join(', '));
-  assert.deepEqual(links, ['trial 1, trial 2', 'trial 2, trial 3', 'trial 3, trial 4', 'trial 3, trial 4', 'trial 4, trial 5']);
+  assert.deepEqual(items.map((item) => item.match(/^- \*\*(.+?)\*\*/)?.[1]), ['A fair baseline.', 'Guesses marked.', 'Starts every time.', 'Rules it missed.', 'One source per fact.', 'Learning that asks before saving.']);
+  const links = items.map((item) => [...item.matchAll(/\[(trial \d+[a-z]?)\]/g)].map((m) => m[1]).join(', '));
+  assert.deepEqual(links, ['trial 1, trial 2', 'trial 2, trial 3', 'trial 3, trial 4', 'trial 3, trial 4', 'trial 4, trial 5', 'trial 6, trial 6b']);
+  assert.ok(items[5].includes('trial 6b passed every step it reran'));
   assert.ok(items[0].includes('a usable estimate on 1 of 4 stories, against Loupe\'s 4 of 4'));
   assert.ok(items[1].includes('9 guessed behaviors') && items[1].includes('trial 3 had 0'));
   assert.ok(items[2].includes('1 of 6 runs') && items[2].includes('all 6 runs in trial 4'));
@@ -164,7 +172,9 @@ test('what the trials changed: five bullets in a fixed order, each linking the t
 });
 
 test('the limits say exactly who ran and scored the trials', () => {
-  assert.ok(section('Limits').includes('- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4 and 5. A separate reviewer scored trials 2 and 3 blind.'));
+  assert.ok(section('Limits').includes('- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6 and 6b. A separate reviewer scored trials 2 and 3 blind.'));
+  assert.ok(section('Limits').includes("- Learning needs you to swap the updated learned.md into the project's files by hand, and it has been tested on the invented team and no other."));
+  assert.doesNotMatch(readme, /doesn't learn from corrections yet/);
 });
 
 test('setup says what you need, and gets the skill from the latest release, nothing else', () => {
