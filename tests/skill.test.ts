@@ -247,3 +247,10 @@ test('every response is checked, a "Not ready yet" response too, and ends with t
   assert.match(story, /node SKILL\/src\/run\.js check response\.md/);
   assert.doesNotMatch(story, /check story\.md/);
 });
+
+// Trial 3: the payment bug used the user story template.
+test('the kind of work picks the template, and a bug always uses the bug template', () => {
+  const story = storyMode();
+  assert.match(story, /When the team's `story-style\.md` names a kind of work \(bug, job story, user story, change request\), use the matching template: the team's own if it has one, otherwise the built-in one in `SKILL\/templates\/`\./);
+  assert.match(story, /A bug always uses `SKILL\/templates\/bug\.md` unless the team has its own bug template\./);
+});
