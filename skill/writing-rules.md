@@ -4,7 +4,7 @@ Follow every rule when writing a story. The checker catches some of them, not al
 
 ## Sources and gaps
 - Not included lists only what someone decided to leave out, citing where it was decided. If no one decided, it goes in Questions before building. With nothing decided, write "None."
-- Every Known line ends with its source in parentheses: the input or a context file.
+- Every Known line ends with its source in parentheses. For a fact from a context file, cite the original document the file names, then the file, like "(planning email 2026-09-18, via the Priorities context file)". If the file names several sources and doesn't say which, name them all.
 - Invent nothing. A gap goes in Unknown, Assumed or a question.
 
 ## Around the change

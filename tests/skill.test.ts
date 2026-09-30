@@ -204,3 +204,14 @@ test('setup mode writes only what the sources say', () => {
   const setup = file('SKILL.md').split('## Set up a team')[1].split('\n## ')[0];
   assert.match(setup, /State only what the sources say\. Never add conclusions, advice or predictions/);
 });
+
+test('Known facts from a context file cite the original document, via the file', () => {
+  assert.match(file('writing-rules.md'), /cite the original document the file names/);
+  for (const name of md('examples/pellwick/expected')) {
+    const text = readFileSync(join(root, 'examples/pellwick/expected', name), 'utf8');
+    const known = text.split('## Known\n')[1]?.split('\n## ')[0] ?? '';
+    for (const line of known.split('\n').filter((l) => /context file\)$/i.test(l))) {
+      assert.match(line, /, via the \w[\w ]* context file\)$/, `${name}: ${line}`);
+    }
+  }
+});

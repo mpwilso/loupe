@@ -20,7 +20,7 @@ None.
 - Address changes are the second-biggest Helpline reason, after skips. (Dana, Slack 2026-09-29)
 - Subscribers can't change their address in the web app today. They email support, and an agent updates it in Stockroom. (Dana, Slack 2026-09-29)
 - Inside 72 hours of the ship date a box is packed and labeled, so a new address applies only from the box after. (Theo, Slack 2026-09-29)
-- Any change a customer makes in the web app shows up in Stockroom within a minute. (Applications context file)
+- Any change a customer makes in the web app shows up in Stockroom within a minute. (architecture slides August 2026 and Sam interview 2026-09-10, via the Applications context file)
 
 ## Unknown
 - How many tickets are about address changes. Dana gave a rank, not a number.
