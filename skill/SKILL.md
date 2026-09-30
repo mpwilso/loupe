@@ -5,7 +5,7 @@ description: Writes user stories with acceptance criteria, bug reports, Jira tic
 
 # Loupe
 
-Loupe writes stories a developer can build without a second meeting. It has two modes: set up a team, and write a story. Read only the files the current mode needs.
+Loupe writes stories a developer can build without a second meeting. It has three modes: set up a team, write a story, and learn from corrections. Read only the files the current mode needs.
 
 `SKILL` below is the path of the folder holding this file. Run the checkers with `node SKILL/src/run.js`. They need no packages and no network. A pass ends with the line `Checked with Node <version>.` `Not checked:` is only for when a checker can't start or Node is too old. Then show the draft under the line it printed, or under `Not checked: <the reason>` if it printed nothing. Never say or imply that it passed.
 
@@ -23,13 +23,13 @@ Loupe writes stories a developer can build without a second meeting. It has two 
 
 Write the response once, then run the checker until it passes, up to five runs. Every response is checked. A "Not ready yet" response runs the checker too, and ends with the `Checked with Node` line, the same as a story.
 
-1. Read the input and the team's context files where they are, in the project's knowledge. Don't copy them anywhere.
+1. Read the input and the team's context files where they are, in the project's knowledge, learned.md included. Don't copy them anywhere. Where learned.md and another file disagree, the entry that replaces the other wins.
 2. Check the input, with the context files, against the readiness bar: who's affected, the problem, the desired outcome, which system or application, and known constraints.
 3. Below the bar, write only a "Not ready yet" response, shaped like `SKILL/examples/not-ready.md`, and save it as `response.md`. Ask the few questions that would get the user over the bar. Go to step 5.
 4. At or above the bar, pick the template by the kind of work. When the team's `story-style.md` names a kind of work (bug, job story, user story, change request), use the matching template: the team's own if it has one, otherwise the built-in one in `SKILL/templates/`. A bug always uses `SKILL/templates/bug.md` unless the team has its own bug template. Read that one template and `SKILL/writing-rules.md`. Write the story once, in the shape of `SKILL/examples/story.md`, and save it as `response.md`.
 5. Run `node SKILL/src/run.js check response.md`. If the story uses a team template, save only that template to `team-templates/` and add `--templates team-templates`. Fix every line the checker reports and run it again, until it passes, up to five runs. If it still fails after five runs, show the draft with the line `Failed the checker after five runs:` and the remaining messages right under the summary, and `Call: Failed the checker`. Never call it passed.
 6. Check the truth. The checker checks shape, not truth, so this step is yours. Reread every Known line against the source it cites. If the source doesn't say it, move the line to Assumed or Unknown, and run the checker again.
-7. Never run `check-context` in this mode. It belongs to setup.
+7. Never run `check-context` in this mode. It belongs to setup and learning.
 
 ## What the user sees
 
@@ -43,6 +43,12 @@ First question: the first, most build-blocking question, word for word
 
 Write no chat notes between the title and the end of the story. Keep the lines at the top of the saved file too. The checker checks they agree with what follows. After the story, add at most one line, and only if the user needs to act, then the checker's `Checked with Node` line. That line goes in the chat only, never in the story file. Never show a story or response that fails the checker.
 
-## Not in this version
+## Learn from corrections
 
-Loupe does not learn from corrections yet. When the user corrects a story, fix that story, run the checker again, and tell them the context files have not changed. They can update the context files by setting up the team again.
+After a story, when the user corrects it or answers one of its questions or "To confirm" lines, read `SKILL/learning.md` and follow it. In short:
+
+1. Sort each one: a fact about the team, a rule for how the team wants stories written, or a one-off fix to this story. Fix a one-off and learn nothing. If you can't tell, ask one short question.
+2. Propose the exact learned.md entries, each with its source, and ask "Save these to learned.md?" Save nothing without a clear yes.
+3. If an entry contradicts a sourced fact, show both, with their sources and dates, and ask which holds, or whether both hold at different times. Never pick one silently.
+4. On a yes, write the whole updated learned.md and check it with `node SKILL/src/run.js check-context learned.md` and the team's other context files, looping until it passes. Give it as a file, and tell the user in one line to replace learned.md in the project's files.
+5. Never learn an invented fact, a secret, a credential or customer data, even if asked. Say why in one line.
