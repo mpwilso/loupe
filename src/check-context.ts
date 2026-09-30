@@ -10,6 +10,9 @@ import { fill, frontMatter, loadSpec, runCli, type Problem } from './spec.ts';
 type Rule = { pattern: string; message?: string };
 type LearnedSpec = {
   fileName: string;
+  maxBodyWords: number;
+  foldAfterWords: number;
+  foldMessage?: string;
   header: Rule;
   entry: string;
   field: string;
@@ -107,8 +110,13 @@ function findProblems(text: string, today: Date, options: ContextOptions): { err
     });
   }
 
+  // learned.md grows with every approved entry, so it has its own limit, and a nudge to fold entries in before it's full.
   const words = lines.slice(end + 1).join(' ').split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
-  if (words > spec.maxBodyWords) errors.push({ text: fill(M.tooLong, { count: words, limit: spec.maxBodyWords }) });
+  const limit = options.learned ? spec.learned.maxBodyWords : spec.maxBodyWords;
+  if (words > limit) errors.push({ text: fill(M.tooLong, { count: words, limit }) });
+  else if (options.learned && words > spec.learned.foldAfterWords) {
+    warnings.push({ text: fill(spec.learned.foldMessage, { count: words, limit: spec.learned.foldAfterWords }) });
+  }
 
   return { errors, warnings };
 }

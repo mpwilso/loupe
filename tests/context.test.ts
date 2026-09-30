@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { checkContext } from '../src/check-context.ts';
+import { checkContext, contextSpec } from '../src/check-context.ts';
 import { format } from '../src/spec.ts';
-import { fixture, learned, learnedOptions, secretLine, secrets, shortLookalikes, today, withLine } from './cases.ts';
+import { fixture, learnedOptions, secretLine, secrets, shortLookalikes, today, withLine } from './cases.ts';
 
 const secret = (what: string) =>
   `line 8: This looks like ${what}. Remove it. Context files must never hold secrets, credentials or customer data.`;
@@ -88,11 +88,14 @@ const learnedBad: Record<string, string> = {
     'line 12: "replaces:" quotes "The web app is where staff manage refunds.", but no other context file or earlier entry says that. Quote the earlier fact exactly, and check learned.md together with the other context files.',
   'duplicate-replaces': 'line 16: Two entries replace "The web app is where customers manage their orders.". Keep one, or have the newer entry replace the older one.',
   'unknown-field': 'line 12: "said:" is not an entry field. The fields are kind, source, applies and replaces.',
+  'fold-soon': 'warning: learned.md has 570 words. Past 480, say so in one line and offer to fold its entries into the main context files at the next setup refresh.',
+  'too-long': 'The body has 745 words; the limit is 600. Keep only what a new team member needs.',
 };
 
 for (const [name, message] of Object.entries(learnedBad)) {
   test(`bad/learned/${name}.md fails with one plain message`, () => {
-    assert.deepEqual(learned(fixture(`bad/learned/${name}.md`)).map(format), [message]);
+    const { errors, warnings } = checkContext(fixture(`bad/learned/${name}.md`), today, learnedOptions());
+    assert.deepEqual([...errors.map(format), ...warnings.map((w) => `warning: ${format(w)}`)], [message]);
   });
 }
 
@@ -113,4 +116,13 @@ test('a "replaces:" line can only be checked against the other context files, so
 
 test('an ordinary context file still needs a source on every line; learned.md uses its entry fields instead', () => {
   assert.equal(checkContext(fixture('good-learned.md'), today).errors.length > 0, true);
+});
+
+// Trial 6: three entries came to 161 words, so 300 held about 7. learned.md gets its own, larger limit.
+test('learned.md has its own word limit of 600, and a nudge to fold entries in past 480', () => {
+  assert.equal(contextSpec.learned.maxBodyWords, 600);
+  assert.equal(contextSpec.learned.foldAfterWords, 480);
+  assert.equal(contextSpec.maxBodyWords, 300, 'the other context files keep 300');
+  assert.deepEqual(checkContext(fixture('good-learned-long.md'), today, learnedOptions()), { errors: [], warnings: [] });
+  assert.equal(checkContext(fixture('good-learned-long.md'), today).errors.some((e) => /limit is 300/.test(e.text)), true, 'as an ordinary context file it is too long');
 });

@@ -26,6 +26,9 @@
   ],
   "learned": {
     "fileName": "learned.md",
+    "maxBodyWords": 600,
+    "foldAfterWords": 480,
+    "foldMessage": "learned.md has {count} words. Past {limit}, say so in one line and offer to fold its entries into the main context files at the next setup refresh.",
     "header": {
       "pattern": "\\bapprov",
       "message": "Start learned.md with a short line saying Loupe proposes these entries and a person approves each one."
