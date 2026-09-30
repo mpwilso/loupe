@@ -16,7 +16,9 @@ const bad: Record<string, string> = {
   password: secret('a password'),
   'private-key': secret('a private key'),
   token: secret('a secret or token'),
-  'too-long': 'The body has 309 words; the limit is 300. Keep only what a new team member needs.',
+  'too-long': 'The body has 315 words; the limit is 300. Keep only what a new team member needs.',
+  'paragraph-no-source': 'line 8: This fact doesn\'t say where it came from. End the line with its own source in parentheses, like "(planning email, Priya Raman, 2026-09-18)".',
+  'numbered-no-source': 'line 10: This fact doesn\'t say where it came from. End the line with its own source in parentheses, like "(planning email, Priya Raman, 2026-09-18)".',
   'no-line-source': 'line 7: This fact doesn\'t say where it came from. End the line with its own source in parentheses, like "(planning email, Priya Raman, 2026-09-18)".',
 };
 
@@ -63,4 +65,11 @@ test('every bullet in a context file ends with its own source', () => {
   const text = `${fixture('good-context.md')}- Stockroom is the staff tool. (Interview with the engineering lead, 2026-09-01)\n1. Skips come first. (planning email, 2026-09-18)\n`;
   assert.deepEqual(checkContext(text, today).errors, []);
   assert.equal(checkContext(`${text}2. Payments come second.\n`, today).errors.length, 1);
+});
+
+// Trial 5 follow-up: plain paragraph lines state facts too. Headings and the front matter are exempt.
+test('every fact line needs a source, whether bullet, numbered or paragraph, but headings don\'t', () => {
+  const text = `${fixture('good-context.md')}## Staff tools\nStockroom is the staff tool. (engineering lead, 2026-09-01)\n`;
+  assert.deepEqual(checkContext(text, today).errors, []);
+  assert.equal(checkContext(`${text}Agents use it every day.\n`, today).errors.length, 1);
 });

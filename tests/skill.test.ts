@@ -209,7 +209,7 @@ test('setup mode writes only what the sources say', () => {
 // Trial 4: Known lines cited a document that didn't hold the fact, since context files listed sources as a group.
 test('each context-file fact names its own source, and Known lines cite that source, via the file', () => {
   const setup = file('SKILL.md').split('## Set up a team')[1].split('\n## ')[0];
-  assert.match(setup, /Write each fact as a bullet that ends with its own source in parentheses/);
+  assert.match(setup, /Every line but a heading ends with its own source in parentheses/);
   assert.match(file('writing-rules.md'), /cite the source on the context-file line it came from, then "via the <name> context file"/);
   assert.doesNotMatch(file('writing-rules.md'), /name them all/);
   let cited = 0;

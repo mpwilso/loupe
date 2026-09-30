@@ -11,7 +11,7 @@ export const today = new Date('2026-09-30T00:00:00Z');
 
 // Fake secrets are built here while the test runs, so no file ever holds one and push protection never sees one.
 const mix = (length: number) => Array.from({ length }, (_, i) => 'Zq7Xk2Lm9Pw4Rt8Vn3Bc6Hd1Jf5Gs0Ya'[(i * 7) % 32]).join('');
-export const withLine = (line: string) => `${fixture('good-context.md')}${line}\n`;
+export const withLine = (line: string) => `${fixture('good-context.md')}${line} (engineering lead, 2026-09-01)\n`;
 export const shortLookalikes = [
   'The ghp_ prefix marks a GitHub token.',
   'Keys start with sk- and are long.',
