@@ -17,3 +17,9 @@ desktop.ini
 # Logs
 *.log
 logs/
+
+# Dependencies
+node_modules/
+
+# Test output
+test-output.txt
