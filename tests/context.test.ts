@@ -45,3 +45,36 @@ test('the staleness limit comes from the spec: 90 days passes, 91 warns', () => 
   assert.equal(checkContext(text, new Date('2026-11-30T00:00:00Z')).warnings.length, 0);
   assert.equal(checkContext(text, new Date('2026-12-01T00:00:00Z')).warnings.length, 1);
 });
+
+// Fake secrets are built here while the test runs, so no file ever holds one and push protection never sees one.
+const mix = (length: number) => Array.from({ length }, (_, i) => 'Zq7Xk2Lm9Pw4Rt8Vn3Bc6Hd1Jf5Gs0Ya'[(i * 7) % 32]).join('');
+const withLine = (line: string) => `${fixture('good-context.md')}${line}\n`;
+
+const secrets: [string, string][] = [
+  ['a cloud access key', 'AKIA' + mix(16).toUpperCase()],
+  ['an API key', 'sk-' + mix(48)],
+  ['an API key', 'sk-proj-' + mix(40)],
+  ['an API key', 'AIza' + mix(35)],
+  ['a GitHub token', 'ghp_' + mix(36)],
+  ['a GitHub token', 'gho_' + mix(36)],
+  ['a GitHub token', 'github_pat_' + mix(22) + '_' + mix(59)],
+  ['a Slack token', 'xoxb-' + mix(12) + '-' + mix(24)],
+];
+
+for (const [what, value] of secrets) {
+  test(`${what} that looks real (${value.slice(0, 4)}...) fails`, () => {
+    const { errors } = checkContext(withLine(`The staging key is ${value} if you need it.`), today);
+    assert.deepEqual(errors.map(format), [secret(what)]);
+  });
+}
+
+test('text that only looks a little like a key passes', () => {
+  for (const line of [
+    'The ghp_ prefix marks a GitHub token.',
+    'Keys start with sk- and are long.',
+    'Short ids like ' + 'ghp_' + mix(10) + ' or ' + 'sk-' + mix(10) + ' are fine.',
+    'The stock code AKIA' + mix(8).toUpperCase() + ' is too short.',
+  ]) {
+    assert.deepEqual(checkContext(withLine(line), today).errors, [], line);
+  }
+});
