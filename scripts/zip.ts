@@ -6,7 +6,10 @@ import { basename, join } from 'node:path';
 import { crc32, deflateRawSync, inflateRawSync } from 'node:zlib';
 
 const DOS_DATE = (1 << 5) | 1; // 1980-01-01, so the same files always give the same zip.
-const UTF8 = 0x0800;
+const UTF8 = 0x0800; // Set only for names that aren't plain ASCII, as Python's zipfile does.
+const MADE_ON_UNIX = (3 << 8) | 20;
+const FILE_MODE = 0o100644 << 16; // A normal file: owner can write, everyone can read.
+const FOLDER_MODE = ((0o40755 << 16) | 0x10) >>> 0; // A normal folder, plus the flag that marks a folder elsewhere.
 
 export function writeZip(entries: { name: string; data?: Buffer }[]): Buffer {
   const locals: Buffer[] = [];
@@ -17,10 +20,11 @@ export function writeZip(entries: { name: string; data?: Buffer }[]): Buffer {
     const body = data ? deflateRawSync(data) : Buffer.alloc(0);
     const crc = data ? crc32(data) : 0;
     const size = data?.length ?? 0;
+    const flags = /^[\x00-\x7f]*$/.test(name) ? 0 : UTF8;
     const local = Buffer.alloc(30);
     local.writeUInt32LE(0x04034b50, 0);
     local.writeUInt16LE(20, 4);
-    local.writeUInt16LE(UTF8, 6);
+    local.writeUInt16LE(flags, 6);
     local.writeUInt16LE(data ? 8 : 0, 8);
     local.writeUInt16LE(DOS_DATE, 12);
     local.writeUInt32LE(crc, 14);
@@ -29,16 +33,16 @@ export function writeZip(entries: { name: string; data?: Buffer }[]): Buffer {
     local.writeUInt16LE(file.length, 26);
     const central = Buffer.alloc(46);
     central.writeUInt32LE(0x02014b50, 0);
-    central.writeUInt16LE(20, 4);
+    central.writeUInt16LE(MADE_ON_UNIX, 4);
     central.writeUInt16LE(20, 6);
-    central.writeUInt16LE(UTF8, 8);
+    central.writeUInt16LE(flags, 8);
     central.writeUInt16LE(data ? 8 : 0, 10);
     central.writeUInt16LE(DOS_DATE, 14);
     central.writeUInt32LE(crc, 16);
     central.writeUInt32LE(body.length, 20);
     central.writeUInt32LE(size, 24);
     central.writeUInt16LE(file.length, 28);
-    central.writeUInt32LE(data ? 0 : 0x10, 38); // 0x10 marks a folder.
+    central.writeUInt32LE(data ? FILE_MODE >>> 0 : FOLDER_MODE, 38);
     central.writeUInt32LE(offset, 42);
     locals.push(local, file, body);
     centrals.push(central, file);
@@ -54,15 +58,20 @@ export function writeZip(entries: { name: string; data?: Buffer }[]): Buffer {
   return Buffer.concat([...locals, directory, end]);
 }
 
-// Reads back what writeZip writes: every entry's name, and the contents of each file.
-export function readZip(zip: Buffer): { name: string; data?: Buffer }[] {
+export type Entry = { name: string; data?: Buffer; flags: number; method: number; madeBy: number; attributes: number };
+
+// Reads back what writeZip writes: every entry's name, header fields, and the contents of each file.
+export function readZip(zip: Buffer): Entry[] {
   const end = zip.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
   if (end < 0) throw new Error('Not a zip file.');
   const count = zip.readUInt16LE(end + 10);
   let at = zip.readUInt32LE(end + 16);
-  const entries: { name: string; data?: Buffer }[] = [];
+  const entries: Entry[] = [];
   for (let i = 0; i < count; i++) {
+    const madeBy = zip.readUInt16LE(at + 4);
+    const flags = zip.readUInt16LE(at + 8);
     const method = zip.readUInt16LE(at + 10);
+    const attributes = zip.readUInt32LE(at + 38);
     const compressed = zip.readUInt32LE(at + 20);
     const nameLength = zip.readUInt16LE(at + 28);
     const skip = nameLength + zip.readUInt16LE(at + 30) + zip.readUInt16LE(at + 32);
@@ -70,7 +79,8 @@ export function readZip(zip: Buffer): { name: string; data?: Buffer }[] {
     const name = zip.toString('utf8', at + 46, at + 46 + nameLength);
     const start = local + 30 + zip.readUInt16LE(local + 26) + zip.readUInt16LE(local + 28);
     const body = zip.subarray(start, start + compressed);
-    entries.push(name.endsWith('/') ? { name } : { name, data: method === 8 ? inflateRawSync(body) : Buffer.from(body) });
+    const data = name.endsWith('/') ? undefined : method === 8 ? inflateRawSync(body) : Buffer.from(body);
+    entries.push({ name, data, flags, method, madeBy, attributes });
     at += 46 + skip;
   }
   return entries;

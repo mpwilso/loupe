@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { after, before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { readZip } from '../scripts/zip.ts';
+import { readZip, type Entry } from '../scripts/zip.ts';
 import { frontMatter } from '../src/spec.ts';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -13,7 +13,7 @@ const temp = mkdtempSync(join(tmpdir(), 'loupe-skill-'));
 const zipPath = join(temp, 'loupe-skill.zip');
 const unzipped = join(temp, 'unzipped');
 const md = (dir: string) => readdirSync(join(root, dir)).filter((f) => f.endsWith('.md')).sort();
-let entries: { name: string; data?: Buffer }[] = [];
+let entries: Entry[] = [];
 
 before(() => {
   const build = spawnSync('bash', ['scripts/build-skill.sh', zipPath], { cwd: root, encoding: 'utf8' });
@@ -46,6 +46,23 @@ test('the zip has one root folder named after the skill, holding exactly the exp
   const folders = ['', 'examples/', 'spec/', 'src/', 'templates/'].map((f) => `loupe/${f}`);
   const files = [...Object.keys(sources), 'package.json'].map((f) => `loupe/${f}`);
   assert.deepEqual(entries.map((e) => e.name).sort(), [...folders, ...files].sort());
+});
+
+// A guard, not proof of a fix: the Windows password prompt was never traced to a header field.
+// Encryption is bit 0 of the flags, and 0 (stored) and 8 (deflate) are the methods every unzip tool reads.
+test('guard: no zip entry is marked encrypted or uses an unusual compression method', () => {
+  for (const { name, flags, method } of entries) {
+    assert.equal(flags & 1, 0, `${name} is marked encrypted`);
+    assert.ok(method === 0 || method === 8, `${name} uses compression method ${method}`);
+  }
+});
+
+test("zip headers match what Python's zipfile writes: made on Unix, normal file modes, no UTF-8 flag for plain names", () => {
+  for (const { name, flags, madeBy, attributes } of entries) {
+    assert.equal(madeBy >> 8, 3, `${name}: made-by host`);
+    assert.equal(attributes, name.endsWith('/') ? 0x41ed0010 : 0x81a40000, `${name}: attributes 0x${attributes.toString(16)}`);
+    assert.equal(flags, 0, `${name}: flags 0x${flags.toString(16)}`);
+  }
 });
 
 test('every packaged file is the repo file, byte for byte', () => {
