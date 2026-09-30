@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -137,9 +138,18 @@ test('every CI action is pinned to a commit, and the trial kit stays blind', () 
   for (const name of ['loupe-skill', 'pellwick-trial-kit']) assert.ok(workflow.includes(`name: ${name}\n`), name);
   assert.equal(workflow.match(/retention-days: 7\n/g)?.length, 2);
   assert.doesNotMatch(workflow, /examples\/pellwick\/expected/);
-  for (const folder of ['context', 'templates', 'inputs', 'raw']) assert.ok(workflow.includes(`examples/pellwick/${folder}/\n`), folder);
-  // The trial 6 plan travels with the kit, and its inputs are in the kit's inputs/ folder.
-  assert.ok(workflow.includes('docs/trials/trial-6-plan.md\n'), 'the trial 6 plan');
+  // The kit is one folder, built by a script, so its files sit at its root: context/, inputs/ and so on.
+  assert.ok(workflow.includes('- run: scripts/build-trial-kit.sh\n'), 'CI builds the kit with the script');
+  assert.match(workflow, /name: pellwick-trial-kit\n\s+path: build\/pellwick-trial-kit\/\n/);
+  const out = mkdtempSync(join(tmpdir(), 'loupe-kit-'));
+  try {
+    execFileSync('bash', ['scripts/build-trial-kit.sh', join(out, 'kit')], { cwd: root });
+    assert.deepEqual(readdirSync(join(out, 'kit')).sort(), ['context', 'inputs', 'raw', 'templates', 'trial-6-plan.md']);
+    assert.ok(!existsSync(join(out, 'kit', 'expected')), 'no expected stories');
+  } finally {
+    rmSync(out, { recursive: true });
+  }
+  // The trial 6 plan's inputs are in the kit's inputs/ folder.
   const plan = read('docs/trials/trial-6-plan.md');
   for (const [, input] of plan.matchAll(/`inputs\/([\w.-]+\.md)`/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
 });

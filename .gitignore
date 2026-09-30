@@ -26,3 +26,6 @@ test-output.txt
 
 # Build output
 dist/
+
+# Trial kit, built for CI
+build/

@@ -54,14 +54,11 @@ jobs:
             !dist/loupe-skill.zip
           if-no-files-found: error
           retention-days: 7
+      # One folder, so the kit's files sit at its root: context/, templates/, inputs/, raw/ and the trial plan.
+      - run: scripts/build-trial-kit.sh
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pellwick-trial-kit
-          path: |
-            examples/pellwick/context/
-            examples/pellwick/templates/
-            examples/pellwick/inputs/
-            examples/pellwick/raw/
-            docs/trials/trial-6-plan.md
+          path: build/pellwick-trial-kit/
           if-no-files-found: error
           retention-days: 7
