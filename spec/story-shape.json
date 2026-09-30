@@ -69,7 +69,12 @@
       "name": "Confidence",
       "kind": "lines",
       "lines": [
-        { "pattern": "^(High|Medium|Low)$", "message": "The first line of Confidence must be exactly High, Medium or Low." },
+        {
+          "pattern": "^(High|Medium|Low)$",
+          "message": "The first line of Confidence must be exactly High, Medium or Low.",
+          "placeholder": "[High, Medium or Low]",
+          "placeholderMessage": "In a template, write \"[High, Medium or Low]\" here, not a value."
+        },
         { "pattern": "^Why: \\S", "message": "Confidence needs a \"Why:\" line saying what the rating is based on." },
         { "pattern": "^How to raise it: \\S", "message": "Confidence needs a \"How to raise it:\" line saying what would make it higher." }
       ]
@@ -83,7 +88,9 @@
           "pattern": "^(\\d+) to (\\d+) hours$",
           "message": "The first line of Estimate must read \"N to M hours\", for example \"4 to 8 hours\".",
           "ascending": [1, 2],
-          "ascendingMessage": "The estimate says {low} to {high} hours. The first number can't be bigger than the second."
+          "ascendingMessage": "The estimate says {low} to {high} hours. The first number can't be bigger than the second.",
+          "placeholder": "[N to M hours]",
+          "placeholderMessage": "In a template, write \"[N to M hours]\" here, not a value."
         },
         { "pattern": "^Basis: \\S", "message": "Estimate needs a \"Basis:\" line saying what the hours are based on." }
       ]

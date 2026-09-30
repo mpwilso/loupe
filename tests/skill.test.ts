@@ -232,3 +232,9 @@ test('a bug always asks about records the bug already damaged', () => {
 test('nothing comes before the summary, and nothing but the story sits inside it', () => {
   assert.match(file('SKILL.md'), /no narration before the three lines, and no chat notes between the title and the end of the story/);
 });
+
+test('setup turns a team form into a template with placeholders, not values, and keeps the team labels', () => {
+  const setup = file('SKILL.md').split('## Set up a team')[1].split('\n## ')[0];
+  assert.ok(setup.includes('`[High, Medium or Low]` and `[N to M hours]`, never values'));
+  assert.match(setup, /Keep the team's own labels/);
+});

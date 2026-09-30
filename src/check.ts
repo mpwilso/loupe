@@ -16,6 +16,8 @@ type LineRule = {
   listOf?: 'items';
   separator?: string;
   unknownMessage?: string;
+  placeholder?: string;
+  placeholderMessage?: string;
 };
 type Section = {
   heading: string;
@@ -164,12 +166,12 @@ export function check(text: string, templates = builtIn): { errors: Problem[]; w
   const shape = notReady ? readiness.notReady : story;
   if (hasSummary) checkLines(summary, story.summary.lines, 'The summary', 1, add);
   if (hasSummary) checkSummary(summary, rest, notReady, skip > 0, add);
-  const inBody = [...marks, ...checkShape(rest, shape, templates).map((e) => (e.line ? { ...e, line: e.line + skip } : e))];
+  const inBody = [...marks, ...checkShape(rest, shape, templates, offset > 0).map((e) => (e.line ? { ...e, line: e.line + skip } : e))];
   const errors = [...found, ...chat.filter((e) => e.text), ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines)];
   return { errors: errors.map((e) => (e.line ? { ...e, line: e.line + offset } : e)), warnings: [] };
 }
 
-function checkShape(lines: string[], shape: Shape, templates: Template[]): Problem[] {
+function checkShape(lines: string[], shape: Shape, templates: Template[], template: boolean): Problem[] {
   const problems: Problem[] = [];
   const add = (line: number | undefined, message = '') => void (message && problems.push({ line, text: message }));
   if (!new RegExp(shape.title.pattern).test(lines[0] ?? '')) add(1, shape.title.message);
@@ -213,7 +215,7 @@ function checkShape(lines: string[], shape: Shape, templates: Template[]): Probl
     seen.add(block.heading);
     if (index < furthest) add(block.line, fill(M.outOfOrder, { heading: block.heading, order }));
     furthest = Math.max(furthest, index);
-    checkSection(shape.sections[index], block.line, block.body, templates, add);
+    checkSection(shape.sections[index], block.line, block.body, templates, template, add);
   }
   for (const section of shape.sections) {
     if (!seen.has(section.heading)) add(undefined, fill(M.missingSection, { heading: section.heading }));
@@ -234,7 +236,9 @@ function checkSummary(summary: Entry[], rest: string[], notReady: boolean, unche
 
   const after = (heading: string) => rest.slice(rest.findIndex((line) => line.trim() === heading) + 1).find((line) => line.trim())?.trim();
   if (notReady && confidence !== S.noStory && summary[1]?.text.startsWith('Confidence: ')) add(2, S.noStoryMessage);
-  const level = notReady ? undefined : after('## Confidence');
+  const levelRule = story.sections.find((s) => s.heading === '## Confidence')?.lines?.[0];
+  const found = notReady ? undefined : after('## Confidence');
+  const level = found && levelRule && new RegExp(levelRule.pattern).test(found) ? found : undefined;
   if (level && summary[1]?.text.startsWith('Confidence: ') && !confidence.startsWith(`${level}, `)) add(2, fill(S.levelMessage, { level }));
 
   const heading = notReady ? S.questions.notReady : S.questions.story;
@@ -260,7 +264,7 @@ function checkOverflow(shape: Shape, blocks: { heading: string; body: Entry[] }[
   }
 }
 
-function checkSection(section: Section, headingLine: number, body: Entry[], templates: Template[], add: Add): void {
+function checkSection(section: Section, headingLine: number, body: Entry[], templates: Template[], template: boolean, add: Add): void {
   const { name } = section;
   if (body.length === 0) {
     add(headingLine, fill(section.allowNone ? M.emptyNoneAllowed : M.emptySection, { name }));
@@ -292,7 +296,7 @@ function checkSection(section: Section, headingLine: number, body: Entry[], temp
       }
     }
   } else if (section.kind === 'lines' && section.lines) {
-    checkLines(body, section.lines, name, headingLine, add);
+    checkLines(body, section.lines, name, headingLine, add, template);
   }
 }
 
@@ -313,10 +317,16 @@ function checkListLengths(name: string, body: Entry[], add: Add): void {
 
 // Walks the rules in order. A line that fits a later rule means this rule's line is missing.
 // A rule without a message is switched off: it takes any line that doesn't belong to a later rule.
-function checkLines(body: Entry[], rules: LineRule[], name: string, anchor: number, add: Add): void {
+// In a template, a line with a placeholder must hold a bracketed placeholder, never a value.
+function checkLines(body: Entry[], rules: LineRule[], name: string, anchor: number, add: Add, template = false): void {
   let next = 0;
   rules.forEach((rule, i) => {
     const entry = body[next];
+    if (template && rule.placeholder && entry && (/^\[.+\]$/.test(entry.text) || new RegExp(rule.pattern).test(entry.text))) {
+      if (!/^\[.+\]$/.test(entry.text)) add(entry.line, rule.placeholderMessage);
+      next++;
+      return;
+    }
     const match = entry && new RegExp(rule.pattern).exec(entry.text);
     if (!entry || !match || !rule.message) {
       add(entry?.line ?? anchor, rule.message);

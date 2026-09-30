@@ -16,7 +16,7 @@ Loupe writes stories a developer can build without a second meeting. It has two 
 3. State only what the sources say. Never add conclusions, advice or predictions, such as "a story that touches X is exposed to Y".
 4. Never write secrets, credentials or customer data. If the product manager shares any, tell them plainly and leave them out.
 5. Save the files in `team/context/` and run `node SKILL/src/run.js check-context team/context/*.md`. Fix every line it reports and run it again, until it passes.
-6. If the team has its own story template, save it in `team/templates/` with front matter like `SKILL/templates/user-story.md`, and check it with `node SKILL/src/run.js check`.
+6. If the team has its own story template or form, turn it into a template in `team/templates/`, with front matter like `SKILL/templates/user-story.md`, and check it with `node SKILL/src/run.js check`. Keep confidence and estimate as placeholders, `[High, Medium or Low]` and `[N to M hours]`, never values. Keep the team's own labels, such as `Change:` and `Reason:`, as the wording of the story section.
 7. Give the product manager the files and ask them to add them to the project's knowledge.
 
 ## Write a story

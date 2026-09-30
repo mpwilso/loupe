@@ -1,12 +1,16 @@
 ---
-name: user story
+name: spike
 patterns:
-  - ^As an? .+, I want .+, so that .+
+  - ^Question: \S
+  - ^Time box: \S
+  - ^Done when: \S
 ---
-# [Short title: what changes, for whom]
+# [Short title: the question to answer]
 
 ## The story
-As a [kind of user], I want [something], so that [the reason it matters].
+Question: [The one question this spike answers.]
+Time box: [The most time to spend, for example 8 hours.]
+Done when: [What the team will have in hand, for example a written recommendation.]
 
 ## Acceptance criteria
 - Given [a starting situation], when [someone does something], then [what they see or get].
@@ -29,7 +33,7 @@ Why: [What the rating is based on.]
 How to raise it: [What would make it higher.]
 
 ## Estimate
-[N to M hours]
+2 to 4 hours
 Basis: [What the range is based on, for a developer who knows the system.]
 
 ## Questions before building

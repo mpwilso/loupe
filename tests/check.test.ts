@@ -51,6 +51,8 @@ const bad: Record<string, string> = {
   'not-ready-bad-title': 'line 5: The first line must be exactly "# Not ready yet".',
   'template-no-patterns':
     'line 1: The template\'s front matter is missing "patterns": a list of patterns; each must match a line of "The story".',
+  'template-confidence-value': 'line 31: In a template, write "[High, Medium or Low]" here, not a value.',
+  'template-estimate-value': 'line 36: In a template, write "[N to M hours]" here, not a value.',
   'template-bad-pattern': 'line 3: "^Time box: (" is not a valid pattern.',
   'not-ready-no-about':
     'line 7: Right under the title, add one line that starts with "About: " and names the input this responds to.',
@@ -215,4 +217,9 @@ test('a pass ends with the Node version, and too old a Node gets a plain "Not ch
   assert.doesNotMatch(fail.stdout, /Checked with Node/);
   assert.deepEqual(['v20.20.2', 'v22.17.9', 'v22.18.0', 'v22.22.2', 'v24.21.0'].map(tooOld), [true, true, false, false, false]);
   assert.equal(minimum, '22.18.0');
+});
+
+test('a story that keeps a template placeholder fails', () => {
+  const text = fixture('good-story.md').replace('\nHigh\n', '\n[High, Medium or Low]\n');
+  assert.deepEqual(problems(text), ['line 26: The first line of Confidence must be exactly High, Medium or Low.']);
 });

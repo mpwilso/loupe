@@ -28,12 +28,12 @@ Done when: [What the team will have in hand, for example a written recommendatio
 - [Something taken as true but not confirmed.]
 
 ## Confidence
-Medium
+[High, Medium or Low]
 Why: [What the rating is based on.]
 How to raise it: [What would make it higher.]
 
 ## Estimate
-2 to 4 hours
+[N to M hours]
 Basis: [What the range is based on, for a developer who knows the system.]
 
 ## Questions before building
