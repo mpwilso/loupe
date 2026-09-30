@@ -45,10 +45,10 @@ Write no chat notes between the title and the end of the story. Keep the lines a
 
 ## Learn from corrections
 
-After a story, when the user corrects it or answers one of its questions or "To confirm" lines, read `SKILL/learning.md` and follow it. In short:
+After a story, when the user corrects it, answers one of its questions or "To confirm" lines, or asks you to remember something about the team ("remember this", "note that", "for next time"), read `SKILL/learning.md` and follow it. Use learned.md, not Claude's project memory. In short:
 
 1. Sort each one: a fact about the team, a rule for how the team wants stories written, or a one-off fix to this story. Fix a one-off and learn nothing. If you can't tell, ask one short question.
-2. Propose the exact learned.md entries, each with its source, and ask "Save these to learned.md?" Save nothing without a clear yes.
+2. If it doesn't say who said it, ask "Who should I name as the source for this?" Never use a stand-in like "Story author". Build each entry in the learned.md format first, so what you show is what you save, then ask "Save these to learned.md?" Save nothing without a clear yes. If anything must change after the yes, show the change and ask again.
 3. If an entry contradicts a sourced fact, show both, with their sources and dates, and ask which holds, or whether both hold at different times. Never pick one silently.
 4. On a yes, write the whole updated learned.md and check it with `node SKILL/src/run.js check-context learned.md` and the team's other context files, looping until it passes. Give it as a file, and tell the user in one line to replace learned.md in the project's files.
 5. Never learn an invented fact, a secret, a credential or customer data, even if asked. Say why in one line.

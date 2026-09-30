@@ -281,7 +281,7 @@ test('SECURITY.md says how to report a problem privately, and that there is no b
 // Trial 6 is planned, not run: every step has scripted messages to paste and a pass line to score against.
 test('the trial 6 plan has every step, scripted messages, pass lines and a scoring sheet', () => {
   const plan = read('docs/trials/trial-6-plan.md');
-  for (const step of ['A', 'B', 'C', 'D', 'E', 'F', 'G']) {
+  for (const step of ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']) {
     const body = plan.split(`## Step ${step}:`)[1]?.split('\n## ')[0] ?? '';
     assert.ok(body, `step ${step}`);
     assert.match(body, /\*\*Pass:\*\*/, `step ${step} has a pass line`);
@@ -289,6 +289,11 @@ test('the trial 6 plan has every step, scripted messages, pass lines and a scori
     assert.match(plan, new RegExp(`^\\| ${step} \\| .+ \\| +\\| +\\|$`, 'm'), `step ${step} is on the scoring sheet`);
   }
   assert.match(plan, /This is a plan, not a record/);
+  // Trial 6 found the scripted correction never said who made it.
+  assert.match(plan.split('## Step A:')[1].split('\n## ')[0], /```\nA correction from Priya Raman: /);
+  const h = plan.split('## Step H:')[1].split('\n## ')[0];
+  assert.match(h, /```\nRemember this for next time: /);
+  assert.match(h, /not (a )?(Claude's )?(project )?memory/i);
   assert.match(plan, /jane\.doe@example\.com/, 'step G uses a fake customer email');
   // The empty learned.md the trial starts from passes check-context as written.
   const empty = plan.match(/```\n(---\ntitle: Learned[\s\S]*?)```/)?.[1] ?? '';
@@ -312,4 +317,14 @@ test('the docs describe the learning loop as it works, including the manual swap
   for (const phrase of [/learned\.md/, /Save these to learned\.md\?/, /delete the old learned\.md/i, /upload the new one/i]) assert.match(section, phrase);
   assert.doesNotMatch(guide, /doesn't learn from your corrections yet/);
   assert.doesNotMatch(section, /automatic/i);
+});
+
+// Trial 6: Claude's project memory took a "remember this" request, with no source and no question.
+test('the project instructions send corrections, answers and "remember" requests to Loupe, not memory', () => {
+  const guide = read('docs/claude-project.md');
+  const instructions = guide.split('```\n')[1] ?? '';
+  assert.ok(instructions.includes("When I correct a story, answer one of its questions, or ask you to remember something about the team, use the loupe skill's learning steps and learned.md, not memory."));
+  const section = guide.split('## Keeping Loupe up to date\n')[1]?.split('\n## ')[0] ?? '';
+  assert.match(section, /Claude's project memory is separate/);
+  assert.match(section, /doesn't cite sources/);
 });

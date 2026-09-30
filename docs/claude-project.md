@@ -35,6 +35,8 @@ When I paste notes, a transcript, a ticket or an email, write a story with the l
 Use the context files and team templates in this project's knowledge. Every Known line must name its source. Never invent a fact. Only show me a story that passes the loupe checker.
 
 When I say "set up the team", run the loupe skill's team setup and give me the context files it writes.
+
+When I correct a story, answer one of its questions, or ask you to remember something about the team, use the loupe skill's learning steps and learned.md, not memory.
 ```
 
 ## 4. Add the context files (you, then whenever they change)
@@ -63,3 +65,5 @@ Open a new chat in the project and paste your input. Claude checks whether there
 Loupe keeps what it learns in one context file, learned.md. When you correct a story, or answer one of its questions or "To confirm" lines, it may offer to learn it: it shows the exact entries it would add, each with who said it and when, and asks "Save these to learned.md?" It saves nothing unless you say yes, and it doesn't offer for a one-off fix to a single story.
 
 Loupe can't change the project's files itself. On a yes, it gives you the updated learned.md as a download. In the project's knowledge, delete the old learned.md and upload the new one. If the project has no learned.md yet, just upload it. Every chat after that uses it.
+
+Claude's project memory is separate: it doesn't cite sources, and nothing in it goes through Loupe's checks. The project instructions ask Claude to use learned.md instead.

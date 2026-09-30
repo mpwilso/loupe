@@ -8,6 +8,9 @@ After a story, watch for:
 - a correction to the story
 - an answer to one of its questions before building
 - an answer to one of its "To confirm" lines
+- a request to keep something about the team, such as "remember this", "note that" or "for next time"
+
+Treat each of these as a learning request for learned.md, not Claude's project memory. Memory has no sources and can't be checked.
 
 ## Sort each one
 
@@ -19,7 +22,11 @@ If you can't tell whether it holds beyond this story, ask one short question, li
 
 ## Propose
 
-Show the exact entries you would add, in the file's format, each with its source, then ask "Save these to learned.md?" Save nothing without a clear yes. "Maybe", "later" or a new question is not a yes.
+If a correction or answer doesn't say who said it, ask once, before proposing: "Who should I name as the source for this?" Never use a stand-in like "Story author".
+
+Build each entry in the file's format and check it before you show it: one sentence, a kind, and a source that is exactly who, how, on which story, and the date, with nothing after the date. What you show is what you save. If anything must change after the yes, show the change and ask again.
+
+Then show the exact entries, each with its source, and ask "Save these to learned.md?" Save nothing without a clear yes. "Maybe", "later" or a new question is not a yes.
 
 Each entry is one plain sentence, then its fields, indented:
 
@@ -44,8 +51,9 @@ If a proposed entry contradicts a sourced fact in the context files or learned.m
 On a clear yes:
 1. Build the whole updated learned.md: the existing entries, then the new ones. Update `updated` to today and add any new source to `sources`.
 2. If there is no learned.md yet, start one. Its first line under the front matter says: "Loupe proposes each entry below after a correction or an answer, and a person approves it before it is saved."
-3. Save it as `learned.md` and run `node SKILL/src/run.js check-context learned.md` with the team's other context files after it, so its `replaces:` lines can be checked. Fix every line it reports and run it again, up to five runs, as with stories.
+3. Save it as `learned.md` and run `node SKILL/src/run.js check-context learned.md` with the team's other context files after it, so its `replaces:` lines can be checked. Fix every line it reports and run it again, up to five runs, as with stories. If a fix would change an approved entry, show the change and ask again before saving.
 4. Give the user the file to download, and tell them in one line: replace learned.md in the project's files, or add it if the project has none.
+5. If check-context warns that learned.md has passed 480 words, say so in one line and offer to fold its entries into the main context files at the next setup refresh. learned.md can't pass 600 words.
 
 ## Never
 

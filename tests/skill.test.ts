@@ -378,3 +378,25 @@ test('story mode reads learned.md like any context file, and a replacing entry w
   assert.match(story, /the entry that replaces the other wins/);
   assert.match(file('writing-rules.md'), /via the Learned context file/);
 });
+
+// Trial 6 fixes: a source always names a real person, what's approved is what's saved, and "remember" goes through Loupe.
+test('the skill asks who said it rather than using a stand-in, and never changes an entry after the yes', () => {
+  const text = learningText();
+  assert.ok(text.includes('"Who should I name as the source for this?"'));
+  assert.match(text, /Never use a stand-in like "Story author"/);
+  assert.match(text, /What you show is what you save/);
+  assert.match(text, /show the change and ask again/i);
+  assert.match(text, /nothing after the date/i);
+});
+
+test('the skill treats "remember this" about the team as a learning request, not memory', () => {
+  const text = learningText();
+  for (const phrase of ['"remember this"', '"note that"', '"for next time"']) assert.ok(text.includes(phrase), phrase);
+  assert.match(text, /not (Claude's )?(project )?memory/i);
+});
+
+test('the skill offers to fold entries in when learned.md passes 480 words', () => {
+  const text = learningText();
+  assert.match(text, /480 words/);
+  assert.match(text, /fold its entries into the main context files at the next setup refresh/);
+});

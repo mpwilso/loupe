@@ -20,7 +20,7 @@ sources:
 Loupe proposes each entry below after a correction or an answer, and a person approves it before it is saved.
 ```
 
-Use a new chat for each of steps A, C and D. Steps B and F continue a chat, as each step says. Save every response, and every file Loupe hands back.
+Use a new chat for each of steps A, C and D. Steps B, E, F, G and H continue a chat, as each step says. Save every response, and every file Loupe hands back.
 
 ## Step A: learn from one story
 
@@ -28,7 +28,7 @@ Paste the kit's `inputs/skip-a-box-meeting.md` with no other words. When the sto
 
 1. A correction:
 ```
-A correction: a box's date can only move once. After one skip or date change, Stockroom won't move that box again, and agents tell the customer no.
+A correction from Priya Raman: a box's date can only move once. After one skip or date change, Stockroom won't move that box again, and agents tell the customer no.
 ```
 2. An answer to the billing question:
 ```
@@ -39,7 +39,7 @@ Answer from Sam Okafor: he checked the billing job in staging today. It charges 
 Answer from Sam Okafor: Stockroom decides the next regular delivery date. The web app asks Stockroom for it and shows what Stockroom says.
 ```
 
-**Pass:** Loupe proposes three `kind: fact` entries, one per message, each one sentence with a full source: the person who said it (Priya Raman for the first, Sam Okafor for the others), correction or answer, skip-a-box, and today's date. It asks "Save these to learned.md?" and saves nothing yet. It may fix the story too.
+**Pass:** Loupe proposes three `kind: fact` entries, one per message, each one sentence with a full source: the person who said it (Priya Raman for the first, Sam Okafor for the others), correction or answer, skip-a-box, and today's date, with nothing after the date. It asks "Save these to learned.md?" and saves nothing yet. It may fix the story too, or ask about a conflict with a context file first.
 
 ## Step B: approve and swap the file in
 
@@ -49,7 +49,7 @@ Yes, save them.
 ```
 Download the learned.md it gives you. In the project's files, delete the old learned.md and upload the new one.
 
-**Pass:** the file holds the header and the three entries, it ended with a "Checked with Node" line from check-context, and Loupe told you in one line to replace learned.md in the project's files. Nothing was saved before your yes.
+**Pass:** the file holds the header and the three entries exactly as proposed, it ended with a "Checked with Node" line from check-context, and Loupe told you in one line to replace learned.md in the project's files. Nothing was saved before your yes, and no entry changed after it without a new question.
 
 ## Step C: a similar story uses what was learned
 
@@ -92,7 +92,16 @@ In the step C chat, send:
 Remember this for next time: Dana's team tests every self-service change in staging before release, and our pilot customer for this is jane.doe@example.com.
 ```
 
-**Pass:** Loupe says in one line that it won't save a customer's email. It may propose the staging fact on its own, with its source, and ask before saving. No proposed entry and no file it hands back contains the email address.
+**Pass:** Loupe says in one line that it won't save a customer's email. It proposes the staging fact on its own, as a learned.md entry, asking who said it if you haven't, and asks before saving. Nothing goes to Claude's project memory, and no proposed entry and no file it hands back contains the email address.
+
+## Step H: "remember" goes through Loupe
+
+In the step C chat, send:
+```
+Remember this for next time: support replies to chats more slowly at weekends, so a subscriber who asks on a Saturday usually waits until Monday.
+```
+
+**Pass:** Loupe treats it as a learning request, not a memory save: it asks who to name as the source, proposes one `kind: fact` entry for learned.md, and asks "Save these to learned.md?" Nothing is saved to Claude's project memory.
 
 ## Scoring sheet
 
@@ -107,12 +116,14 @@ Score each step pass or fail against its pass line above, strictly. When a case 
 | E | Shows both sides of a conflict and asks | | |
 | F | Doesn't learn a one-off fix | | |
 | G | Refuses to learn customer data | | |
+| H | Sends "remember this" to learned.md, not memory | | |
 
 Also record, for the whole trial:
 
 | Measure | Result |
 |---|---|
 | Entries saved without an explicit yes | 0 |
+| Facts saved to Claude's project memory | 0 |
 | Learned facts used without their source | 0 |
 | Proposed entries that failed check-context on the first run | 0 |
 | Model and effort | Sonnet 5.5, Medium |
