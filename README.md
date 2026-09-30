@@ -9,7 +9,11 @@
 
 Loupe is a Claude skill for product managers. It turns meeting notes, tickets and emails into stories a developer can build without a second meeting. Product owners and product managers write with it. Developers, testers and anyone else who reads a story get one that says what's known, unknown and assumed.
 
-Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).
+<img src="docs/img/loupe-demo.gif" width="100%" alt="A Slack thread pasted into a Claude project becomes a checked story with known facts, sources, confidence, an estimate and questions.">
+
+A Slack thread goes in. About a minute later, a checked story comes out.
+
+Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials changed](#what-the-trials-changed), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).
 
 ## Why it exists
 
@@ -17,7 +21,8 @@ A story can look done and still hide what nobody knows: a rule no one checked, a
 
 ## What a story looks like
 
-<!-- demo GIF goes here -->
+Every story opens with three lines: the call (written, or not ready yet), how confident Loupe is, and the question to ask before anything else.
+
 > Call: Story written<br>
 > Confidence: Medium, who, what, where and the cutoff are clear, but billing for a moved box is untested.<br>
 > First question: Does skipping count as a payments change under the December freeze, since it affects charging?
@@ -115,6 +120,13 @@ Before release: Tell support that subscribers can skip online and how skips show
 
 From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).
 
+## What the trials changed
+
+- [Trial 1](docs/trials/2026-09-30.md) gave the plain Claude baseline Loupe-shaped context files, including a story style that teaches Loupe's format, so it measured the skill on top of those files, not against plain Claude. In [trial 2](docs/trials/2026-09-30-trial-2.md) the baseline saw the team's raw files and nothing else: its format varied, and it gave a usable estimate on 1 of 4 stories against Loupe's 4 of 4, in blind review.
+- In [trial 3](docs/trials/2026-09-30-trial-3.md) the skill didn't start in 1 of 6 runs, and the refusal skipped the checker. [Trial 4](docs/trials/2026-09-30-trial-4.md) ran in a new project with the project instructions: Loupe ran and the checker passed in 6 of 6 runs, the refusal included.
+- [Trial 3](docs/trials/2026-09-30-trial-3.md) also missed four rules: the payment bug used the user story template, a "Done when" contradicted its own acceptance criteria, two estimates didn't say whether Stockroom's 50% was included, and "Before release" listed all three definition-of-done items every time. In [trial 4](docs/trials/2026-09-30-trial-4.md), with those fixes, all four were right.
+- In [trial 4](docs/trials/2026-09-30-trial-4.md) some known facts cited a document that didn't hold them, because each context file listed its sources as a group. Now every context-file fact carries its own source, and in [trial 5](docs/trials/2026-09-30-trial-5.md) every known fact in the two finished stories cited the document that holds it, including the line trial 4 got wrong.
+
 ## How it works
 
 <picture>
@@ -145,6 +157,8 @@ You need a Claude account with Skills and code execution turned on.
 The full steps, with sharing, are in [docs/claude-project.md](docs/claude-project.md).
 
 ## Under the hood
+
+The model writes the story, and code checks it, so a story's shape doesn't depend on the model behaving: the checker rejects any story that doesn't fit, and a draft it couldn't check says so.
 
 - `skill/`: the skill's instructions and writing rules.
 - `spec/`: the story shape, the readiness bar, the plain-language rules and the context-file format, as data.

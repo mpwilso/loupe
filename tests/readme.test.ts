@@ -88,23 +88,28 @@ const story = readFileSync(join(root, 'examples/pellwick/expected/skip-a-box.md'
 test('the README runs from plain to technical, in a fixed order', () => {
   assert.deepEqual(
     sections().map((s) => s.title),
-    ['Why it exists', 'What a story looks like', "What's different", 'Proof', 'How it works', 'Limits', 'Setup', 'Under the hood', 'How it was built', "What's next"],
+    ['Why it exists', 'What a story looks like', "What's different", 'Proof', 'What the trials changed', 'How it works', 'Limits', 'Setup', 'Under the hood', 'How it was built', "What's next"],
   );
 });
 
-test('the README opens with the lockup, both themes, the tagline, the paragraph and a line of links to the sections', () => {
+test('the README opens with the lockup, both themes, the tagline, the paragraph, the demo and a line of links to the sections', () => {
   const top = readme.split('\n## ')[0];
   assert.ok(top.includes('<source media="(prefers-color-scheme: dark)" srcset="brand/lockup-dark.svg">'));
   assert.ok(top.includes('<img src="brand/lockup-light.svg" alt="Loupe" width="360">'));
   assert.ok(top.includes("Story tools help you write faster. Loupe won't hand you a story it can't back up."));
   assert.ok(top.includes("get one that says what's known, unknown and assumed."));
-  assert.ok(top.includes('Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).'));
-  assert.doesNotMatch(readme, /\.gif/i, 'no image until the GIF exists');
+  const demo = '<img src="docs/img/loupe-demo.gif" width="100%" alt="A Slack thread pasted into a Claude project becomes a checked story with known facts, sources, confidence, an estimate and questions.">';
+  const caption = 'A Slack thread goes in. About a minute later, a checked story comes out.';
+  const jump = 'Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials changed](#what-the-trials-changed), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).';
+  const order = ["get one that says what's known, unknown and assumed.", demo, caption, jump].map((part) => top.indexOf(part));
+  assert.ok(order.every((at) => at >= 0), `missing: ${JSON.stringify(order)}`);
+  assert.deepEqual([...order].sort((a, b) => a - b), order, 'paragraph, demo, caption, then the jump line');
+  assert.doesNotMatch(readme, /demo GIF goes here/i, 'the placeholder is gone');
 });
 
 test('the story section shows real lines from the example, then the whole story, collapsed', () => {
   const body = section('What a story looks like');
-  assert.match(body, /^\n<!-- demo GIF goes here -->\n> /, 'the demo slot sits right above the excerpt');
+  assert.match(body, /^\nEvery story opens with three lines: the call \(written, or not ready yet\), how confident Loupe is, and the question to ask before anything else\.\n\n> /, 'one sentence, then the excerpt');
   // A quote, not a code block, so long lines wrap on GitHub. Headings show as bold text; summary lines end in <br>.
   const quote = body.split('\n').filter((line) => line.startsWith('>')).map((line) => line.replace(/^> ?/, ''));
   assert.doesNotMatch(body.split('<details>')[0], /```/, 'the excerpt is not a code block');
@@ -135,6 +140,16 @@ test('every proof line links its trial file, in plain words', () => {
   assert.ok(proof.includes('From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).'));
 });
 
+test('what the trials changed: 3 or 4 bullets, each linking the trial files it draws on', () => {
+  const items = section('What the trials changed').split('\n').filter((line) => line.startsWith('- '));
+  assert.ok(items.length >= 3 && items.length <= 4, `${items.length} bullets`);
+  for (const item of items) {
+    const trials = [...item.matchAll(/\]\((docs\/trials\/[\w.-]+\.md)\)/g)].map((m) => m[1]);
+    assert.ok(trials.length >= 2, `a trial and the next one: ${item}`);
+    for (const file of trials) assert.ok(existsSync(join(root, file)), file);
+  }
+});
+
 test('setup says what you need, and leads with the download that exists today', () => {
   const setup = section('Setup');
   assert.match(setup, /^\nYou need a Claude account with Skills and code execution turned on\.\n/);
@@ -148,6 +163,7 @@ test('setup says what you need, and leads with the download that exists today', 
 
 test('under the hood: the repo map is real, and the documented checker command passes', () => {
   const hood = section('Under the hood');
+  assert.match(hood, /^\nThe model writes the story, and code checks it, so a story's shape doesn't depend on the model behaving/);
   for (const [, dir] of hood.matchAll(/^- `([\w/.-]+\/)`/gm)) assert.ok(existsSync(join(root, dir)), dir);
   for (const dir of ['skill/', 'spec/', 'src/', 'examples/pellwick/', 'docs/trials/', 'brand/', 'scripts/']) assert.ok(hood.includes(`- \`${dir}\``), dir);
   assert.ok(hood.includes('`scripts/test.sh`'));
