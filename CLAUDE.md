@@ -1,6 +1,6 @@
 # Loupe rules
 
-- This is a personal project. Use invented names only: no real company, product or internal tool names.
+- This is a personal project. Examples and test data use invented names only.
 - No em dashes anywhere: code, docs, comments, commit messages.
 - Less is more. No filler, no bloat. Use plain words an intern and an executive both understand.
 - The story shape in docs/direction.md is law. Anything that produces a story must pass the checker.
