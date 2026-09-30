@@ -58,7 +58,8 @@ test('each README rule catches what it should', () => {
 
 test('the README opens with the lockup, both themes, then the tagline, and leaves a slot for the demo', () => {
   const top = readme.split('\n## ')[0];
-  assert.ok(top.includes('srcset="brand/lockup-dark.svg"') && top.includes('src="brand/lockup-light.svg"'));
+  assert.ok(top.includes('<source media="(prefers-color-scheme: dark)" srcset="brand/lockup-dark.svg">'));
+  assert.ok(top.includes('<img src="brand/lockup-light.svg" alt="Loupe" width="360">'));
   assert.ok(top.includes('media="(prefers-color-scheme: dark)"'));
   assert.ok(top.includes("Story tools help you write faster. Loupe won't hand you a story it can't back up."));
   assert.match(top, /<!-- Demo GIF goes here\. -->/);
@@ -70,6 +71,9 @@ test('every proof line links its trial file, and the story example is the real o
   const items = proof.split('\n').filter((line) => line.startsWith('- '));
   assert.ok(items.length >= 3 && items.length <= 4, `${items.length} proof lines`);
   for (const item of items) assert.match(item, /\]\(docs\/trials\/2026-09-30-trial-\d\.md\)/, item);
+  // GitHub shows the trial 5 line as exactly this sentence, with "trial 5" as the link.
+  assert.ok(proof.includes('- In [trial 5](docs/trials/2026-09-30-trial-5.md), every cited source checked out: each known fact named the document that holds it.'));
+  assert.ok(readme.includes("get one that says what's known, unknown and assumed."));
   assert.ok(proof.includes('From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).'));
   const story = readFileSync(join(root, 'examples/pellwick/expected/skip-a-box.md'), 'utf8');
   assert.ok(readme.includes(`<details>`) && readme.includes('```markdown\n' + story + '```\n'), 'the README shows skip-a-box.md word for word');

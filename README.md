@@ -1,19 +1,19 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="brand/lockup-dark.svg">
-    <img src="brand/lockup-light.svg" alt="Loupe" height="64">
+    <img src="brand/lockup-light.svg" alt="Loupe" width="360">
   </picture>
 </p>
 
 <p align="center"><b>Story tools help you write faster. Loupe won't hand you a story it can't back up.</b></p>
 
-Loupe is a Claude skill for product managers. It turns meeting notes, tickets and emails into stories a developer can build without a second meeting. Product owners and product managers write with it. Developers, testers and anyone else who reads a story get one they can trust.
+Loupe is a Claude skill for product managers. It turns meeting notes, tickets and emails into stories a developer can build without a second meeting. Product owners and product managers write with it. Developers, testers and anyone else who reads a story get one that says what's known, unknown and assumed.
 
 <!-- Demo GIF goes here. -->
 
 ## Proof
 
-- Every fact names its source, and the source checks out. ([trial 5](docs/trials/2026-09-30-trial-5.md), advisor-scored)
+- In [trial 5](docs/trials/2026-09-30-trial-5.md), every cited source checked out: each known fact named the document that holds it.
 - Guessed screen details and behavior: 9 unflagged in trial 2, 0 in trial 3, all marked "To confirm". ([trial 3](docs/trials/2026-09-30-trial-3.md), blind review)
 - Against plain Claude with the same team documents: a usable estimate on 4 of 4 stories against 1 of 4, and the same format every time. ([trial 2](docs/trials/2026-09-30-trial-2.md), blind review)
 - Checked before you see it: the checker ran on 6 of 6 responses, and a story took about one to three minutes. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
