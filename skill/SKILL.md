@@ -1,6 +1,6 @@
 ---
 name: loupe
-description: Turns meeting notes, tickets and emails into stories a developer can build, saying what is known, unknown and assumed. Use when asked to write a story or to set up a team.
+description: Writes user stories, bug reports and tickets from meeting notes, tickets or emails. Use when a product manager sets up their team or needs a story. Not for fiction or creative writing.
 ---
 
 # Loupe

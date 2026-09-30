@@ -72,6 +72,10 @@ test('SKILL.md front matter follows the documented rules', () => {
   assert.doesNotMatch(`${name} ${description}`, /<[^>]*>/, 'no XML tags');
   assert.doesNotMatch(description, /^(I|You|We)\b|\b(I can|you can)\b/i, 'description: third person');
   assert.match(description, /\bUse when\b/, 'description: says when to use it');
+  for (const term of ['user stories', 'bug reports', 'tickets', 'meeting notes', 'emails', 'product manager', 'sets up their team']) {
+    assert.ok(description.includes(term), `description: names "${term}"`);
+  }
+  assert.match(description, /Not for fiction or creative writing\.$/, 'description: rules out creative writing');
 
   assert.ok(lines.length - end - 1 < 500, 'body: under 500 lines');
 });
