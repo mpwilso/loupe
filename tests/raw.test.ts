@@ -73,7 +73,8 @@ test('every key fact in the context files is also in raw/, however it is worded'
 // Every body line of a context file that states a fact needs at least one key fact above.
 test('every fact line in the context files has a key fact', () => {
   const uncovered: string[] = [];
-  for (const file of readdirSync(dir('context'))) {
+  // learned.md comes from corrections and answers, not from raw/; its sources are traced in the next test.
+  for (const file of readdirSync(dir('context')).filter((f) => f !== 'learned.md')) {
     const lines = readFileSync(new URL(file, dir('context')), 'utf8').split('\n');
     const body = lines.slice(lines.indexOf('---', 1) + 1).filter((line) => line.trim() && !line.startsWith('#'));
     const mine = facts.filter(([name]) => `${name}.md` === file).map(([, context]) => context);
@@ -93,4 +94,21 @@ test('no file in raw/ mentions Loupe or uses a Loupe section heading', () => {
     return [...(/loupe/i.test(text) ? [`${file}: mentions Loupe`] : []), ...text.split('\n').filter((line) => loupeLine.test(line.trim())).map((line) => `${file}: ${line}`)];
   });
   assert.deepEqual(found, []);
+});
+
+// Every learned entry traces to something real: the input its story came from, or the trial record that made the correction.
+test('every entry in learned.md traces to a real input or a trial record', () => {
+  const learned = readFileSync(new URL('learned.md', dir('context')), 'utf8');
+  const sources = [...learned.matchAll(/^  source: (.+), \S+ on ([\w-]+), (\d{4}-\d{2}-\d{2})$/gm)];
+  assert.ok(sources.length >= 3, 'at least three entries');
+  const inputs = readdirSync(dir('inputs'));
+  for (const [line, who, story, date] of sources) {
+    const trial = who.match(/^Trial (\d) reviewer$/);
+    const file = trial ? new URL(`../docs/trials/2026-09-30-trial-${trial[1]}.md`, import.meta.url) : new URL(inputs.find((f) => f.startsWith(story)) ?? 'missing', dir('inputs'));
+    const text = readFileSync(file, 'utf8');
+    if (trial) assert.ok(text.includes(`# Trial ${trial[1]}: ${date}`), line);
+    else assert.ok(text.includes(who) && text.includes(date), `${line}: ${who} and ${date} are not in the ${story} input`);
+  }
+  for (const kind of ['fact', 'rule']) assert.match(learned, new RegExp(`^  kind: ${kind}$`, 'm'), kind);
+  for (const field of ['applies', 'replaces']) assert.match(learned, new RegExp(`^  ${field}: \\S`, 'm'), field);
 });

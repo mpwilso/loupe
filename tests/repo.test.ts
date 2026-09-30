@@ -40,8 +40,12 @@ test('every expected example passes the checker, with the team templates it find
 
 test('every example context file passes, with no warnings on the day it was written for', () => {
   for (const team of teams) {
-    for (const path of list(`examples/${team}/context`)) {
-      const result = checkContext(read(path), new Date('2026-09-30T00:00:00Z'));
+    const paths = list(`examples/${team}/context`);
+    for (const path of paths) {
+      // learned.md is checked against the team's other context files, which its "replaces:" lines quote.
+      const learned = path.endsWith('/learned.md');
+      const others = learned ? paths.filter((p) => p !== path).map(read) : [];
+      const result = checkContext(read(path), new Date('2026-09-30T00:00:00Z'), { learned, others });
       assert.deepEqual([...result.errors, ...result.warnings].map(format), [], path);
     }
   }
