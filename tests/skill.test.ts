@@ -93,6 +93,12 @@ test('both modes start by checking the checker can run, and say so when it canno
   assert.ok(skill.includes('`Not checked: <the reason>`'));
 });
 
+test('the skill says the checker cannot check truth, so Claude rereads every Known line', () => {
+  const skill = file('SKILL.md');
+  assert.ok(skill.includes('- [ ] Reread every Known line against its source'));
+  assert.match(skill, /checker checks shape, not truth/);
+});
+
 test('the packaged checkers need no packages and no network', () => {
   const allowed = new Set(['node:fs', 'node:path', 'node:url', 'node:util']);
   for (const name of ['src/check.ts', 'src/check-context.ts', 'src/spec.ts']) {
