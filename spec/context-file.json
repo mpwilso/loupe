@@ -9,6 +9,11 @@
   "listField": "sources",
   "staleAfterDays": 90,
   "maxBodyWords": 300,
+  "lineSource": {
+    "item": "^(- |\\d+\\. )",
+    "pattern": " \\([^()]+\\)$",
+    "message": "This fact doesn't say where it came from. End the line with its own source in parentheses, like \"(planning email, Priya Raman, 2026-09-18)\"."
+  },
   "secrets": [
     { "what": "a private key", "pattern": "-----BEGIN [A-Z ]*PRIVATE KEY-----" },
     { "what": "a password", "pattern": "\\b(password|passwd|pwd)\\s*[=:]\\s*\\S", "flags": "i" },

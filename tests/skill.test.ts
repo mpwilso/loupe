@@ -206,15 +206,26 @@ test('setup mode writes only what the sources say', () => {
   assert.match(setup, /State only what the sources say\. Never add conclusions, advice or predictions/);
 });
 
-test('Known facts from a context file cite the original document, via the file', () => {
-  assert.match(file('writing-rules.md'), /cite the original document the file names/);
+// Trial 4: Known lines cited a document that didn't hold the fact, since context files listed sources as a group.
+test('each context-file fact names its own source, and Known lines cite that source, via the file', () => {
+  const setup = file('SKILL.md').split('## Set up a team')[1].split('\n## ')[0];
+  assert.match(setup, /Write each fact as a bullet that ends with its own source in parentheses/);
+  assert.match(file('writing-rules.md'), /cite the source on the context-file line it came from, then "via the <name> context file"/);
+  assert.doesNotMatch(file('writing-rules.md'), /name them all/);
+  let cited = 0;
   for (const name of md('examples/pellwick/expected')) {
     const text = readFileSync(join(root, 'examples/pellwick/expected', name), 'utf8');
     const known = text.split('## Known\n')[1]?.split('\n## ')[0] ?? '';
     for (const line of known.split('\n').filter((l) => /context file\)$/i.test(l))) {
-      assert.match(line, /, via the \w[\w ]* context file\)$/, `${name}: ${line}`);
+      const [, source, title] = line.match(/\(([^()]+), via the (\w[\w ]*) context file\)$/) ?? [];
+      assert.ok(source && title, `${name}: ${line}`);
+      const context = readFileSync(join(root, 'examples/pellwick/context', `${title.toLowerCase().replace(/ /g, '-')}.md`), 'utf8');
+      const sources = [...context.matchAll(/ \(([^()]+)\)$/gm)].map((m) => m[1]);
+      assert.ok(sources.some((s) => source.endsWith(s)), `${name}: "${source}" is not a source on any line of the ${title} context file`);
+      cited++;
     }
   }
+  assert.ok(cited >= 3, `only ${cited} Known lines cite a context file`);
 });
 
 test('screen details the input does not state are flagged for confirmation, with a bad and a good example', () => {

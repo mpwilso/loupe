@@ -10,6 +10,7 @@ export type ContextSpec = {
   listField: string;
   staleAfterDays: number;
   maxBodyWords: number;
+  lineSource: { item: string; pattern: string; message?: string };
   secrets: { what: string; pattern: string; flags?: string }[];
   messages: Record<string, string>;
 };
@@ -71,6 +72,12 @@ function findProblems(text: string, today: Date): { errors: Problem[]; warnings:
       if (days > spec.staleAfterDays) warnings.push({ line: date.line, text: fill(M.stale, { date: date.value, days }) });
     }
   }
+
+  // Each fact in a list names its own source, so a story can cite the document that holds it.
+  lines.slice(end + 1).forEach((line, i) => {
+    const { item, pattern, message } = spec.lineSource;
+    if (new RegExp(item).test(line.trim()) && !new RegExp(pattern).test(line.trim())) errors.push({ line: end + i + 2, text: fill(message) });
+  });
 
   const words = lines.slice(end + 1).join(' ').split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
   if (words > spec.maxBodyWords) errors.push({ text: fill(M.tooLong, { count: words, limit: spec.maxBodyWords }) });

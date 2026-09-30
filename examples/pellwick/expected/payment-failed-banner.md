@@ -29,7 +29,7 @@ None.
 - 24 tickets in September so far, starting with ticket 48213. All came after a card update that followed a failed charge. (Maya, Helpline ticket 48213)
 - Stockroom shows the charge as paid and the box as ready to ship, not on hold. (Maya, Helpline ticket 48213)
 - It reproduces in staging. After a failed charge and a card update, the banner was still there 30 minutes later. (Dana, Helpline ticket 48213)
-- Payment status updates can arrive up to 10 minutes after a charge. (Q4 planning deck and planning meeting notes 2026-09-18, via the Priorities context file)
+- Payment status updates can arrive up to 10 minutes after a charge. (planning email, Priya Raman, 2026-09-18, via the Priorities context file)
 
 ## Unknown
 - Why the web app keeps the old status. It may be a saved value that never refreshes, or a status update it misses.

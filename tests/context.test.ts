@@ -17,6 +17,7 @@ const bad: Record<string, string> = {
   'private-key': secret('a private key'),
   token: secret('a secret or token'),
   'too-long': 'The body has 309 words; the limit is 300. Keep only what a new team member needs.',
+  'no-line-source': 'line 7: This fact doesn\'t say where it came from. End the line with its own source in parentheses, like "(planning email, Priya Raman, 2026-09-18)".',
 };
 
 for (const [name, message] of Object.entries(bad)) {
@@ -56,4 +57,10 @@ test('text that only looks a little like a key passes', () => {
   for (const line of shortLookalikes) {
     assert.deepEqual(checkContext(withLine(line), today).errors, [], line);
   }
+});
+
+test('every bullet in a context file ends with its own source', () => {
+  const text = `${fixture('good-context.md')}- Stockroom is the staff tool. (Interview with the engineering lead, 2026-09-01)\n1. Skips come first. (planning email, 2026-09-18)\n`;
+  assert.deepEqual(checkContext(text, today).errors, []);
+  assert.equal(checkContext(`${text}2. Payments come second.\n`, today).errors.length, 1);
 });

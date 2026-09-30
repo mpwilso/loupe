@@ -21,7 +21,7 @@ As a subscriber, I want to skip my next box from my account, so that I don't pay
 - No box can change within 72 hours of its ship date. The cutoff is stored per box and already shown on the "change my box" page. (Theo and Sam, meeting 2026-09-22)
 - Scope is the next box only. A skip moves it to the next regular delivery date, the same as agents do today. (Priya and Dana, meeting 2026-09-22)
 - Subscribers are charged on the ship date. (Sam, meeting 2026-09-22)
-- This must ship before the December freeze: no risky changes to checkout or payments from 1 December to 5 January. (Priya, meeting 2026-09-22; dates from the Q4 planning deck and planning meeting notes 2026-09-18, via the Priorities context file)
+- This must ship before the December freeze: no risky changes to checkout or payments from 1 December to 5 January. (Priya, meeting 2026-09-22; dates from the planning email, Priya Raman, 2026-09-18, via the Priorities context file)
 
 ## Unknown
 - Whether the billing job leaves out a box whose date moved. Sam has not checked yet.
