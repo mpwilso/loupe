@@ -3,7 +3,7 @@
 Loupe turns what a team knows into stories a developer can build without a second meeting. Every story says what it knows, what it doesn't, what it's assuming and how sure it is. It won't write a story it can't stand behind.
 
 ## Why Loupe
-- It refuses. Below the readiness bar it writes no story, and the checker enforces that.
+- It refuses: below the readiness bar, it writes no story, and the trial measures how often it makes that call correctly.
 - Every known fact shows where it came from.
 - It is honest about its own checks. If the checker can't run, the draft says so and can't pass.
 - Its rules are proven. Every rule in the spec has a failing case, and a test fails if one doesn't.
