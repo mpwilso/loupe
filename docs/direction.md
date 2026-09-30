@@ -9,7 +9,7 @@ Loupe turns what a team knows into stories a developer can build without a secon
 - Its rules are proven. Every rule in the spec has a failing case, and a test fails if one doesn't.
 
 ## Who it's for
-Product owners and product managers write with it. Developers, testers and anyone else who reads a story are its audience. A non-technical PM uses it inside Claude; a technical PM can use the VS Code version to check against real systems.
+Product owners and product managers write with it. Developers, testers and anyone else who reads a story are its audience. A non-technical PM uses it inside Claude. A VS Code version is planned, so a technical PM can check facts against real systems.
 
 ## What it does
 1. Learns the team. A short interview plus whatever a new team member would need: documents, slides, transcripts, past stories. It distills them into short context files (applications, environments, priorities, known tech debt, conventions, the team's story style), each dated and showing where it came from. It flags files that look stale.
@@ -18,9 +18,9 @@ Product owners and product managers write with it. Developers, testers and anyon
 4. Writes the story in the team's template, every time in the same shape.
 5. Says what it knows, what it doesn't and what it's assuming, one line each. Every known fact shows its source.
 6. Rates its confidence: high, medium or low, with why, and what would raise it.
-7. Estimates the work in hours, as a range for a developer who knows the system, with its basis. Once the team has history, it calibrates against it.
+7. Estimates the work in hours, as a range for a developer who knows the system, with its basis. Calibrating against the team's history is planned (M5).
 8. Asks now the questions a developer would ask later. Questions that would stop the build come first, and if more than five would, it says so, suggests a spike first and won't rate its confidence High.
-9. Learns. Accepted stories and the user's corrections update the context files, so nobody repeats themselves.
+9. Learns (planned, M3). Accepted stories and the user's corrections will update the context files, so nobody repeats themselves.
 
 ## The story, always in this shape
 Title
@@ -46,7 +46,7 @@ The core: the story shape, templates, readiness bar, checker and context-file fo
 - Keep secrets, credentials or customer data in context files. Warn, and leave them out.
 
 ## Works with Parallax
-A finished story exports as a Parallax intent, so a story can go straight into governed development.
+Planned: a finished story exports as a Parallax intent, so a story can go straight into governed development.
 
 ## How we'll know it works
 - Time to write a story: about one to three minutes, fully checked.

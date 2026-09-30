@@ -205,3 +205,22 @@ test('the setup guide gets the skill from the latest release, with Actions as th
   assert.match(step, /latest run of \*\*tests\*\* on \*\*master\*\*/);
   assert.doesNotMatch(step, /main branch/);
 });
+
+// The trials folder explains itself: what the trials are, who "the advisor" is, and one line per trial.
+test('the trials README lists and links every trial record, in order, and defines the advisor', () => {
+  const records = readdirSync(join(root, 'docs/trials')).filter((f) => f !== 'README.md').sort();
+  assert.deepEqual(records, [1, 2, 3, 4, 5].map((n) => `2026-09-30-trial-${n}.md`), 'every record is named by its trial number');
+  const index = read('docs/trials/README.md');
+  const lines = index.split('\n').filter((line) => line.startsWith('- '));
+  assert.deepEqual(lines.map((line) => line.match(/^- \[Trial (\d)\]\(([^)]+)\)/)?.slice(1).join(' ')), records.map((f, i) => `${i + 1} ${f}`));
+  // Each line says who scored the trial and whether it was blind.
+  for (const line of lines) {
+    assert.match(line, /Scored .*(the advisor|a separate reviewer)/, line);
+    assert.match(line, /Scored .*\bblind\b/, line);
+  }
+  assert.match(index, /"the advisor" is Claude, reviewing in a separate claude\.ai chat, with Matt Wilson checking/);
+  for (const record of records) {
+    const text = read(`docs/trials/${record}`);
+    if (/\bthe advisor\b/i.test(text)) assert.ok(index.includes('the advisor'), record);
+  }
+});

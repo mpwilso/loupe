@@ -1,0 +1,11 @@
+# Trials
+
+Each trial runs Loupe in claude.ai on one invented team, Pellwick, which sells refillable home cleaning supplies by subscription. The inputs are a handful of real-looking team documents: a meeting transcript, a support ticket, an email, hallway notes and a Slack thread. Each record says how the trial was set up, what it found and how it was scored.
+
+In these records, "the advisor" is Claude, reviewing in a separate claude.ai chat, with Matt Wilson checking its scores. Trial 1's record calls it "a reviewer who helped design Loupe". The blind reviews in trials 2 and 3 were by a separate reviewer.
+
+- [Trial 1](2026-09-30-trial-1.md): Loupe against Claude without the skill, on four inputs, both with the same context files. Loupe made the right call on 4 of 4 and kept the same shape every time; the baseline made 3 of 4 and used three layouts. Scored by the advisor, not blind.
+- [Trial 2](2026-09-30-trial-2.md): Loupe against plain Claude given the team's raw files and nothing else, on five inputs, plus Loupe's team setup. Loupe gave a usable estimate on 4 of 4 stories against 1 of 4, but its setup added four conclusions of its own to the context files. Scored by the advisor, then blind by a separate reviewer.
+- [Trial 3](2026-09-30-trial-3.md): Skill version 3, on the same raw files as trial 2. Guessed behavior left unflagged fell from 9 to 0, but the skill didn't start in 1 of 6 runs. Scored blind by a separate reviewer, against trial 2's Loupe stories.
+- [Trial 4](2026-09-30-trial-4.md): The skill with the trial 3 fixes, in a project with the project instructions. Loupe ran and the checker passed in 6 of 6 runs, but some known facts cited a document that didn't hold them. Scored by the advisor, not blind.
+- [Trial 5](2026-09-30-trial-5.md): A fresh setup pass, then three stories. Every known fact in the two finished stories cited the document that holds it, but the holiday story came back unchecked, stopped by the checker's two-run limit. Scored by the advisor, not blind.
