@@ -1,10 +1,14 @@
 # Set up Loupe in Claude
 
-This is for the product manager setting Loupe up for a team. It takes about 15 minutes. You need a Claude plan with "Code execution and file creation" turned on in Settings.
+This is for the product manager setting Loupe up for a team. It takes about 15 minutes.
+
+Skills only run with code execution turned on. Each teammate must turn on "Code execution and file creation" in Claude's settings, or the skill can't run its checker.
 
 Two things make Loupe work:
 - **The project** holds what your team knows: the context files and any team templates. You set it up once and share it. Everyone who opens it sees the same files.
-- **The skill** is what writes and checks the stories. Skills on claude.ai belong to one person. Each teammate uploads the skill zip once, to their own account. (If your company is on a Team or Enterprise plan, an owner can add it for everyone instead. Ask them.)
+- **The skill** is what writes and checks the stories. Skills on claude.ai belong to one person. Each teammate uploads the skill zip once, to their own account.
+
+An organization owner can instead add the skill for everyone, from the organization settings. It then shows up for every member, who can switch it on or off. See [Using Skills in Claude](https://support.claude.com/en/articles/12512180-using-skills-in-claude).
 
 ## 1. Get the skill zip
 

@@ -4,17 +4,26 @@ Run the skill by hand in claude.ai on four Pellwick inputs, and record the resul
 
 Three inputs should give a story. One, `export-notes.md`, should not: success there means no story, only a "Not ready yet" response that asks the right questions.
 
+## Download the trial files
+
+Every CI run keeps two downloads for 7 days.
+
+1. In a browser, open the repository on GitHub and click **Actions**.
+2. Click the latest run of **tests** on the branch you are trying. Note its commit id, shown on the run page.
+3. Scroll to **Artifacts** at the bottom and download both:
+   - **loupe-skill**: GitHub wraps it in a zip. Unzip it once. Inside is `loupe-skill.zip`, the file you upload. Don't unzip that one.
+   - **pellwick-trial-kit**: unzip it. It holds `context/`, `templates/` and `inputs/`. It leaves out the expected stories, so the trial stays blind. Don't look at `examples/pellwick/expected/` until you finish.
+
 ## Before you start
 
-- [ ] Build the zip: `scripts/build-skill.sh`. Note the commit id: `git rev-parse --short HEAD`.
-- [ ] Upload `dist/loupe-skill.zip` as described in [claude-project.md](claude-project.md), step 2. Remove any older copy first.
+- [ ] Upload `loupe-skill.zip` as described in [claude-project.md](claude-project.md), step 2. Remove any older copy first.
 - [ ] Create a project named "Pellwick trial" with the instructions from claude-project.md, step 3.
-- [ ] Upload the five files in `examples/pellwick/context/` and `examples/pellwick/templates/change-request.md` as project knowledge.
+- [ ] Upload the five files in the kit's `context/` folder and `templates/change-request.md` as project knowledge.
 
 ## For each input
 
 - [ ] Open a new chat in the project. Use one chat per input.
-- [ ] Start a timer and paste the whole input file.
+- [ ] Start a timer and paste the whole input file from the kit's `inputs/` folder.
 - [ ] Note the Node version the skill reports, and whether it says the checker ran.
 - [ ] Read what Claude gives you as if you were the team's product manager. Ask for changes until you would hand it to a developer.
 - [ ] Stop the timer when you accept it.
