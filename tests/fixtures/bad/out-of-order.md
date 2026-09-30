@@ -6,6 +6,9 @@ As a subscriber, I want to see my next delivery date, so that I know when to exp
 ## Acceptance criteria
 - Given I have an active subscription, when I open my orders page, then I see the next delivery date.
 
+## Not included
+None.
+
 ## Unknown
 None.
 

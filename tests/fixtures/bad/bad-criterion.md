@@ -6,6 +6,9 @@ As a subscriber, I want to see my next delivery date, so that I know when to exp
 ## Acceptance criteria
 - The orders page shows the next delivery date.
 
+## Not included
+None.
+
 ## Known
 - The delivery date is stored with each order. (Sam, meeting 2026-09-01)
 

@@ -20,6 +20,7 @@ Product owners and product managers write with it. Developers, testers and anyon
 Title
 The story (the team's template)
 Acceptance criteria (Given / When / Then)
+Not included: what this story deliberately leaves out
 Known / Unknown / Assumed
 Confidence: level, why, how to raise it
 Estimate: hours range, basis

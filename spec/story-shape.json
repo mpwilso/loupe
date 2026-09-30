@@ -26,6 +26,7 @@
       "itemPattern": "^(- |\\d+\\. )Given .+, when .+, then .+",
       "itemMessage": "Each acceptance criterion must read \"Given ..., when ..., then ...\"."
     },
+    { "heading": "## Not included", "name": "Not included", "kind": "list", "allowNone": true },
     {
       "heading": "## Known",
       "name": "Known",

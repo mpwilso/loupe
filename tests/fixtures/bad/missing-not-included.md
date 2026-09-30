@@ -6,9 +6,6 @@ As a subscriber, I want to see my next delivery date, so that I know when to exp
 ## Acceptance criteria
 - Given I have an active subscription, when I open my orders page, then I see the next delivery date.
 
-## Not included
-None.
-
 ## Known
 - The delivery date is stored with each order. (Sam, meeting 2026-09-01)
 
@@ -19,7 +16,7 @@ None.
 - The date uses the same format as the rest of the site.
 
 ## Confidence
-Fairly high
+High
 Why: The data exists and the page already loads the order.
 How to raise it: Nothing needed.
 

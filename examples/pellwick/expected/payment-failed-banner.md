@@ -18,6 +18,9 @@ Impact: Subscribers who update their card after a failed charge. 24 have written
 - Given the payment status arrives late, when the subscriber reloads after it arrives, then the banner is gone.
 - Given the new card was charged but the payment status has not arrived yet, when the subscriber opens their account page, then what do they see? The product manager must confirm this; the input doesn't say.
 
+## Not included
+None.
+
 ## Known
 - 24 tickets in September so far, starting with ticket 48213. All came after a card update that followed a failed charge. (Maya, Helpline ticket 48213)
 - Stockroom shows the charge as paid and the box as ready to ship, not on hold. (Maya, Helpline ticket 48213)

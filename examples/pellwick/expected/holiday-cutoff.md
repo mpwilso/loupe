@@ -10,6 +10,9 @@ Asked for by: Theo Park, warehouse operations, by email on 2026-09-26.
 - Given a box ships within 96 hours during that period, when the subscriber tries to change it, then the change is blocked.
 - Given it is 5 January or later, when a subscriber opens the "change my box" page, then the cutoff is back to 72 hours.
 
+## Not included
+None.
+
 ## Known
 - Last December, 140 boxes were changed after they were packed, and each one was unpacked by hand. (Theo, email 2026-09-26)
 - The cutoff is 72 hours today. It is stored per box and shown on the "change my box" page. (Theo and Sam, meeting 2026-09-22)

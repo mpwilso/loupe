@@ -21,6 +21,9 @@ Impact: [Who is affected and how many, in plain words.]
 ## Acceptance criteria
 - Given [a starting situation], when [someone does something], then [what they see or get].
 
+## Not included
+- [Something this story deliberately leaves out, and who decided. Write "None." if nothing.]
+
 ## Known
 - [A fact you can point to.] ([Where it came from, for example: Dana, meeting 2026-09-22])
 

@@ -11,6 +11,9 @@ As a [kind of user], I want [something], so that [the reason it matters].
 ## Acceptance criteria
 - Given [a starting situation], when [someone does something], then [what they see or get].
 
+## Not included
+- [Something this story deliberately leaves out, and who decided. Write "None." if nothing.]
+
 ## Known
 - [A fact you can point to.] ([Where it came from, for example: Dana, meeting 2026-09-22])
 

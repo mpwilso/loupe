@@ -14,7 +14,7 @@ const problems = (text: string) => check(text).errors.map(format);
 const noTeamTemplate =
   "line 3: The story section doesn't follow any template. Tried: bug, job story, spike and user story. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.\n";
 const order =
-  '"## The story", "## Acceptance criteria", "## Known", "## Unknown", "## Assumed", "## Confidence", "## Estimate", "## Questions before building"';
+  '"## The story", "## Acceptance criteria", "## Not included", "## Known", "## Unknown", "## Assumed", "## Confidence", "## Estimate", "## Questions before building"';
 
 // Each fixture breaks exactly one rule, so it must produce exactly this one message.
 const bad: Record<string, string> = {
@@ -22,30 +22,30 @@ const bad: Record<string, string> = {
   'extra-title': 'line 9: Only the first line can be a title. Start section headings with "## ".',
   'stray-text': 'line 3: This text sits above the first section. Only the title goes there.',
   'missing-section': 'The "## Assumed" section is missing.',
-  'out-of-order': `line 12: "## Known" is out of order. The sections must be: ${order}.`,
-  'unknown-section': `line 18: "## Notes" is not an allowed section. The sections are: ${order}.`,
-  'duplicate-section': 'line 18: "## Known" appears more than once.',
-  'empty-section': 'line 9: Known is empty.',
-  'empty-unknown': 'line 12: Unknown is empty. List the items, or write "None."',
-  'none-not-allowed': 'line 10: Known can\'t be "None." It needs at least one item.',
-  'none-mixed': 'line 13: Unknown says "None." but also lists items. Use one or the other.',
-  'not-a-list': 'line 10: Known must be a list, one item per line, each starting with "- ".',
-  'too-many-items': 'line 10: Known has 6 items; the limit is 5.',
+  'out-of-order': `line 15: "## Known" is out of order. The sections must be: ${order}.`,
+  'unknown-section': `line 21: "## Notes" is not an allowed section. The sections are: ${order}.`,
+  'duplicate-section': 'line 21: "## Known" appears more than once.',
+  'empty-section': 'line 12: Known is empty.',
+  'empty-unknown': 'line 15: Unknown is empty. List the items, or write "None."',
+  'none-not-allowed': 'line 13: Known can\'t be "None." It needs at least one item.',
+  'none-mixed': 'line 16: Unknown says "None." but also lists items. Use one or the other.',
+  'not-a-list': 'line 13: Known must be a list, one item per line, each starting with "- ".',
+  'too-many-items': 'line 13: Known has 6 items; the limit is 5.',
   'bad-criterion': 'line 7: Each acceptance criterion must read "Given ..., when ..., then ...".',
   'no-template':
     "line 3: The story section doesn't follow any template. Tried: bug, job story, spike and user story. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.",
   'known-no-source':
-    "line 10: This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown.",
-  'bad-confidence-level': 'line 19: The first line of Confidence must be exactly High, Medium or Low.',
-  'missing-why': 'line 20: Confidence needs a "Why:" line saying what the rating is based on.',
-  'missing-how': 'line 18: Confidence needs a "How to raise it:" line saying what would make it higher.',
-  'extra-line': 'line 22: Confidence has an extra line. It should have exactly 3 lines.',
-  'bad-estimate': 'line 24: The first line of Estimate must read "N to M hours", for example "4 to 8 hours".',
-  'estimate-reversed': "line 24: The estimate says 8 to 4 hours. The first number can't be bigger than the second.",
-  'missing-basis': 'line 23: Estimate needs a "Basis:" line saying what the hours are based on.',
-  'banned-phrase': 'line 16: Replace "leverage" with a plainer word.',
-  acronym: 'line 10: Spell out "OMS" the first time it appears, like this: "the full name (OMS)".',
-  'long-sentence': 'line 16: This sentence has 34 words; the limit is 30. Split it up.',
+    "line 13: This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown.",
+  'bad-confidence-level': 'line 22: The first line of Confidence must be exactly High, Medium or Low.',
+  'missing-why': 'line 23: Confidence needs a "Why:" line saying what the rating is based on.',
+  'missing-how': 'line 21: Confidence needs a "How to raise it:" line saying what would make it higher.',
+  'extra-line': 'line 25: Confidence has an extra line. It should have exactly 3 lines.',
+  'bad-estimate': 'line 27: The first line of Estimate must read "N to M hours", for example "4 to 8 hours".',
+  'estimate-reversed': "line 27: The estimate says 8 to 4 hours. The first number can't be bigger than the second.",
+  'missing-basis': 'line 26: Estimate needs a "Basis:" line saying what the hours are based on.',
+  'banned-phrase': 'line 19: Replace "leverage" with a plainer word.',
+  acronym: 'line 13: Spell out "OMS" the first time it appears, like this: "the full name (OMS)".',
+  'long-sentence': 'line 19: This sentence has 34 words; the limit is 30. Split it up.',
   'not-ready-bad-title': 'line 1: The first line must be exactly "# Not ready yet".',
   'template-no-patterns':
     'line 1: The template\'s front matter is missing "patterns": a list of patterns; each must match a line of "The story".',
@@ -58,14 +58,16 @@ const bad: Record<string, string> = {
     'line 4: "the budget" is not one of the five things a story needs: who\'s affected, the problem, the desired outcome, which system or application, known constraints.',
   'not-ready-too-many-questions': 'line 7: Questions has 6 items; the limit is 5.',
   'overflow-not-last':
-    'line 28: The line "More open questions than fit here. Consider a spike first." must come last, after five questions.',
+    'line 31: The line "More open questions than fit here. Consider a spike first." must come last, after five questions.',
   'overflow-too-few':
-    'line 30: The line "More open questions than fit here. Consider a spike first." must come last, after five questions.',
+    'line 33: The line "More open questions than fit here. Consider a spike first." must come last, after five questions.',
   'overflow-high-confidence':
-    "line 19: Confidence can't be High while there are more open questions than fit. Lower it, or answer some questions first.",
+    "line 22: Confidence can't be High while there are more open questions than fit. Lower it, or answer some questions first.",
   'two-questions':
-    'line 28: Each item in Questions before building must ask one question, with exactly one question mark. This one has 2.',
+    'line 31: Each item in Questions before building must ask one question, with exactly one question mark. This one has 2.',
   'not-ready-two-questions': 'line 8: Each item in Questions must ask one question, with exactly one question mark. This one has 2.',
+  'missing-not-included': 'The "## Not included" section is missing.',
+  'too-many-not-included': 'line 10: Not included has 6 items; the limit is 5.',
   'not-checked': 'line 1: This draft was never checked. Run the checker on it, fix what it reports, then remove the "Not checked:" line.',
   'not-ready-extra-section': 'line 10: "## Known" is not an allowed section. The sections are: "## Questions".',
 };
@@ -78,7 +80,7 @@ for (const [name, message] of Object.entries(bad)) {
 
 test('a story with an em dash fails', () => {
   assert.deepEqual(problems(emDash()), [
-    'line 21: Remove the em dash. Use a comma, a period or a new sentence instead.',
+    'line 24: Remove the em dash. Use a comma, a period or a new sentence instead.',
   ]);
 });
 
@@ -106,7 +108,7 @@ test('a Known item needs its source at the end, not in the middle', () => {
     '- Sam (engineering lead) says the date is stored with each order.',
   );
   assert.deepEqual(problems(text), [
-    "line 10: This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown.",
+    "line 13: This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown.",
   ]);
 });
 
@@ -116,7 +118,7 @@ test('the command line exits 0 on a pass and 1 with plain lines on a fail', () =
   assert.equal(pass.stdout, '');
   const fail = cli('tests/fixtures/bad/too-many-items.md');
   assert.equal(fail.status, 1);
-  assert.equal(fail.stdout, 'line 10: Known has 6 items; the limit is 5.\n');
+  assert.equal(fail.stdout, 'line 13: Known has 6 items; the limit is 5.\n');
 });
 
 test('the built-in templates come from the files in templates/', () => {
