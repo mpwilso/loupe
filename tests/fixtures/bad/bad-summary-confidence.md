@@ -1,5 +1,5 @@
 Call: Story written
-Confidence: Fairly high, based on the checks above.
+Sure: High, based on the checks above.
 First question: None.
 
 # Show the next delivery date on the orders page
@@ -23,7 +23,7 @@ None.
 - The date uses the same format as the rest of the site.
 
 ## Confidence
-Fairly high
+High
 Why: The data exists and the page already loads the order.
 How to raise it: Nothing needed.
 

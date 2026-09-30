@@ -1,3 +1,7 @@
+Call: Story written
+Confidence: High, based on the checks above.
+First question: Which date shows when a box was skipped?
+
 # Show the next delivery date on the orders page
 
 ## The story

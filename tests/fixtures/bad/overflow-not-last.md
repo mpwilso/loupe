@@ -1,3 +1,7 @@
+Call: Story written
+Confidence: Medium, based on the checks above.
+First question: More open questions than fit here. Consider a spike first.
+
 # Show the next delivery date on the orders page
 
 ## The story

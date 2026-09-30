@@ -1,3 +1,7 @@
+Call: Story written
+Confidence: Low, no one knows if boxes that already exist pick up the new cutoff.
+First question: Both switches fall inside the December freeze dates. Does the freeze cover this change?
+
 # Move the box cutoff to 96 hours over the holidays, so the warehouse can keep up
 
 ## The story

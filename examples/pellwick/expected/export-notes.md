@@ -1,3 +1,7 @@
+Call: Not ready yet
+Confidence: None, no story
+First question: Which export does finance mean, and where do they run it: Stockroom or another tool?
+
 # Not ready yet
 
 About: Notes from the hallway, 2026-09-24, about the finance export.

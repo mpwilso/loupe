@@ -1,3 +1,7 @@
+Call: Story written
+Confidence: Low, the cause is not found yet, and the cause decides the fix.
+First question: What should the account page show during the wait of up to 10 minutes before the payment status arrives?
+
 # Clear the "Payment failed" banner once a subscriber's new card is charged
 
 ## The story

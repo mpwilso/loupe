@@ -34,6 +34,16 @@ type StoryShape = Shape & {
   maxListItems: number;
   none: string;
   unchecked: { pattern: string; message?: string };
+  summary: {
+    lines: LineRule[];
+    calls: { story: string; notReady: string; unchecked: string };
+    callMessage?: string;
+    noStory: string;
+    noStoryMessage?: string;
+    levelMessage?: string;
+    questions: { story: string; notReady: string };
+    questionMessage?: string;
+  };
   templates: { folder: string; fields: Record<string, string> };
   messages: Record<string, string>;
   errors: Record<string, string>;
@@ -131,14 +141,26 @@ export function check(text: string, templates = builtIn): { errors: Problem[]; w
     offset = end + 1;
     lines = lines.slice(offset);
   }
+  // A story or response starts with three summary lines and a blank line. A template has none.
+  const found: Problem[] = [];
+  const add = (line: number | undefined, message = '') => void (message && found.push({ line, text: message }));
+  const hasSummary = !offset && lines.slice(0, 3).some((line) => /^(Call|Confidence|First question): /.test(line));
+  if (!offset && !hasSummary) add(1, story.summary.lines[0].message);
+  const head = hasSummary ? lines.slice(3).findIndex((line) => line.trim()) + 3 : 0;
+  const summary = lines.slice(0, hasSummary ? 3 : 0).map((text, i) => ({ line: i + 1, text: text.trim() }));
+  const body = lines.slice(head);
+
   // A draft marked "Not checked:" can never pass. When the mark is the first line, the rest is checked as usual.
   const unchecked = new RegExp(story.unchecked.pattern);
-  const marks = lines.flatMap((text, i) => (unchecked.test(text) ? [{ line: i + 1, text: story.unchecked.message ?? '' }] : []));
+  const marks = body.flatMap((text, i) => (unchecked.test(text) ? [{ line: i + 1, text: story.unchecked.message ?? '' }] : []));
   const skip = marks[0]?.line === 1 ? 1 : 0;
-  const rest = lines.slice(skip);
-  const shape = new RegExp(readiness.notReady.detect, 'i').test(rest[0] ?? '') ? readiness.notReady : story;
-  const found = [...checkShape(rest, shape, templates), ...checkPlainLanguage(rest)].map((e) => (e.line ? { ...e, line: e.line + skip } : e));
-  const errors = [...marks.filter((m) => m.text), ...found];
+  const rest = body.slice(skip);
+  const notReady = new RegExp(readiness.notReady.detect, 'i').test(rest[0] ?? '');
+  const shape = notReady ? readiness.notReady : story;
+  if (hasSummary) checkLines(summary, story.summary.lines, 'The summary', 1, add);
+  if (hasSummary) checkSummary(summary, rest, notReady, skip > 0, add);
+  const inBody = [...marks, ...checkShape(rest, shape, templates).map((e) => (e.line ? { ...e, line: e.line + skip } : e))];
+  const errors = [...found, ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines)];
   return { errors: errors.map((e) => (e.line ? { ...e, line: e.line + offset } : e)), warnings: [] };
 }
 
@@ -186,6 +208,24 @@ function checkShape(lines: string[], shape: Shape, templates: Template[]): Probl
 }
 
 type Add = (line: number | undefined, message?: string) => void;
+
+// The summary must agree with what follows: the call, the confidence level and the first question.
+function checkSummary(summary: Entry[], rest: string[], notReady: boolean, unchecked: boolean, add: Add): void {
+  const S = story.summary;
+  const [call, confidence, question] = summary.map((entry) => entry.text.replace(/^[^:]*: /, ''));
+  const expected = unchecked ? S.calls.unchecked : notReady ? S.calls.notReady : S.calls.story;
+  const what = unchecked ? 'an unchecked draft' : notReady ? 'a "Not ready yet" response' : 'a story';
+  if (Object.values(S.calls).includes(call) && call !== expected) add(1, fill(S.callMessage, { call, what, expected }));
+
+  const after = (heading: string) => rest.slice(rest.findIndex((line) => line.trim() === heading) + 1).find((line) => line.trim())?.trim();
+  if (notReady && confidence !== S.noStory && summary[1]?.text.startsWith('Confidence: ')) add(2, S.noStoryMessage);
+  const level = notReady ? undefined : after('## Confidence');
+  if (level && summary[1]?.text.startsWith('Confidence: ') && !confidence.startsWith(`${level}, `)) add(2, fill(S.levelMessage, { level }));
+
+  const heading = notReady ? S.questions.notReady : S.questions.story;
+  const first = rest.some((line) => line.trim() === heading) ? after(heading)?.replace(listItem, '') : undefined;
+  if (first && summary[2]?.text.startsWith('First question: ') && question !== first) add(3, fill(S.questionMessage, { heading }));
+}
 
 // A list may end with one fixed line saying more questions are open than fit. It needs a full list, and rules out top confidence.
 function checkOverflow(shape: Shape, blocks: { heading: string; body: Entry[] }[], add: Add): void {

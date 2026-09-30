@@ -1,3 +1,7 @@
+Call: Story written
+Confidence: High, based on the checks above.
+First question: Should the date show the weekday? Or only the day and month?
+
 # Show the next delivery date on the orders page
 
 ## The story

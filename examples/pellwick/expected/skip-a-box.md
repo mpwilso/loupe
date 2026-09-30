@@ -1,3 +1,7 @@
+Call: Story written
+Confidence: Medium, who, what, where and the cutoff are clear, but billing for a moved box is untested.
+First question: Does skipping count as a payments change under the December freeze, since it affects charging?
+
 # Let subscribers skip their next box from their account
 
 ## The story

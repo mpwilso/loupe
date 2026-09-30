@@ -61,6 +61,18 @@ Copy this checklist and tick it off:
 6. Check the truth. The checker checks shape, not truth, so this step is yours. Reread every Known line against the source it cites. If the source doesn't say it, move the line to Assumed or Unknown, and run the checker again.
 7. Show the user the story only after both pass. Never show a story or response that fails the checker.
 
+## What the user sees
+
+Every story or "Not ready yet" response starts with exactly these three lines and a blank line, and nothing else comes before the story:
+
+```
+Call: Story written, Not ready yet or Not checked
+Confidence: the level and one short reason, or "None, no story" when not ready
+First question: the first, most build-blocking question, word for word
+```
+
+Keep the lines at the top of the saved file too. The checker checks they agree with what follows. After the story, add at most one line, and only if the user needs to act. See both examples.
+
 ## Not in this version
 
 Loupe does not learn from corrections yet. When the user corrects a story, fix that story, run the checker again, and tell them the context files have not changed. They can update the context files by setting up the team again.

@@ -1,3 +1,7 @@
+Call: Not ready yet
+Confidence: None, no story
+First question: Which screen do the finance team use to run the export?
+
 # Not ready yet
 
 Missing: which system or application, known constraints.

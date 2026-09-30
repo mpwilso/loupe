@@ -1,3 +1,7 @@
+Call: Not ready yet
+Confidence: None, no story
+First question: Which screen do the finance team use to run the export?
+
 # Not ready yet
 
 About: Notes from the hallway, 2026-09-24, on the finance export.

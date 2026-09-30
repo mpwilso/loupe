@@ -12,64 +12,76 @@ const root = new URL('..', import.meta.url);
 const cli = (...args: string[]) => spawnSync(process.execPath, ['src/check.ts', ...args], { cwd: root, encoding: 'utf8' });
 const problems = (text: string) => check(text).errors.map(format);
 const noTeamTemplate =
-  "line 3: The story section doesn't follow any template. Tried: bug, job story, spike and user story. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.\n";
+  "line 7: The story section doesn't follow any template. Tried: bug, job story, spike and user story. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.\n";
 const order =
   '"## The story", "## Acceptance criteria", "## Not included", "## Known", "## Unknown", "## Assumed", "## Confidence", "## Estimate", "## Questions before building"';
 
 // Each fixture breaks exactly one rule, so it must produce exactly this one message.
 const bad: Record<string, string> = {
-  'no-title': 'line 1: The first line must be the title, starting with "# ".',
-  'extra-title': 'line 9: Only the first line can be a title. Start section headings with "## ".',
-  'stray-text': 'line 3: This text sits above the first section. Only the title goes there.',
+  'no-title': 'line 5: The first line must be the title, starting with "# ".',
+  'extra-title': 'line 13: Only the first line can be a title. Start section headings with "## ".',
+  'stray-text': 'line 7: This text sits above the first section. Only the title goes there.',
   'missing-section': 'The "## Assumed" section is missing.',
-  'out-of-order': `line 15: "## Known" is out of order. The sections must be: ${order}.`,
-  'unknown-section': `line 21: "## Notes" is not an allowed section. The sections are: ${order}.`,
-  'duplicate-section': 'line 21: "## Known" appears more than once.',
-  'empty-section': 'line 12: Known is empty.',
-  'empty-unknown': 'line 15: Unknown is empty. List the items, or write "None."',
-  'none-not-allowed': 'line 13: Known can\'t be "None." It needs at least one item.',
-  'none-mixed': 'line 16: Unknown says "None." but also lists items. Use one or the other.',
-  'not-a-list': 'line 13: Known must be a list, one item per line, each starting with "- ".',
-  'too-many-items': 'line 13: Known has 6 items; the limit is 5.',
-  'bad-criterion': 'line 7: Each acceptance criterion must read "Given ..., when ..., then ...".',
+  'out-of-order': `line 19: "## Known" is out of order. The sections must be: ${order}.`,
+  'unknown-section': `line 25: "## Notes" is not an allowed section. The sections are: ${order}.`,
+  'duplicate-section': 'line 25: "## Known" appears more than once.',
+  'empty-section': 'line 16: Known is empty.',
+  'empty-unknown': 'line 19: Unknown is empty. List the items, or write "None."',
+  'none-not-allowed': 'line 17: Known can\'t be "None." It needs at least one item.',
+  'none-mixed': 'line 20: Unknown says "None." but also lists items. Use one or the other.',
+  'not-a-list': 'line 17: Known must be a list, one item per line, each starting with "- ".',
+  'too-many-items': 'line 17: Known has 6 items; the limit is 5.',
+  'bad-criterion': 'line 11: Each acceptance criterion must read "Given ..., when ..., then ...".',
   'no-template':
-    "line 3: The story section doesn't follow any template. Tried: bug, job story, spike and user story. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.",
+    "line 7: The story section doesn't follow any template. Tried: bug, job story, spike and user story. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.",
   'known-no-source':
-    "line 13: This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown.",
-  'bad-confidence-level': 'line 22: The first line of Confidence must be exactly High, Medium or Low.',
-  'missing-why': 'line 23: Confidence needs a "Why:" line saying what the rating is based on.',
-  'missing-how': 'line 21: Confidence needs a "How to raise it:" line saying what would make it higher.',
-  'extra-line': 'line 25: Confidence has an extra line. It should have exactly 3 lines.',
-  'bad-estimate': 'line 27: The first line of Estimate must read "N to M hours", for example "4 to 8 hours".',
-  'estimate-reversed': "line 27: The estimate says 8 to 4 hours. The first number can't be bigger than the second.",
-  'missing-basis': 'line 26: Estimate needs a "Basis:" line saying what the hours are based on.',
-  'banned-phrase': 'line 19: Replace "leverage" with a plainer word.',
-  acronym: 'line 13: Spell out "OMS" the first time it appears, like this: "the full name (OMS)".',
-  'long-sentence': 'line 19: This sentence has 34 words; the limit is 30. Split it up.',
-  'not-ready-bad-title': 'line 1: The first line must be exactly "# Not ready yet".',
+    "line 17: This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown.",
+  'bad-confidence-level': 'line 26: The first line of Confidence must be exactly High, Medium or Low.',
+  'missing-why': 'line 27: Confidence needs a "Why:" line saying what the rating is based on.',
+  'missing-how': 'line 25: Confidence needs a "How to raise it:" line saying what would make it higher.',
+  'extra-line': 'line 29: Confidence has an extra line. It should have exactly 3 lines.',
+  'bad-estimate': 'line 31: The first line of Estimate must read "N to M hours", for example "4 to 8 hours".',
+  'estimate-reversed': "line 31: The estimate says 8 to 4 hours. The first number can't be bigger than the second.",
+  'missing-basis': 'line 30: Estimate needs a "Basis:" line saying what the hours are based on.',
+  'banned-phrase': 'line 23: Replace "leverage" with a plainer word.',
+  acronym: 'line 17: Spell out "OMS" the first time it appears, like this: "the full name (OMS)".',
+  'long-sentence': 'line 23: This sentence has 34 words; the limit is 30. Split it up.',
+  'not-ready-bad-title': 'line 5: The first line must be exactly "# Not ready yet".',
   'template-no-patterns':
     'line 1: The template\'s front matter is missing "patterns": a list of patterns; each must match a line of "The story".',
   'template-bad-pattern': 'line 3: "^Time box: (" is not a valid pattern.',
   'not-ready-no-about':
-    'line 3: Right under the title, add one line that starts with "About: " and names the input this responds to.',
+    'line 7: Right under the title, add one line that starts with "About: " and names the input this responds to.',
   'not-ready-no-missing-line':
-    'line 1: Under the title, add one line that starts with "Missing: " and names what is missing, ending with a period.',
+    'line 5: Under the title, add one line that starts with "Missing: " and names what is missing, ending with a period.',
   'not-ready-unknown-item':
-    'line 4: "the budget" is not one of the five things a story needs: who\'s affected, the problem, the desired outcome, which system or application, known constraints.',
-  'not-ready-too-many-questions': 'line 7: Questions has 6 items; the limit is 5.',
+    'line 8: "the budget" is not one of the five things a story needs: who\'s affected, the problem, the desired outcome, which system or application, known constraints.',
+  'not-ready-too-many-questions': 'line 11: Questions has 6 items; the limit is 5.',
   'overflow-not-last':
-    'line 31: The line "More open questions than fit here. Consider a spike first." must come last, after five questions.',
+    'line 35: The line "More open questions than fit here. Consider a spike first." must come last, after five questions.',
   'overflow-too-few':
-    'line 33: The line "More open questions than fit here. Consider a spike first." must come last, after five questions.',
+    'line 37: The line "More open questions than fit here. Consider a spike first." must come last, after five questions.',
   'overflow-high-confidence':
-    "line 22: Confidence can't be High while there are more open questions than fit. Lower it, or answer some questions first.",
+    "line 26: Confidence can't be High while there are more open questions than fit. Lower it, or answer some questions first.",
   'two-questions':
-    'line 31: Each item in Questions before building must ask one question, with exactly one question mark. This one has 2.',
-  'not-ready-two-questions': 'line 8: Each item in Questions must ask one question, with exactly one question mark. This one has 2.',
+    'line 35: Each item in Questions before building must ask one question, with exactly one question mark. This one has 2.',
+  'not-ready-two-questions': 'line 12: Each item in Questions must ask one question, with exactly one question mark. This one has 2.',
   'missing-not-included': 'The "## Not included" section is missing.',
-  'too-many-not-included': 'line 10: Not included has 6 items; the limit is 5.',
-  'not-checked': 'line 1: This draft was never checked. Run the checker on it, fix what it reports, then remove the "Not checked:" line.',
-  'not-ready-extra-section': 'line 10: "## Known" is not an allowed section. The sections are: "## Questions".',
+  'too-many-not-included': 'line 14: Not included has 6 items; the limit is 5.',
+  'not-checked': 'line 5: This draft was never checked. Run the checker on it, fix what it reports, then remove the "Not checked:" line.',
+  'no-summary':
+    'line 1: Start with three summary lines. The first must read "Call: Story written", "Call: Not ready yet" or "Call: Not checked".',
+  'bad-call':
+    'line 1: Start with three summary lines. The first must read "Call: Story written", "Call: Not ready yet" or "Call: Not checked".',
+  'bad-summary-confidence': 'line 2: The second summary line must start with "Confidence: ".',
+  'bad-first-question': 'line 3: The third summary line must start with "First question: ".',
+  'call-mismatch': 'line 1: The summary says "Call: Not ready yet", but this is a story. Write "Call: Story written".',
+  'not-ready-with-confidence':
+    'line 2: A "Not ready yet" response has no confidence. Write "Confidence: None, no story".',
+  'summary-level-mismatch':
+    'line 2: The summary\'s confidence must start with the level under Confidence, then a reason, like "High, because ...".',
+  'summary-question-mismatch': 'line 3: "First question:" must repeat the first item under ## Questions before building, word for word.',
+  'not-ready-extra-section': 'line 14: "## Known" is not an allowed section. The sections are: "## Questions".',
 };
 
 for (const [name, message] of Object.entries(bad)) {
@@ -80,7 +92,7 @@ for (const [name, message] of Object.entries(bad)) {
 
 test('a story with an em dash fails', () => {
   assert.deepEqual(problems(emDash()), [
-    'line 24: Remove the em dash. Use a comma, a period or a new sentence instead.',
+    'line 28: Remove the em dash. Use a comma, a period or a new sentence instead.',
   ]);
 });
 
@@ -90,7 +102,7 @@ test('the good fixtures pass', () => {
 });
 
 test('five questions and the overflow line pass when Confidence is not High', () => {
-  const text = fixture('bad/overflow-high-confidence.md').replace('\nHigh\n', '\nMedium\n');
+  const text = fixture('bad/overflow-high-confidence.md').replace('\nHigh\n', '\nMedium\n').replace('Confidence: High,', 'Confidence: Medium,');
   assert.deepEqual(problems(text), []);
 });
 
@@ -108,7 +120,7 @@ test('a Known item needs its source at the end, not in the middle', () => {
     '- Sam (engineering lead) says the date is stored with each order.',
   );
   assert.deepEqual(problems(text), [
-    "line 13: This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown.",
+    "line 17: This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown.",
   ]);
 });
 
@@ -118,7 +130,7 @@ test('the command line exits 0 on a pass and 1 with plain lines on a fail', () =
   assert.equal(pass.stdout, '');
   const fail = cli('tests/fixtures/bad/too-many-items.md');
   assert.equal(fail.status, 1);
-  assert.equal(fail.stdout, 'line 13: Known has 6 items; the limit is 5.\n');
+  assert.equal(fail.stdout, 'line 17: Known has 6 items; the limit is 5.\n');
 });
 
 test('the built-in templates come from the files in templates/', () => {
@@ -169,7 +181,7 @@ test('with a team folder, the message names the team templates it tried too', ()
   const team = loadTemplates('examples/pellwick/templates');
   const text = fixture('bad/no-template.md');
   assert.deepEqual(check(text, [...loadTemplates(builtInFolder), ...team]).errors.map(format), [
-    "line 3: The story section doesn't follow any template. Tried: bug, job story, spike, user story and change request. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.",
+    "line 7: The story section doesn't follow any template. Tried: bug, job story, spike, user story and change request. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.",
   ]);
 });
 

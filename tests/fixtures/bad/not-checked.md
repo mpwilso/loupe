@@ -1,3 +1,7 @@
+Call: Not checked
+Confidence: High, based on the checks above.
+First question: None.
+
 Not checked: Node is older than 22.18, so the checker could not run.
 # Show the next delivery date on the orders page
 
