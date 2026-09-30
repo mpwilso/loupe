@@ -229,12 +229,13 @@ test('the setup guide gets the skill from the latest release, and nowhere else',
 // The trials folder explains itself: what the trials are, who "the advisor" is, and one line per trial.
 test('the trials README lists and links every trial record, in order, and defines the advisor', () => {
   const files = readdirSync(join(root, 'docs/trials'));
-  const records = files.filter((f) => /^\d{4}-\d{2}-\d{2}-trial-\d+\.md$/.test(f)).sort();
+  // A rerun keeps its trial's number, with a letter: trial 6b reran trial 6.
+  const records = files.filter((f) => /^\d{4}-\d{2}-\d{2}-trial-\d+[a-z]?\.md$/.test(f)).sort();
   assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-6-plan.md'], 'records, the index and plans only');
-  assert.deepEqual(records, [1, 2, 3, 4, 5, 6].map((n) => `2026-09-30-trial-${n}.md`), 'every record is named by its trial number');
+  assert.deepEqual(records, ['1', '2', '3', '4', '5', '6', '6b'].map((n) => `2026-09-30-trial-${n}.md`), 'every record is named by its trial number');
   const index = read('docs/trials/README.md');
   const lines = index.split('\n').filter((line) => line.startsWith('- '));
-  assert.deepEqual(lines.map((line) => line.match(/^- \[Trial (\d)\]\(([^)]+)\)/)?.slice(1).join(' ')), records.map((f, i) => `${i + 1} ${f}`));
+  assert.deepEqual(lines.map((line) => line.match(/^- \[Trial (\d+[a-z]?)\]\(([^)]+)\)/)?.slice(1).join(' ')), records.map((f) => `${f.match(/trial-(\w+)\.md$/)![1]} ${f}`));
   // Each line says who scored the trial and whether it was blind.
   for (const line of lines) {
     assert.match(line, /Scored .*(the advisor|a separate reviewer)/, line);
