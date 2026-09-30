@@ -230,8 +230,12 @@ test('a bug always asks about records the bug already damaged', () => {
   assert.match(bug.split('## Questions before building')[1], /already stuck .+ one-time repair\?/);
 });
 
-test('nothing comes before the summary, and nothing but the story sits inside it', () => {
-  assert.match(file('SKILL.md'), /no narration before the three lines, and no chat notes between the title and the end of the story/);
+// Narration before tool calls is fine. The final answer is what starts with the summary.
+test('the final answer starts with the summary, and nothing but the story sits inside it', () => {
+  const skill = file('SKILL.md');
+  assert.match(skill, /Narration is fine before tool calls\. The final answer starts with the three summary lines/);
+  assert.match(skill, /no chat notes between the title and the end of the story/);
+  assert.doesNotMatch(skill, /Write no narration/);
 });
 
 test('setup turns a team form into a template with placeholders, not values, and keeps the team labels', () => {

@@ -33,7 +33,7 @@ Write the response once, then run the checker at most twice. Every response is c
 
 ## What the user sees
 
-Every story or "Not ready yet" response starts with exactly these three lines and a blank line, and nothing else comes before the story:
+Narration is fine before tool calls. The final answer starts with the three summary lines and a blank line, with nothing before them:
 
 ```
 Call: Story written, Not ready yet or Not checked
@@ -41,7 +41,7 @@ Confidence: the level and one short reason, or "None, no story" when not ready
 First question: the first, most build-blocking question, word for word
 ```
 
-Write no narration before the three lines, and no chat notes between the title and the end of the story. Keep the lines at the top of the saved file too. The checker checks they agree with what follows. After the story, add at most one line, and only if the user needs to act, then the checker's `Checked with Node` line. That line goes in the chat only, never in the story file. Never show a story or response that fails the checker.
+Write no chat notes between the title and the end of the story. Keep the lines at the top of the saved file too. The checker checks they agree with what follows. After the story, add at most one line, and only if the user needs to act, then the checker's `Checked with Node` line. That line goes in the chat only, never in the story file. Never show a story or response that fails the checker.
 
 ## Not in this version
 
