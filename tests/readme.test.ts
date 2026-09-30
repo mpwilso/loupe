@@ -99,7 +99,7 @@ test('the README opens with the lockup, both themes, the tagline, the paragraph,
   assert.ok(top.includes("Story tools help you write faster. Loupe won't hand you a story it can't back up."));
   assert.ok(top.includes("get one that says what's known, unknown and assumed."));
   const demo = '<img src="docs/img/loupe-demo.gif" width="100%" alt="A Slack thread pasted into a Claude project becomes a checked story with known facts, sources, confidence, an estimate and questions.">';
-  const caption = 'A Slack thread goes in. About a minute later, a checked story comes out.';
+  const caption = 'A Slack thread goes in, and a checked story comes out.';
   const jump = 'Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials changed](#what-the-trials-changed), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).';
   const order = ["get one that says what's known, unknown and assumed.", demo, caption, jump].map((part) => top.indexOf(part));
   assert.ok(order.every((at) => at >= 0), `missing: ${JSON.stringify(order)}`);
@@ -140,9 +140,14 @@ test('every proof line links its trial file, in plain words', () => {
   assert.ok(proof.includes('From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).'));
 });
 
-test('what the trials changed: 3 or 4 bullets, each linking the trial files it draws on', () => {
+test('what the trials changed: five bullets in a fixed order, each linking the trial it came from and the next', () => {
   const items = section('What the trials changed').split('\n').filter((line) => line.startsWith('- '));
-  assert.ok(items.length >= 3 && items.length <= 4, `${items.length} bullets`);
+  assert.deepEqual(items.map((item) => item.match(/^- \*\*(.+?)\*\*/)?.[1]), ['A fair baseline.', 'Guesses marked.', 'Starts every time.', 'Rules it missed.', 'One source per fact.']);
+  const links = items.map((item) => [...item.matchAll(/\[(trial \d)\]/g)].map((m) => m[1]).join(', '));
+  assert.deepEqual(links, ['trial 1, trial 2', 'trial 2, trial 3', 'trial 3, trial 4', 'trial 3, trial 4', 'trial 4, trial 5']);
+  assert.ok(items[0].includes('a usable estimate on 1 of 4 stories, against Loupe\'s 4 of 4'));
+  assert.ok(items[1].includes('9 guessed behaviors') && items[1].includes('trial 3 had 0'));
+  assert.ok(items[2].includes('1 of 6 runs') && items[2].includes('all 6 runs in trial 4'));
   for (const item of items) {
     const trials = [...item.matchAll(/\]\((docs\/trials\/[\w.-]+\.md)\)/g)].map((m) => m[1]);
     assert.ok(trials.length >= 2, `a trial and the next one: ${item}`);
