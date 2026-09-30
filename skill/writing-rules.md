@@ -17,4 +17,7 @@ Follow every rule when writing a story. The checker catches some of them, not al
 - Plain words, no em dashes, at most 30 words per sentence, and spell out each acronym the first time.
 - The estimate's basis cites only the input or the context files. If there is none, say so, widen the range and don't rate confidence High.
 - If the input doesn't say what should happen in a case, the acceptance criterion says so and asks the user to confirm. Never invent expected behavior.
+- The same goes for screen details: any wording, message, note or display detail the input doesn't state. End the criterion with "To confirm:" and the detail.
+  - Bad: `Given my box ships within 72 hours, when I open my account, then the skip button is grey and says "Too late to skip".`
+  - Good: `Given my box ships within 72 hours, when I open my account, then I can't skip it. To confirm: what the page shows instead.`
 - Confidence: High means nothing a developer needs is unknown. Medium means some unknowns, none of which would stop the build. Low means an unknown could change what gets built.

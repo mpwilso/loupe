@@ -215,3 +215,10 @@ test('Known facts from a context file cite the original document, via the file',
     }
   }
 });
+
+test('screen details the input does not state are flagged for confirmation, with a bad and a good example', () => {
+  const rules = file('writing-rules.md');
+  assert.match(rules, /any wording, message, note or display detail the input doesn't state/);
+  assert.match(rules, /- Bad: `Given .+`/);
+  assert.match(rules, /- Good: `Given .+ To confirm: .+`/);
+});

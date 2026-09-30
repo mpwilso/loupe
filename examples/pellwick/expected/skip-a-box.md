@@ -8,10 +8,10 @@ First question: Does skipping count as a payments change under the December free
 As a subscriber, I want to skip my next box from my account, so that I don't pay for refills I don't need yet or wait on support.
 
 ## Acceptance criteria
-- Given my next box ships in more than 72 hours, when I choose "Skip this box", then it moves to the next regular delivery date and I see that date.
-- Given my next box ships within 72 hours, when I open my account, then the skip option is turned off and says why.
+- Given my next box ships in more than 72 hours, when I skip it, then it moves to the next regular delivery date. To confirm: whether and how the page shows the new date.
+- Given my next box ships within 72 hours, when I open my account, then I can't skip it. To confirm: what the page shows instead.
 - Given I skipped my next box, when its original ship date passes, then I am not charged for it.
-- Given a subscriber skipped a box, when an agent opens them in Stockroom, then the history shows "Skipped by customer" with the date and time.
+- Given a subscriber skipped a box, when an agent opens them in Stockroom, then the history shows a note that the customer skipped it. To confirm: the exact wording (Dana suggested "Skipped by customer") and whether it shows the date and time.
 
 ## Not included
 - Skipping any box other than the next one. Priya decided on the next box only for now. (meeting 2026-09-22)
@@ -44,5 +44,5 @@ Basis: Sam said "a couple of days if billing behaves" in the meeting on 2026-09-
 - Can a subscriber undo a skip before the cutoff? Dana wants it, Sam says it adds work, and no one decided.
 - If billing does charge a skipped box, is fixing that part of this story or a separate one?
 - Which system decides the "next regular delivery date"? The web app and Stockroom sometimes disagree. (Priorities context file)
-- If the 72-hour cutoff passes while the subscriber has the page open, what happens when they choose "Skip this box"?
+- If the 72-hour cutoff passes while the subscriber has the page open, what happens when they try to skip?
 More open questions than fit here. Consider a spike first.
