@@ -18,21 +18,22 @@ A story can look done and still hide what nobody knows: a rule no one checked, a
 ## What a story looks like
 
 <!-- demo GIF goes here -->
-```markdown
-Call: Story written
-Confidence: Medium, who, what, where and the cutoff are clear, but billing for a moved box is untested.
-First question: Does skipping count as a payments change under the December freeze, since it affects charging?
-
-## Acceptance criteria
-- Given my next box's cutoff, 72 hours before the ship date today, has not passed, when I skip it, then it moves to the next regular delivery date. To confirm: whether and how the page shows the new date.
-
-## Known
-- Skips were the top Helpline reason in August: 610 of 4,100 tickets, about three minutes of agent time each. Customers who cancel to avoid a box are lost about half the time. (Dana, meeting 2026-09-22)
-- No box can change within 72 hours of its ship date. The cutoff is stored per box and already shown on the "change my box" page. (Theo and Sam, meeting 2026-09-22)
-
-## Unknown
-- Whether the billing job leaves out a box whose date moved. Sam has not checked yet.
-```
+> Call: Story written<br>
+> Confidence: Medium, who, what, where and the cutoff are clear, but billing for a moved box is untested.<br>
+> First question: Does skipping count as a payments change under the December freeze, since it affects charging?
+>
+> **Acceptance criteria**
+>
+> - Given my next box's cutoff, 72 hours before the ship date today, has not passed, when I skip it, then it moves to the next regular delivery date. To confirm: whether and how the page shows the new date.
+>
+> **Known**
+>
+> - Skips were the top Helpline reason in August: 610 of 4,100 tickets, about three minutes of agent time each. Customers who cancel to avoid a box are lost about half the time. (Dana, meeting 2026-09-22)
+> - No box can change within 72 hours of its ship date. The cutoff is stored per box and already shown on the "change my box" page. (Theo and Sam, meeting 2026-09-22)
+>
+> **Unknown**
+>
+> - Whether the billing job leaves out a box whose date moved. Sam has not checked yet.
 
 The full story, with acceptance criteria, estimate and questions, is below.
 
@@ -110,7 +111,7 @@ Before release: Tell support that subscribers can skip online and how skips show
 - In [trial 5](docs/trials/2026-09-30-trial-5.md), every cited source checked out: each known fact named the document that holds it.
 - Guessed screen details and behavior: 9 slipped through unmarked in trial 2. After a fix, 0 in trial 3, with every guess marked "To confirm". ([trial 3](docs/trials/2026-09-30-trial-3.md), blind review)
 - Against plain Claude with the same team documents: a usable estimate on 4 of 4 stories, against 1 of 4, and the same format every time. ([trial 2](docs/trials/2026-09-30-trial-2.md), blind review)
-- In trial 4, all 6 responses ran the checker and passed before they were shown, the refusal included. A story takes about one to three minutes. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
+- In trial 4, all 6 responses passed the checker before they were shown, including the one that refused thin input. A story takes about one to three minutes. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
 
 From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).
 
@@ -135,7 +136,7 @@ Loupe learns your team once, from your own documents. Each input then gets a rea
 
 You need a Claude account with Skills and code execution turned on.
 
-1. **Get the skill.** On GitHub, open **Actions**, click the latest run of **tests** on the main branch and download **loupe-skill**, or `loupe-skill.zip` from the latest release, once one is published.
+1. **Get the skill.** On GitHub, open **Actions**, click the latest run of **tests** on the **master** branch and download **loupe-skill**, or `loupe-skill.zip` from the latest release, once one is published.
 2. **Turn on code execution.** In Claude's settings, turn on "Code execution and file creation". The checker needs it.
 3. **Upload the skill.** In Claude, open Customize, then Skills, and upload the zip. Each teammate does this once.
 4. **Create the project.** Make a Claude Project and paste the project instructions from [docs/claude-project.md](docs/claude-project.md).

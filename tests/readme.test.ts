@@ -13,7 +13,9 @@ const prose = (text: string) =>
   text
     .replace(/^```[\s\S]*?^```$/gm, '')
     .replace(/`[^`\n]*`/g, '')
-    .replace(/<!--[\s\S]*?-->/g, '');
+    .replace(/<!--[\s\S]*?-->/g, '')
+    // A quote is copied output, like the story excerpt, not the README's own claims.
+    .replace(/^>.*$/gm, '');
 
 const tags = new Set(['p', 'picture', 'source', 'img', 'b', 'details', 'summary', 'br', 'a', 'sub']);
 
@@ -102,10 +104,19 @@ test('the README opens with the lockup, both themes, the tagline, the paragraph 
 
 test('the story section shows real lines from the example, then the whole story, collapsed', () => {
   const body = section('What a story looks like');
-  assert.match(body, /^\n<!-- demo GIF goes here -->\n```markdown\n/, 'the demo slot sits right above the excerpt');
-  const excerpt = body.split('```markdown\n')[1].split('\n```')[0].split('\n');
+  assert.match(body, /^\n<!-- demo GIF goes here -->\n> /, 'the demo slot sits right above the excerpt');
+  // A quote, not a code block, so long lines wrap on GitHub. Headings show as bold text; summary lines end in <br>.
+  const quote = body.split('\n').filter((line) => line.startsWith('>')).map((line) => line.replace(/^> ?/, ''));
+  assert.doesNotMatch(body.split('<details>')[0], /```/, 'the excerpt is not a code block');
   const lines = story.split('\n');
-  for (const line of excerpt.filter(Boolean)) assert.ok(lines.includes(line), `not in skip-a-box.md: ${line}`);
+  const excerpt: string[] = [];
+  for (const line of quote.filter(Boolean)) {
+    const bold = line.match(/^\*\*(.+)\*\*$/);
+    if (bold) assert.ok(lines.includes(`## ${bold[1]}`), `no section "${bold[1]}" in skip-a-box.md`);
+    else excerpt.push(line.replace(/<br>$/, ''));
+  }
+  assert.deepEqual(quote.filter((line) => line.endsWith('<br>')).length, 2, 'the three summary lines stay on separate lines');
+  for (const line of excerpt) assert.ok(lines.includes(line), `not in skip-a-box.md: ${line}`);
   const after = (heading: string, n: number) => story.split(`${heading}\n`)[1].split('\n').slice(0, n);
   for (const line of [...lines.slice(0, 3), ...after('## Known', 2), ...after('## Unknown', 1)]) assert.ok(excerpt.includes(line), line);
   assert.ok(excerpt.some((line) => line.includes('To confirm:')), 'a "To confirm" line');
@@ -120,6 +131,7 @@ test('every proof line links its trial file, in plain words', () => {
   for (const item of items) assert.match(item, /\]\(docs\/trials\/2026-09-30-trial-\d\.md\)/, item);
   // GitHub shows the trial 5 line as exactly this sentence, with "trial 5" as the link.
   assert.ok(proof.includes('- In [trial 5](docs/trials/2026-09-30-trial-5.md), every cited source checked out: each known fact named the document that holds it.'));
+  assert.ok(proof.includes('- In trial 4, all 6 responses passed the checker before they were shown, including the one that refused thin input. A story takes about one to three minutes. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))'));
   assert.ok(proof.includes('From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).'));
 });
 
@@ -129,6 +141,9 @@ test('setup says what you need, and leads with the download that exists today', 
   const step = setup.split('\n').find((line) => line.startsWith('1. '))!;
   assert.ok(step.indexOf('Actions') < step.indexOf('release'), 'Actions first');
   assert.ok(step.includes('or `loupe-skill.zip` from the latest release, once one is published.'));
+  // The branch and workflow names a reader will see on GitHub.
+  const workflow = readFileSync(join(root, '.github/workflows/tests.yml'), 'utf8').match(/^name: (.+)$/m)![1];
+  assert.ok(step.includes(`the latest run of **${workflow}** on the **master** branch`), step);
 });
 
 test('under the hood: the repo map is real, and the documented checker command passes', () => {
