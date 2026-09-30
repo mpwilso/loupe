@@ -9,31 +9,32 @@
 
 Loupe is a Claude skill for product managers. It turns meeting notes, tickets and emails into stories a developer can build without a second meeting. Product owners and product managers write with it. Developers, testers and anyone else who reads a story get one that says what's known, unknown and assumed.
 
-<!-- Demo GIF goes here. -->
-
-## Proof
-
-- In [trial 5](docs/trials/2026-09-30-trial-5.md), every cited source checked out: each known fact named the document that holds it.
-- Guessed screen details and behavior: 9 unflagged in trial 2, 0 in trial 3, all marked "To confirm". ([trial 3](docs/trials/2026-09-30-trial-3.md), blind review)
-- Against plain Claude with the same team documents: a usable estimate on 4 of 4 stories against 1 of 4, and the same format every time. ([trial 2](docs/trials/2026-09-30-trial-2.md), blind review)
-- Checked before you see it: the checker ran on 6 of 6 responses, and a story took about one to three minutes. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
-
-From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).
+Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).
 
 ## Why it exists
 
 A story can look done and still hide what nobody knows: a rule no one checked, a screen no one described, a number with no source. The developer finds the gaps halfway through the build, and the team books a second meeting to fill them. Loupe puts those gaps on the page before anyone starts.
 
-## How it works
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/img/how-it-works-dark.svg">
-  <img src="docs/img/how-it-works-light.svg" alt="How Loupe works: setup turns your documents into context files, every fact with its source. An input comes in and gets a readiness check. Too thin, and you get Not ready yet with the questions to ask. Ready, and Loupe writes it in your team's template, the checker sends it back until it passes, every known fact is reread against its source, and you get the story." width="660">
-</picture>
-
-Loupe learns your team once, from your own documents. Each input then gets a readiness check, a story in your team's template, and a checker that sends it back until it fits. Before you see it, Loupe rereads every known fact against its source.
-
 ## What a story looks like
+
+<!-- demo GIF goes here -->
+```markdown
+Call: Story written
+Confidence: Medium, who, what, where and the cutoff are clear, but billing for a moved box is untested.
+First question: Does skipping count as a payments change under the December freeze, since it affects charging?
+
+## Acceptance criteria
+- Given my next box's cutoff, 72 hours before the ship date today, has not passed, when I skip it, then it moves to the next regular delivery date. To confirm: whether and how the page shows the new date.
+
+## Known
+- Skips were the top Helpline reason in August: 610 of 4,100 tickets, about three minutes of agent time each. Customers who cancel to avoid a box are lost about half the time. (Dana, meeting 2026-09-22)
+- No box can change within 72 hours of its ship date. The cutoff is stored per box and already shown on the "change my box" page. (Theo and Sam, meeting 2026-09-22)
+
+## Unknown
+- Whether the billing job leaves out a box whose date moved. Sam has not checked yet.
+```
+
+The full story, with acceptance criteria, estimate and questions, is below.
 
 <details>
 <summary>The skip-a-box story, written from a meeting transcript</summary>
@@ -104,6 +105,24 @@ Before release: Tell support that subscribers can skip online and how skips show
 - **A checker enforces the shape.** Loupe keeps fixing the story until it passes.
 - **It learns your team from your own documents.** It turns them into short context files, every fact with its source.
 
+## Proof
+
+- In [trial 5](docs/trials/2026-09-30-trial-5.md), every cited source checked out: each known fact named the document that holds it.
+- Guessed screen details and behavior: 9 slipped through unmarked in trial 2. After a fix, 0 in trial 3, with every guess marked "To confirm". ([trial 3](docs/trials/2026-09-30-trial-3.md), blind review)
+- Against plain Claude with the same team documents: a usable estimate on 4 of 4 stories, against 1 of 4, and the same format every time. ([trial 2](docs/trials/2026-09-30-trial-2.md), blind review)
+- In trial 4, all 6 responses ran the checker and passed before they were shown, the refusal included. A story takes about one to three minutes. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
+
+From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).
+
+## How it works
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/how-it-works-dark.svg">
+  <img src="docs/img/how-it-works-light.svg" alt="How Loupe works: setup turns your documents into context files, every fact with its source. An input comes in and gets a readiness check. Too thin, and you get Not ready yet with the questions to ask. Ready, and Loupe writes it in your team's template, the checker sends it back until it passes, every known fact is reread against its source, and you get the story." width="660">
+</picture>
+
+Loupe learns your team once, from your own documents. Each input then gets a readiness check, a story in your team's template, and a checker that sends it back until it fits. Before you see it, Loupe rereads every known fact against its source.
+
 ## Limits
 
 - Tested on one invented company.
@@ -112,19 +131,11 @@ Before release: Tell support that subscribers can skip online and how skips show
 - It doesn't learn from corrections yet.
 - The trials were run, and partly scored, by the people who built it.
 
-## How it was built
-
-Designed and directed by Matt Wilson. Claude Code wrote most of the code. Every milestone was reviewed and tested live in claude.ai.
-
-## What's next
-
-1. The learning loop: your corrections update the context files.
-2. A VS Code version with Jira, which never writes to the tracker without your approval.
-3. Estimates calibrated on your team's history.
-
 ## Setup
 
-1. **Get the skill.** Download `loupe-skill.zip` from the latest release, or the **loupe-skill** download from the latest run under Actions.
+You need a Claude account with Skills and code execution turned on.
+
+1. **Get the skill.** On GitHub, open **Actions**, click the latest run of **tests** on the main branch and download **loupe-skill**, or `loupe-skill.zip` from the latest release, once one is published.
 2. **Turn on code execution.** In Claude's settings, turn on "Code execution and file creation". The checker needs it.
 3. **Upload the skill.** In Claude, open Customize, then Skills, and upload the zip. Each teammate does this once.
 4. **Create the project.** Make a Claude Project and paste the project instructions from [docs/claude-project.md](docs/claude-project.md).
@@ -132,6 +143,34 @@ Designed and directed by Matt Wilson. Claude Code wrote most of the code. Every 
 
 The full steps, with sharing, are in [docs/claude-project.md](docs/claude-project.md).
 
-## For developers
+## Under the hood
 
-Run the tests with `scripts/test.sh`. The brand and the diagram are drawn by `node scripts/brand.ts`; see [brand/](brand/README.md). MIT license: [LICENSE](LICENSE).
+- `skill/`: the skill's instructions and writing rules.
+- `spec/`: the story shape, the readiness bar, the plain-language rules and the context-file format, as data.
+- `src/`: the checkers.
+- `examples/pellwick/`: an invented team used for trials, from its raw documents to the expected stories.
+- `docs/trials/`: what each trial found.
+- `brand/`: the mark, lockups and palette. `node scripts/brand.ts` draws them, and the diagram; see [brand/](brand/README.md).
+- `scripts/`: the test runner, the skill builder and the brand drawing.
+
+The story shape is data in `spec/*.json`. The checker in `src/` enforces it, and the skill loops until the story passes. Zero runtime dependencies. TypeScript, run directly by Node 22.18 or newer. CI tests on Node 22.18.0 and 24.21.0.
+
+Run the tests with `scripts/test.sh`. Check a story file yourself with:
+
+```
+node src/run.js check examples/pellwick/expected/skip-a-box.md
+```
+
+It prints `Checked with Node` and the version when the story passes, or one line per problem when it doesn't. Use `check-context` in place of `check` for context files.
+
+MIT license: [LICENSE](LICENSE).
+
+## How it was built
+
+Designed and directed by Matt Wilson, who set the quality bar, designed five trials and fixed what each trial exposed. Two of the trials were scored in blind review, one of them against plain Claude. Claude Code wrote most of the code. Every milestone was reviewed and tested live in claude.ai. The trials are in [docs/trials](docs/trials/).
+
+## What's next
+
+1. The learning loop: your corrections update the context files.
+2. A VS Code version with Jira, which never writes to the tracker without your approval.
+3. Estimates calibrated on your team's history.
