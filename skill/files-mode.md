@@ -25,7 +25,7 @@ Write and edit files only with Claude Code's file tools, never with shell comman
 2. Follow "Write a story" in SKILL.md, steps 2 to 6, with the folder's context files, learned.md and templates.
 3. Save the story to `loupe/stories/<yyyy-mm-dd>-<short-slug>.md`: today's date, then three to six words of the title, lower case, joined by hyphens, such as `loupe/stories/2026-10-02-skip-next-box.md`. If that file exists, save it as `-2`, `-3` and so on, without asking, and name the file in the reply. Never overwrite a story.
 4. Check it with `node SKILL/src/run.js check loupe/stories/<file>`, and fix and run it again until it passes, at most five runs in all, as in SKILL.md. The checker finds the team's templates in `loupe/templates/` on its own.
-5. Reply with the story, in the same shape as in claude.ai mode, then one line naming the file, then the checker's last line. The `Checked with Node` line goes in the reply, not the file.
+5. Your reply is the story exactly as saved, plus the checker's line. Never summarize it, and never name a tracker issue in the reply without its live source. Between the story and the checker's line, add one line naming the file. The `Checked with Node` line goes in the reply, not the file.
 
 ## Learn from corrections
 

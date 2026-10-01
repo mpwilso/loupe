@@ -471,6 +471,8 @@ test('files mode reads files with the Read tool, not shell commands', () => {
   assert.ok(filesMode().includes("Read files with Claude Code's Read tool, not shell commands such as cat, ls or find."));
   // Trial 8c: a cd into loupe/ moved the current directory, and two stories couldn't be saved.
   assert.ok(filesMode().includes('Never change directory (no cd). Run every command from the project root, and use paths like loupe/stories/...'));
+  // Trial 8d: A-1 summed up its story in the reply and named two issues there without a source.
+  assert.ok(filesMode().includes("Your reply is the story exactly as saved, plus the checker's line. Never summarize it, and never name a tracker issue in the reply without its live source."));
 });
 
 // M4b: live context from a tracker, read-only.
@@ -497,6 +499,8 @@ test('the tracker steps: search first, read at most 5, cite with a live source, 
   assert.ok(text.includes("If you read an issue and it's relevant to the story, cite at least one fact from it as a Known line with its live source"));
   assert.ok(text.includes("If an issue turns out not to be relevant, don't mention it."));
   assert.match(text, /Any line that names an issue, in any section, ends with that issue's live source/);
+  // Trial 8d: A-2 cited three issues correctly, but only in questions and "Before release:", never as Known.
+  assert.ok(text.includes('When a relevant issue settles a fact the story relies on, put that fact on a Known line with the live source. Use questions only for what the issue leaves open.'));
   assert.match(text, /never mention a tracker, Jira or issue search in the reply or the story/);
   assert.match(text, /Write the story anyway/);
 });

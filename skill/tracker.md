@@ -5,7 +5,7 @@ Use this when tracker tools are available, such as an issue tracker's search and
 ## Before writing a story
 
 1. Search the tracker for related and duplicate issues, using the input's key terms: who is affected, what they want, and which system. Read at most 5 issues in full.
-2. If you read an issue and it's relevant to the story, cite at least one fact from it as a Known line with its live source: the tracker, the record and when it was read, like "(Jira SUBS-142, read 2026-10-02 14:05)". Use the read time the tool returned for that call. If an issue turns out not to be relevant, don't mention it.
+2. If you read an issue and it's relevant to the story, cite at least one fact from it as a Known line with its live source: the tracker, the record and when it was read, like "(Jira SUBS-142, read 2026-10-02 14:05)". Use the read time the tool returned for that call. If an issue turns out not to be relevant, don't mention it. When a relevant issue settles a fact the story relies on, put that fact on a Known line with the live source. Use questions only for what the issue leaves open.
 3. Any line that names an issue, in any section, ends with that issue's live source. The checker rejects an issue key anywhere in the story without one.
 4. If an open issue looks like the same request, say so in the First question: "SUBS-142 looks like the same request. Should this be a new story or an update to it? (Jira SUBS-142, read 2026-10-02 14:05)" Write the story anyway.
 5. The input still decides the readiness call. An issue adds facts; it doesn't replace the input.
