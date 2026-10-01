@@ -147,7 +147,7 @@ Loupe learns your team once, from your own documents. Each input then gets a rea
 - The customer-data detector catches emails and secrets, but not names, phone numbers or street addresses.
 - The tracker work was tested on an invented mock tracker, never a real one.
 - Where Loupe cites tracker facts still varies from run to run: in trial 8e, 2 of 3 stories listed a fact from a ticket under Known, and the third left it as a question.
-- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6 and 6b. A separate reviewer scored trials 2 and 3 blind.
+- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e were measured by the Claude Code session that ran them. A separate reviewer scored trials 2 and 3 blind.
 
 ## Setup
 
