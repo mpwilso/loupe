@@ -399,6 +399,9 @@ test('the trial 8 plan has every step, pass lines, the call log check and a scor
     assert.match(plan, new RegExp(`^\\| ${step} \\| .+ \\| +\\| +\\|$`, 'm'), `step ${step} is on the scoring sheet`);
   }
   assert.match(plan, /LOUPE_TRACKER_LOG/);
+  // Trial 8b: step E saw step A's story in the same folder and compared the two.
+  assert.match(plan, /Each step runs in its own fresh copy of that repository, with no stories from other steps in it/);
+  assert.match(plan, /Step D is the exception: it continues B's conversation, in B's copy/);
   for (const [, input] of plan.matchAll(/notes\/([\w.-]+\.md)/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
   // Step C's input leads to the issue that holds an invented customer email.
   const issues = JSON.parse(read('examples/pellwick/tracker/issues.json')).issues;

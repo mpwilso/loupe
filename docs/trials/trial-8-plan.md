@@ -6,7 +6,7 @@ This is a plan, not a record. It tests M4b: Loupe in Claude Code reading the moc
 
 Make a fresh repository outside this one, as for [trial 7](trial-7-plan.md), with the Pellwick team folder, the inputs in `notes/` and the skill installed per project. Register the mock tracker as `pellwick-tracker`, as [live-context.md](../live-context.md) shows, with `LOUPE_TRACKER_LOG` set so every tool call is logged. The only allow rules are the ones in [claude-code.md](../claude-code.md) and [live-context.md](../live-context.md), and only the project's Loupe and the mock tracker are loaded. Use Sonnet 5.5 at Medium.
 
-Steps A, B, C and E each start a new conversation; D continues B's.
+Each step runs in its own fresh copy of that repository, with no stories from other steps in it, and starts a new conversation. Step D is the exception: it continues B's conversation, in B's copy. Trial 8b ran step E in the same folder as step A, and E compared its story with A's.
 
 ## Step A: a related, closed issue
 
@@ -43,7 +43,7 @@ Close the address issue as a duplicate.
 
 ## Step E: no tracker
 
-Run step A again in a new conversation, with no tracker registered.
+Run step A again in its own fresh copy, with no tracker registered.
 
 **Pass:** the same behavior as v0.3.0: a story from the team folder, with no tracker mentioned.
 
