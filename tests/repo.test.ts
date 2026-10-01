@@ -230,9 +230,10 @@ test('the setup guide gets the skill from the latest release, and nowhere else',
 test('the trials README lists and links every trial record, in order, and defines the advisor', () => {
   const files = readdirSync(join(root, 'docs/trials'));
   // A rerun keeps its trial's number, with a letter: trial 6b reran trial 6.
-  const records = files.filter((f) => /^\d{4}-\d{2}-\d{2}-trial-\d+[a-z]?\.md$/.test(f)).sort();
-  assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-6-plan.md', 'trial-7-plan.md', 'trial-8-plan.md', 'trial-9-plan.md'], 'records, the index and plans only');
-  assert.deepEqual(records, [...['1', '2', '3', '4', '5', '6', '6b', '7', '8'].map((n) => `2026-09-30-trial-${n}.md`), '2026-10-01-trial-9.md'], 'every record is named by its date and trial number');
+  // Sorted by trial number, so trial 10 follows trial 9.
+  const records = files.filter((f) => /^\d{4}-\d{2}-\d{2}-trial-\d+[a-z]?\.md$/.test(f)).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+  assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-10-plan.md', 'trial-6-plan.md', 'trial-7-plan.md', 'trial-8-plan.md', 'trial-9-plan.md'].sort(), 'records, the index and plans only');
+  assert.deepEqual(records, [...['1', '2', '3', '4', '5', '6', '6b', '7', '8'].map((n) => `2026-09-30-trial-${n}.md`), '2026-10-01-trial-9.md', '2026-10-01-trial-10.md'], 'every record is named by its date and trial number');
   const index = read('docs/trials/README.md');
   const lines = index.split('\n').filter((line) => line.startsWith('- '));
   assert.deepEqual(lines.map((line) => line.match(/^- \[Trial (\d+[a-z]?)\]\(([^)]+)\)/)?.slice(1).join(' ')), records.map((f) => `${f.match(/trial-(\w+)\.md$/)![1]} ${f}`));
@@ -438,4 +439,56 @@ test('the trial 9 plan sets the safety bar first, has every step with a pass lin
   assert.match(plan, /The guide itself never allows it\./);
   assert.match(plan, /compare each created ticket with its story file by script, not by eye/);
   for (const [, input] of plan.matchAll(/notes\/([\w.-]+\.md)/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
+});
+
+// Story format v2: the direction and both setup guides say v2 is the default and saved v1 stories still pass.
+test('direction.md has the v2 shape, and both setup guides say v2 is the default and v1 still passes', () => {
+  const shape = read('docs/direction.md').split('## The story, always in this shape\n')[1].split('\n## ')[0];
+  for (const section of ['Background:', 'Example:', 'Requirements:', 'Notes:', 'Test scenarios:']) assert.ok(shape.includes(`\n${section}`), section);
+  assert.match(shape, /This is version 2, the default for user stories, job stories and bugs\./);
+  assert.match(shape, /Stories saved in version 1, with Given \/ When \/ Then acceptance criteria .+ still pass/);
+  for (const guide of ['docs/claude-code.md', 'docs/claude-project.md']) {
+    const note = read(guide).split('## Story format\n')[1]?.split('\n## ')[0] ?? '';
+    assert.match(note, /New user stories, job stories and bugs use story format v2/, guide);
+    assert.match(note, /Stories saved in v1, with acceptance criteria, still pass the checker\./, guide);
+  }
+});
+
+// Story format v2: the trial 10 bar was set before the trial ran.
+test('the trial 10 plan sets its bar first, runs each input twice, and keeps export notes "Not ready yet"', () => {
+  const plan = read('docs/trials/trial-10-plan.md');
+  assert.match(plan, /This is a plan, not a record/);
+  const bar = plan.split('## The bar, set before the trial\n')[1]?.split('\n## ')[0] ?? '';
+  for (const line of [
+    'Every story passes the checker in the v2 shape.',
+    "0 Known or Background facts that their cited source doesn't say.",
+    '0 invented examples.',
+    'Every scenario has an unhappy path (the checker enforces this).',
+    'Compare against v1: count "To confirm" items and Unknowns per story, v1 against v2. Report it, don\'t gate on it.',
+  ]) assert.ok(bar.includes(`- ${line}\n`), line);
+  assert.match(bar, /The holiday cutoff email is a change request, and Pellwick's story style sends change requests to its own team template/);
+  for (const input of ['skip-a-box-meeting.md', 'helpline-ticket-48213.md', 'holiday-cutoff-email.md', 'slack-thread-address-change.md', 'export-notes.md']) {
+    assert.ok(plan.includes(`| \`${input}\` |`), input);
+    assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
+  }
+  assert.match(plan, /\| `export-notes\.md` \| too thin \| Not ready yet \|/);
+  assert.match(plan, /by reading the input or context file it names/);
+});
+
+// Trial 10b: its bar was added to the plan before the rerun.
+test('the trial 10 plan holds the 10b bar, set before the rerun', () => {
+  const rerun = read('docs/trials/trial-10-plan.md').split('## Trial 10b: the rerun\n')[1] ?? '';
+  assert.ok(rerun.includes("- address-change 4 times: no detail in the Example, Background or requirements that the input doesn't state (check by reading, and quote any you find)\n"));
+  assert.ok(rerun.includes('- skip-a-box once and helpline-ticket-48213 once: still pass, with an Example kept from the input, not "None given."\n'));
+  assert.ok(rerun.includes('- export-notes once: still "Not ready yet"\n'));
+  assert.ok(rerun.includes("- every other line of trial 10's bar still holds\n"));
+  assert.match(rerun, /the bug shape has no Example, so for it the Example part doesn't apply/);
+});
+
+// Trial 10c: its bar and decision rule were added to the plan before the rerun.
+test('the trial 10 plan holds the 10c bar and its decision rule, set before the rerun', () => {
+  const rerun = read('docs/trials/trial-10-plan.md').split('## Trial 10c: unsettled behaviors, rerun\n')[1] ?? '';
+  assert.ok(rerun.includes('- every requirement\'s behavior is settled by the input or a context file, or the whole requirement is a "To confirm: whether ..." line\n'));
+  assert.ok(rerun.includes("- Example, Background and every other line of trial 10b's bar still hold\n"));
+  assert.match(rerun, /4 of 4 means it ships as v0\.6\.0\. Anything less goes back to Matt before another round\./);
 });

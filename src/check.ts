@@ -22,16 +22,30 @@ type LineRule = {
 type Section = {
   heading: string;
   name: string;
-  kind: 'template' | 'list' | 'lines';
+  kind: 'template' | 'list' | 'lines' | 'sourced' | 'scenarios';
   allowNone?: boolean;
+  noneText?: string;
+  scenarios?: Scenarios;
   itemPattern?: string;
   itemMessage?: string;
   lines?: LineRule[];
   questionMarks?: { count: number; message: string };
   overflow?: { line: string; message: string; confidence: string; notLevel: string; confidenceMessage: string; unknown: string; unknownMessage?: string };
 };
+type Scenarios = {
+  scenario: string;
+  happy: string;
+  unhappy: string;
+  when: string;
+  then: string;
+  and: string;
+  warnAbove: number;
+  failAbove: number;
+  messages: Record<string, string>;
+};
 type Closing = { pattern: string; message?: string; separator: string; max: number; maxMessage?: string };
-type Shape = { title: { pattern: string; message?: string }; preamble?: LineRule[]; sections: Section[]; closing?: Closing };
+type Shape = { title: { pattern: string; message?: string }; preamble?: LineRule[]; sections: Section[]; closing?: Closing; storyLines?: { max: number; message?: string } };
+type NamedShape = { name: string; headings: string[]; storyLines?: Shape['storyLines'] };
 type StoryShape = Shape & {
   listItem: string;
   maxListItems: number;
@@ -41,6 +55,7 @@ type StoryShape = Shape & {
   chatOnly: { pattern: string; message?: string };
   liveSource: { key: string; detect: string; pattern: string; noSourceMessage?: string; noReadMessage?: string; badReadMessage?: string };
   secrets: { message?: string };
+  shapes: NamedShape[];
   summary: {
     lines: LineRule[];
     calls: { story: string; notReady: string; unchecked: string; failed: string };
@@ -169,17 +184,30 @@ export function check(text: string, templates = builtIn): { errors: Problem[]; w
   const mark = skip ? (marks[0].kind as keyof typeof kinds) : undefined;
   const rest = body.slice(skip);
   const notReady = new RegExp(readiness.notReady.detect, 'i').test(rest[0] ?? '');
-  const shape = notReady ? readiness.notReady : story;
+  const shape = notReady ? readiness.notReady : pickShape(rest);
+  const warnings: Problem[] = [];
   if (hasSummary) checkLines(summary, story.summary.lines, 'The summary', 1, add);
   if (hasSummary) checkSummary(summary, rest, notReady, mark, add);
-  const inBody = [...marks.map(({ line, text }) => ({ line, text })), ...checkShape(rest, shape, templates, offset > 0).map((e) => (e.line ? { ...e, line: e.line + skip } : e))];
+  const shift = (e: Problem) => (e.line ? { ...e, line: e.line + skip + head + offset } : e);
+  const inBody = [...marks.map(({ line, text }) => ({ line, text })), ...checkShape(rest, shape, templates, offset > 0, warnings).map((e) => (e.line ? { ...e, line: e.line + skip } : e))];
   const errors = [...found, ...chat.filter((e) => e.text), ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines), ...checkLiveSources(lines), ...checkSecrets(lines).filter((e) => e.text)];
-  return { errors: errors.map((e) => (e.line ? { ...e, line: e.line + offset } : e)), warnings: [] };
+  return { errors: errors.map((e) => (e.line ? { ...e, line: e.line + offset } : e)), warnings: warnings.filter((w) => w.text).map(shift) };
 }
 
-function checkShape(lines: string[], shape: Shape, templates: Template[], template: boolean): Problem[] {
+// A story is checked against the shape whose headings fit it best: v2 for new stories, v1 for stories saved before it,
+// spikes and team templates, and the v2 bug shape. Each heading the story has that a shape lacks, or lacks that a shape
+// has, counts against that shape. On a tie, the earlier shape in the spec wins.
+function pickShape(lines: string[]): Shape {
+  const headings = lines.map((line) => line.trim()).filter((line) => line.startsWith('## '));
+  const fit = (s: NamedShape) => headings.filter((h) => s.headings.includes(h)).length - s.headings.filter((h) => !headings.includes(h)).length - headings.filter((h) => !s.headings.includes(h)).length;
+  const best = story.shapes.reduce((a, b) => (fit(b) > fit(a) ? b : a));
+  return { ...story, sections: best.headings.map((h) => story.sections.find((s) => s.heading === h)!), storyLines: best.storyLines };
+}
+
+function checkShape(lines: string[], shape: Shape, templates: Template[], template: boolean, warnings: Problem[] = []): Problem[] {
   const problems: Problem[] = [];
   const add = (line: number | undefined, message = '') => void (message && problems.push({ line, text: message }));
+  const warn = (line: number | undefined, message = '') => void (message && warnings.push({ line, text: message }));
   if (!new RegExp(shape.title.pattern).test(lines[0] ?? '')) add(1, shape.title.message);
 
   const preamble: Entry[] = [];
@@ -221,7 +249,8 @@ function checkShape(lines: string[], shape: Shape, templates: Template[], templa
     seen.add(block.heading);
     if (index < furthest) add(block.line, fill(M.outOfOrder, { heading: block.heading, order }));
     furthest = Math.max(furthest, index);
-    checkSection(shape.sections[index], block.line, block.body, templates, template, add);
+    checkSection(shape.sections[index], block.line, block.body, templates, template, add, warn);
+    if (shape.storyLines && index === 0 && block.body.length > shape.storyLines.max) add(block.body[shape.storyLines.max].line, shape.storyLines.message);
   }
   for (const section of shape.sections) {
     if (!seen.has(section.heading)) add(undefined, fill(M.missingSection, { heading: section.heading }));
@@ -271,7 +300,7 @@ function checkOverflow(shape: Shape, blocks: { heading: string; body: Entry[] }[
   }
 }
 
-function checkSection(section: Section, headingLine: number, body: Entry[], templates: Template[], template: boolean, add: Add): void {
+function checkSection(section: Section, headingLine: number, body: Entry[], templates: Template[], template: boolean, add: Add, warn: Add): void {
   const { name } = section;
   if (body.length === 0) {
     add(headingLine, fill(section.allowNone ? M.emptyNoneAllowed : M.emptySection, { name }));
@@ -304,7 +333,73 @@ function checkSection(section: Section, headingLine: number, body: Entry[], temp
     }
   } else if (section.kind === 'lines' && section.lines) {
     checkLines(body, section.lines, name, headingLine, add, template);
+  } else if (section.kind === 'sourced') {
+    checkSourced(section, body, add);
+  } else if (section.kind === 'scenarios' && section.scenarios) {
+    checkScenarios(section.scenarios, headingLine, body, add, warn);
   }
+}
+
+// Plain sentences, one per line, each ending with its source, like Known lines. Example may say it has none instead.
+function checkSourced(section: Section, body: Entry[], add: Add): void {
+  const none = body.find((entry) => entry.text === section.noneText);
+  if (none) {
+    if (body.length > 1) add(none.line, fill(M.noneGivenMixed, { name: section.name }));
+    return;
+  }
+  for (const entry of body) {
+    if (!new RegExp(section.itemPattern ?? '').test(entry.text)) add(entry.line, section.itemMessage);
+    else if (/[.!?]\s+[A-Z]/.test(entry.text.replace(/\s*\([^()]+\)$/, ''))) add(entry.line, fill(M.oneSentence, { name: section.name }));
+  }
+}
+
+// Test scenarios: blocks of "TEST SCENARIO:", then paths, each "HAPPY PATH:" or "UNHAPPY PATH:" followed by
+// WHEN, any AND lines, THEN and any AND lines. Every scenario has one happy path and at least one unhappy path.
+function checkScenarios(rule: Scenarios, headingLine: number, body: Entry[], add: Add, warn: Add): void {
+  const T = rule.messages;
+  const is = (pattern: string, entry: Entry) => new RegExp(pattern).test(entry.text);
+  type Path = { line: number; happy: boolean; state: 'start' | 'when' | 'then' };
+  const scenarios: { line: number; paths: Path[] }[] = [];
+  const endPath = (path?: Path) => void (path && path.state !== 'then' && add(path.line, T.incompletePath));
+  const endScenario = () => {
+    const last = scenarios.at(-1);
+    if (!last) return;
+    endPath(last.paths.at(-1));
+    const happy = last.paths.filter((p) => p.happy).length;
+    if (happy !== 1) add(last.line, fill(T.happyCount, { count: happy }));
+    if (!last.paths.some((p) => !p.happy)) add(last.line, T.noUnhappy);
+  };
+  let previous: Entry | undefined;
+  for (const entry of body) {
+    if (previous?.text === entry.text) add(entry.line, T.repeatedLine);
+    previous = entry;
+    const path = scenarios.at(-1)?.paths.at(-1);
+    if (is(rule.scenario, entry)) {
+      endScenario();
+      scenarios.push({ line: entry.line, paths: [] });
+    } else if (is(rule.happy, entry) || is(rule.unhappy, entry)) {
+      if (!scenarios.length) add(entry.line, T.noScenario);
+      else {
+        endPath(path);
+        scenarios.at(-1)!.paths.push({ line: entry.line, happy: is(rule.happy, entry), state: 'start' });
+      }
+    } else if (is(rule.when, entry) || is(rule.then, entry) || is(rule.and, entry)) {
+      if (!scenarios.length) add(entry.line, T.noScenario);
+      else if (!path) add(entry.line, T.noPath);
+      else if (is(rule.then, entry)) {
+        if (path.state === 'start') add(entry.line, T.thenWithoutWhen);
+        else if (path.state === 'then') add(entry.line, T.pathOrder);
+        path.state = 'then';
+      } else if (is(rule.when, entry)) {
+        if (path.state !== 'start') add(entry.line, T.pathOrder);
+        else path.state = 'when';
+      } else if (path.state === 'start') add(entry.line, T.pathOrder);
+    } else add(entry.line, T.notALine);
+  }
+  endScenario();
+  const count = scenarios.length;
+  if (count > rule.failAbove) add(headingLine, fill(T.tooMany, { count, limit: rule.failAbove }));
+  else if (count > rule.warnAbove) warn(headingLine, fill(T.many, { count, usual: rule.warnAbove }));
 }
 
 // Every run of list items, in any section, stays within the limit.

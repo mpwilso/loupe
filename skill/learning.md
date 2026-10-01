@@ -15,7 +15,7 @@ Treat each of these as a learning request for learned.md, not Claude's project m
 ## Sort each one
 
 - **A fact about the team**, its product or its systems: propose a `kind: fact` entry. Example: "Sam checked, and the billing job charges each box on its stored ship date."
-- **A rule for how the team wants stories written**: propose a `kind: rule` entry. Example: "In every story, list the Stockroom history note in its own acceptance criterion."
+- **A rule for how the team wants stories written**: propose a `kind: rule` entry. Example: "In every story, list the Stockroom history note in its own requirement."
 - **A one-off fix to this story only**, such as a wording change or a title: fix the story, run the checker again, and learn nothing.
 
 If you can't tell whether it holds beyond this story, ask one short question, like "Is that true for every story, or just this one?"

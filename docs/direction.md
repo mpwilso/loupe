@@ -24,15 +24,19 @@ Product owners and product managers write with it. Developers, testers and anyon
 
 ## The story, always in this shape
 Title
-The story (the team's template)
-Acceptance criteria (Given / When / Then)
+The story (the team's template): one sentence for a user or job story; a bug keeps its own fields
+Background: why it came up, one sentence per line, each with its source
+Example: one real case from the input, with its source, or "None given."
+Requirements: a numbered list of what must be true when it's done
 Not included: what this story deliberately leaves out
+Notes: technical notes, or "None."
+Test scenarios: each with one happy path and at least one unhappy path, in WHEN, AND, THEN lines. Five is the usual; more than ten fails, and a spike is suggested
 Known / Unknown / Assumed
 Confidence: level, why, how to raise it
 Estimate: hours range, basis
 Questions before building
 Before release: only the actions specific to this story, such as telling support about a named change, or "None."
-At most five items in any list. Plain words an intern and an executive both understand in 30 seconds. No jargon without a plain explanation, no filler, no em dashes. It should read like the team's best PM wrote it. A checker rejects any story that doesn't fit this shape.
+At most five items in any list. Plain words an intern and an executive both understand in 30 seconds. No jargon without a plain explanation, no filler, no em dashes. It should read like the team's best PM wrote it. A checker rejects any story that doesn't fit this shape. This is version 2, the default for user stories, job stories and bugs. A bug skips Background, Example, Requirements and Notes. Stories saved in version 1, with Given / When / Then acceptance criteria in place of the sections from Background to Test scenarios, still pass, and spikes and team templates keep that shape.
 
 ## One core, two ways in
 The core: the story shape, templates, readiness bar, checker and context-file format. Built once, shared by both.

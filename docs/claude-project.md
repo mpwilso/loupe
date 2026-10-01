@@ -60,6 +60,10 @@ Remind each teammate to upload the skill (step 2). Without it, the project has t
 
 Open a new chat in the project and paste your input. Claude checks whether there is enough to build from. If there is, you get a story. If not, you get a short list of questions to answer first.
 
+## Story format
+
+New user stories, job stories and bugs use story format v2, built for developers and testers: Background, an Example from the input, numbered Requirements, Notes and Test scenarios, each scenario with a happy path and at least one unhappy path. Stories saved in v1, with acceptance criteria, still pass the checker. Spikes and team templates keep their own sections.
+
 ## Keeping Loupe up to date
 
 Loupe keeps what it learns in one context file, learned.md. When you correct a story, or answer one of its questions or "To confirm" lines, it may offer to learn it: it shows the exact entries it would add, each with who said it and when, and asks "Save these to learned.md?" It saves nothing unless you say yes, and it doesn't offer for a one-off fix to a single story.

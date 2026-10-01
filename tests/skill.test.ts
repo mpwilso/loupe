@@ -237,8 +237,9 @@ test('each context-file fact names its own source, and Known lines cite that sou
 test('screen details the input does not state are flagged for confirmation, with a bad and a good example', () => {
   const rules = file('writing-rules.md');
   assert.match(rules, /any wording, message, note or display detail the input doesn't state/);
-  assert.match(rules, /- Bad: `Given .+`/);
-  assert.match(rules, /- Good: `Given .+ To confirm: .+`/);
+  // v2: the THEN line of a test scenario is where an undecided detail shows.
+  assert.match(rules, /- Bad: `THEN .+`/);
+  assert.match(rules, /- Good: `THEN .+ To confirm: .+`/);
 });
 
 test('a bug always asks about records the bug already damaged', () => {
@@ -280,7 +281,7 @@ test('the kind of work picks the template, and a bug always uses the bug templat
 test('a team done section holds only what the input settles, with a bad and a good example', () => {
   const rules = file('writing-rules.md');
   assert.match(rules, /its own done section, such as `Done when:`, fill it only with what the input settles/);
-  assert.match(rules, /Anything undecided goes in the acceptance criteria marked "To confirm", never stated as settled in the done section/);
+  assert.match(rules, /Anything undecided goes in a requirement, test scenario or acceptance criterion marked "To confirm", never stated as settled in the done section/);
   assert.match(rules, /- Bad: `Done when: .+`/);
   assert.match(rules, /- Good: `Done when: .+`/);
 });
@@ -311,7 +312,8 @@ test('a story names the team rule it depends on and asks about known changes to 
   assert.match(file('writing-rules.md'), /refer to the rule \("the box's cutoff, 72 hours today"\) and ask whether any known upcoming change to that rule affects the story/);
   for (const name of ['skip-a-box.md', 'address-change.md']) {
     const text = readFileSync(join(root, 'examples/pellwick/expected', name), 'utf8');
-    const criteria = text.split('## Acceptance criteria\n')[1].split('\n## ')[0];
+    // v2: the rule is named where the story says what must be true.
+    const criteria = text.split('## Requirements\n')[1].split('\n## ')[0];
     assert.match(criteria, /box's cutoff, 72 hours before the ship date today/, name);
     assert.doesNotMatch(criteria, /ships (in more than|within) 72 hours/, name);
     assert.match(text.split('## Questions before building\n')[1], /Is any change to the box's cutoff, 72 hours today, planned while .+ live\?/, name);
@@ -563,4 +565,39 @@ test('the ticket steps never change an existing issue, never ask twice, and keep
   assert.match(text, /Never create a second ticket for a story\./);
   assert.match(text, /Never update, comment on, move, assign, close or delete an issue, even one Loupe created\. If asked to change an issue, reply with exactly one line: Loupe can't change the tracker yet\./);
   assert.match(text, /Never put customer data in a ticket\./);
+});
+
+// Story format v2: the writing rules for its sections, and when a story keeps acceptance criteria.
+test('the writing rules cover the v2 sections: one-sentence story, sourced Background, a real Example, and happy and unhappy paths', () => {
+  const rules = file('writing-rules.md');
+  assert.match(rules, /User stories, job stories and bugs use these sections, as their templates show\. Spikes and team templates keep their own, with acceptance criteria\./);
+  assert.match(rules, /Background: why this came up, the problem and who it affects\. One plain sentence per line, each ending with its source, like a Known line\./);
+  assert.match(rules, /Example: one case of the problem as it happens today, with its source\. An Example uses only details the input states\./);
+  assert.match(rules, /Cover every requirement with at least one scenario\./);
+  assert.match(rules, /Use happy and unhappy paths to cover failure cases on purpose\. Each scenario has one happy path and at least one unhappy path/);
+  assert.match(rules, /five is the usual, and more than ten means split the story or suggest a spike/);
+  assert.match(storyMode(), /User stories, job stories and bugs use the shape their template shows: Background, Example, numbered Requirements, Notes and Test scenarios, with no acceptance criteria\. Spikes and team templates keep their own sections\./);
+});
+
+// Trial 10: both address-change stories invented "moves house" in their Example, and one carried over a Stockroom note.
+test('Examples and requirements keep to what the input states, and the truth step rereads them', () => {
+  const rules = file('writing-rules.md');
+  assert.ok(rules.includes("An Example uses only details the input states. It may describe a general situation the input gives, such as who is affected and what they have to do today. Never add circumstances the input doesn't state. If the input gives no situation at all, write None given."));
+  assert.match(rules, /- Bad: `A subscriber who moves house emails support, and an agent updates the address in Stockroom\.`/);
+  assert.match(rules, /- Good: `Subscribers can't change their address in the web app, so they email support and an agent updates it in Stockroom\.`/);
+  assert.ok(rules.includes('Every requirement comes from the input or the context files. Anything else, such as a behavior carried over from another story, ends with To confirm or goes to Questions before building.'));
+  assert.match(storyMode(), /Reread every Known line against the source it cites, and the Example, every Background line and every requirement against the input, the same way\./);
+});
+
+// Trial 10b: three requirements stated a behavior the thread never mentions, with only its details marked To confirm.
+test('a behavior the input does not settle is a whole To confirm requirement, and the truth step asks about the behavior itself', () => {
+  const rules = file('writing-rules.md');
+  assert.ok(rules.includes("If the input and context files don't settle a behavior, don't state it as a requirement. Write the whole requirement as a question to confirm, like: `5. To confirm: whether the page checks the address before saving.` Marking only its details To confirm is not enough."));
+  assert.ok(rules.includes('- Bad: `5. The page checks the new address before saving it. To confirm: which checks, and what the page shows when one fails.`'));
+  assert.ok(rules.includes('- Good: `5. To confirm: whether the page checks the address before saving.`'));
+  assert.match(storyMode(), /For each requirement, ask whether the input or a context file settles the behavior itself, not just its details\./);
+  // The expected address-change story follows the rule it teaches.
+  const story = readFileSync(join(root, 'examples/pellwick/expected/address-change.md'), 'utf8');
+  assert.match(story, /^4\. To confirm: whether and how the account page tells a subscriber who saves a new address after the cutoff which box it applies to\.$/m);
+  assert.doesNotMatch(story, /shows the result/);
 });

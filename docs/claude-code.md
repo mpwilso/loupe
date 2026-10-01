@@ -46,6 +46,10 @@ For a per-project install, use `.claude/skills/loupe/src/run.js` in place of the
 
 Correct a story, answer one of its questions, or ask Loupe to remember something about the team. It proposes the exact learned.md entries, each with its source, and asks "Save these to learned.md?" On a yes, it edits `loupe/learned.md`, checks the folder, and shows you the change. The next story uses it.
 
+## Story format
+
+New user stories, job stories and bugs use story format v2, built for developers and testers: Background, an Example from the input, numbered Requirements, Notes and Test scenarios, each scenario with a happy path and at least one unhappy path. Stories saved in v1, with acceptance criteria, still pass the checker. Spikes and team templates keep their own sections.
+
 ## What to commit
 
 Commit `loupe/context/`, `loupe/learned.md` and `loupe/templates/`, so everyone gets the same context and changes go through review. Whether to commit `loupe/stories/` is your team's choice.

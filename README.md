@@ -24,9 +24,9 @@ Every story opens with three lines: the call (written, or not ready yet), how co
 > Confidence: Medium, who, what, where and the cutoff are clear, but billing for a moved box is untested.<br>
 > First question: Does skipping count as a payments change under the December freeze, since it affects charging?
 >
-> **Acceptance criteria**
+> **Test scenarios**
 >
-> - Given my next box's cutoff, 72 hours before the ship date today, has not passed, when I skip it, then it moves to the next regular delivery date. To confirm: whether and how the page shows the new date.
+> TEST SCENARIO: Skip the next box from my account<br>HAPPY PATH: Before the cutoff<br>WHEN my next box's cutoff has not passed<br>AND I skip it from my account<br>THEN it moves to the next regular delivery date. To confirm: whether and how the page shows the new date.<br>UNHAPPY PATH: After the cutoff<br>WHEN my next box's cutoff has passed<br>AND I open my account<br>THEN I can't skip it. To confirm: what the page shows instead.
 >
 > **Known**
 >
@@ -37,7 +37,7 @@ Every story opens with three lines: the call (written, or not ready yet), how co
 >
 > - Whether the billing job leaves out a box whose date moved. Sam has not checked yet.
 
-The full story, with acceptance criteria, estimate and questions, is below.
+The full story, with its background, requirements, test scenarios, estimate and questions, is below.
 
 <details>
 <summary>The skip-a-box story, written from a meeting transcript</summary>
@@ -52,14 +52,56 @@ First question: Does skipping count as a payments change under the December free
 ## The story
 As a subscriber, I want to skip my next box from my account, so that I don't pay for refills I don't need yet or wait on support.
 
-## Acceptance criteria
-- Given my next box's cutoff, 72 hours before the ship date today, has not passed, when I skip it, then it moves to the next regular delivery date. To confirm: whether and how the page shows the new date.
-- Given my next box's cutoff has passed, when I open my account, then I can't skip it. To confirm: what the page shows instead.
-- Given I skipped my next box, when its original ship date passes, then I am not charged for it.
-- Given a subscriber skipped a box, when an agent opens them in Stockroom, then the history shows a note that the customer skipped it. To confirm: the exact wording (Dana suggested "Skipped by customer") and whether it shows the date and time.
+## Background
+Skips were the top Helpline reason in August: 610 of 4,100 tickets, about three minutes of agent time each. (Dana, meeting 2026-09-22)
+Customers who cancel to avoid a box are lost about half the time. (Dana, meeting 2026-09-22)
+
+## Example
+Customers going on holiday, or with plenty of refills left, want to skip the next box, and today they have to email support or open a chat. (Dana, meeting 2026-09-22)
+
+## Requirements
+1. A subscriber can skip their next box from their account until the box's cutoff, 72 hours before the ship date today.
+2. A skipped box moves to the next regular delivery date. To confirm: whether and how the page shows the new date.
+3. After the cutoff, the subscriber can't skip the box. To confirm: what the page shows instead.
+4. A skipped box isn't charged on its original ship date.
+5. Stockroom's history shows a note that the customer skipped the box. To confirm: the exact wording (Dana suggested "Skipped by customer") and whether it shows the date and time.
 
 ## Not included
 - Skipping any box other than the next one. Priya decided on the next box only for now. (meeting 2026-09-22)
+
+## Notes
+- The cutoff is already stored per box and shown on the "change my box" page, so skipping can reuse it. (Theo and Sam, meeting 2026-09-22)
+
+## Test scenarios
+TEST SCENARIO: Skip the next box from my account
+HAPPY PATH: Before the cutoff
+WHEN my next box's cutoff has not passed
+AND I skip it from my account
+THEN it moves to the next regular delivery date. To confirm: whether and how the page shows the new date.
+UNHAPPY PATH: After the cutoff
+WHEN my next box's cutoff has passed
+AND I open my account
+THEN I can't skip it. To confirm: what the page shows instead.
+
+TEST SCENARIO: Billing for a skipped box
+HAPPY PATH: Skipped box
+WHEN I skip my next box
+AND its original ship date passes
+THEN I am not charged for it
+UNHAPPY PATH: Box not skipped
+WHEN I don't skip my next box
+AND its ship date comes
+THEN I am charged on the ship date
+
+TEST SCENARIO: Stockroom shows the customer's skip
+HAPPY PATH: Skipped by the customer
+WHEN a subscriber skips a box
+AND an agent opens them in Stockroom
+THEN the history shows a note that the customer skipped it. To confirm: the exact wording (Dana suggested "Skipped by customer") and whether it shows the date and time.
+UNHAPPY PATH: Skip refused after the cutoff
+WHEN the box's cutoff has passed, so the subscriber can't skip it
+AND an agent opens them in Stockroom
+THEN the box keeps its date and no skip note shows
 
 ## Known
 - Skips were the top Helpline reason in August: 610 of 4,100 tickets, about three minutes of agent time each. Customers who cancel to avoid a box are lost about half the time. (Dana, meeting 2026-09-22)
@@ -133,13 +175,11 @@ From trials on one small invented team, a handful of inputs each; see [docs/tria
 - **Learning that asks before saving.** Trial 6 found a learned fact with no person in its source, approved entries changed after the yes, and "remember this" saved to Claude's own memory with no source. After the fixes, trial 6b passed every step it reran. ([trial 6](docs/trials/2026-09-30-trial-6.md), [trial 6b](docs/trials/2026-09-30-trial-6b.md))
 - **File tools, not shell commands.** In trial 7, Loupe tried shell commands outside its rules, including a python edit, and permissions blocked them. Files mode now writes with Claude Code's file tools, never with shell commands, and the guide's rules make Claude Code keep it inside `loupe/`. The rerun passed every step. ([trial 7](docs/trials/2026-09-30-trial-7.md))
 - **Tracker facts, sourced.** Trial 8 named tracker tickets in questions with sources the checker never looked at, so the checker now needs a live source for a ticket anywhere in a story. A story marked "Not checked" without trying led to "always run the checker". Repeat runs found that the setup guide's edit rule broke after a `cd`; the guide's new rule fixes it, for v0.3.0 users too. ([trial 8](docs/trials/2026-09-30-trial-8.md))
+- **Examples and requirements kept to the input.** In trial 10, two stories invented a detail in their Example, and in 10b, three stated behaviors the input never mentions as requirements. Examples now keep to what the input says, and an unsettled behavior becomes a whole "To confirm" requirement; in 10c, all four address-change stories passed. ([trial 10](docs/trials/2026-10-01-trial-10.md))
 
 ## How it works
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/img/how-it-works-dark.svg">
-  <img src="docs/img/how-it-works-light.svg" alt="How Loupe works: setup turns your documents into context files, every fact with its source. An input comes in and gets a readiness check. Too thin, and you get Not ready yet with the questions to ask. Ready, and Loupe writes it in your team's template, the checker sends it back until it passes, every known fact is reread against its source, and you get the story." width="660">
-</picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/how-it-works-dark.svg"><img src="docs/img/how-it-works-light.svg" alt="How Loupe works: setup turns your documents into context files, every fact with its source. An input comes in and gets a readiness check. Too thin, and you get Not ready yet with the questions to ask. Ready, and Loupe writes it in your team's template, the checker sends it back until it passes, every known fact is reread against its source, and you get the story." width="660"></picture>
 
 Loupe learns your team once, from your own documents. Each input then gets a readiness check, a story in your team's template, and a checker that sends it back until it fits. Before you see it, Loupe rereads every known fact against its source.
 

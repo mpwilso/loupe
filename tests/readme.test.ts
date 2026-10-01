@@ -134,14 +134,16 @@ test('the story section shows real lines from the example, then the whole story,
   for (const line of quote.filter(Boolean)) {
     const bold = line.match(/^\*\*(.+)\*\*$/);
     if (bold) assert.ok(lines.includes(`## ${bold[1]}`), `no section "${bold[1]}" in skip-a-box.md`);
-    else excerpt.push(line.replace(/<br>$/, ''));
+    else excerpt.push(...line.split('<br>').filter(Boolean));
   }
   assert.deepEqual(quote.filter((line) => line.endsWith('<br>')).length, 2, 'the three summary lines stay on separate lines');
   for (const line of excerpt) assert.ok(lines.includes(line), `not in skip-a-box.md: ${line}`);
   const after = (heading: string, n: number) => story.split(`${heading}\n`)[1].split('\n').slice(0, n);
   for (const line of [...lines.slice(0, 3), ...after('## Known', 2), ...after('## Unknown', 1)]) assert.ok(excerpt.includes(line), line);
   assert.ok(excerpt.some((line) => line.includes('To confirm:')), 'a "To confirm" line');
-  assert.ok(body.includes('The full story, with acceptance criteria, estimate and questions, is below.'));
+  // v2: the excerpt shows a whole test scenario, with its happy and unhappy paths.
+  for (const start of ['TEST SCENARIO: ', 'HAPPY PATH: ', 'UNHAPPY PATH: ', 'WHEN ', 'THEN ']) assert.ok(excerpt.some((line) => line.startsWith(start)), start);
+  assert.ok(body.includes('The full story, with its background, requirements, test scenarios, estimate and questions, is below.'));
   assert.ok(body.includes('<details>') && body.includes('```markdown\n' + story + '```\n'), 'the full story, word for word');
 });
 
@@ -160,17 +162,18 @@ test('every proof line links its trial file, in plain words', () => {
   assert.ok(proof.includes('- Every ticket created in trial 9 matched its story byte for byte, compared by script, and nothing was created without a yes. ([trial 9](docs/trials/2026-10-01-trial-9.md))'));
 });
 
-test('what the trials changed: eight bullets in a fixed order, each linking the trials it came from', () => {
+test('what the trials changed: nine bullets in a fixed order, each linking the trials it came from', () => {
   const items = section('What the trials changed').split('\n').filter((line) => line.startsWith('- '));
-  assert.deepEqual(items.map((item) => item.match(/^- \*\*(.+?)\*\*/)?.[1]), ['A fair baseline.', 'Guesses marked.', 'Starts every time.', 'Rules it missed.', 'One source per fact.', 'Learning that asks before saving.', 'File tools, not shell commands.', 'Tracker facts, sourced.']);
+  assert.deepEqual(items.map((item) => item.match(/^- \*\*(.+?)\*\*/)?.[1]), ['A fair baseline.', 'Guesses marked.', 'Starts every time.', 'Rules it missed.', 'One source per fact.', 'Learning that asks before saving.', 'File tools, not shell commands.', 'Tracker facts, sourced.', 'Examples and requirements kept to the input.']);
   const links = items.map((item) => [...item.matchAll(/\[(trial \d+[a-z]?)\]/g)].map((m) => m[1]).join(', '));
-  assert.deepEqual(links, ['trial 1, trial 2', 'trial 2, trial 3', 'trial 3, trial 4', 'trial 3, trial 4', 'trial 4, trial 5', 'trial 6, trial 6b', 'trial 7', 'trial 8']);
+  assert.deepEqual(links, ['trial 1, trial 2', 'trial 2, trial 3', 'trial 3, trial 4', 'trial 3, trial 4', 'trial 4, trial 5', 'trial 6, trial 6b', 'trial 7', 'trial 8', 'trial 10']);
   assert.ok(items[5].includes('trial 6b passed every step it reran'));
   assert.ok(items[0].includes('a usable estimate on 1 of 4 stories, against Loupe\'s 4 of 4'));
   assert.ok(items[1].includes('9 guessed behaviors') && items[1].includes('trial 3 had 0'));
   assert.ok(items[2].includes('1 of 6 runs') && items[2].includes('all 6 runs in trial 4'));
   assert.ok(items[6].includes('In trial 7, Loupe tried shell commands outside its rules, including a python edit, and permissions blocked them.') && items[6].includes("Files mode now writes with Claude Code's file tools, never with shell commands"));
-  // Trials 7 and 8 keep their reruns in one record each, so their bullets link that one.
+  assert.ok(items[8].includes('an unsettled behavior becomes a whole "To confirm" requirement; in 10c, all four address-change stories passed'));
+  // Trials 7, 8 and 10 keep their reruns in one record each, so their bullets link that one.
   assert.ok(items[7].includes('the checker now needs a live source for a ticket anywhere in a story') && items[7].includes('"always run the checker"') && items[7].includes('for v0.3.0 users too'));
   for (const item of items) {
     const trials = [...item.matchAll(/\]\((docs\/trials\/[\w.-]+\.md)\)/g)].map((m) => m[1]);
