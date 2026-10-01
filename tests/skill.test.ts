@@ -35,6 +35,7 @@ const sources: Record<string, string> = {
   'writing-rules.md': 'skill/writing-rules.md',
   'learning.md': 'skill/learning.md',
   'files-mode.md': 'skill/files-mode.md',
+  'tracker.md': 'skill/tracker.md',
   'src/run.js': 'src/run.js',
   'src/node-version.js': 'src/node-version.js',
   'src/check.ts': 'src/check.ts',
@@ -333,6 +334,11 @@ test('story mode reruns the checker up to five times, and keeps "Not checked" fo
   assert.match(story, /Fix every line the checker reports and run it again, until it passes, up to five runs\./);
   assert.match(story, /If it still fails after five runs, show the draft with the line `Failed the checker after five runs:` and the remaining messages right under the summary, and `Call: Failed the checker`\. Never call it passed\./);
   assert.match(skill, /`Not checked:` is only for when a checker can't start or Node is too old\./);
+  // Trial 8b: step A marked a story "Not checked" without trying, after an unrelated command was denied, and step E ran six times.
+  assert.ok(skill.includes('A denied or failed command does not mean the checker is denied. Always run the checker command itself. Write Not checked only if that exact command fails to start, and quote its error.'));
+  assert.ok(story.includes('Count every run, the first and any after step 6 included: the limit is five checker runs per story.'));
+  assert.ok(file('files-mode.md').includes('at most five runs in all, as in SKILL.md.'));
+  assert.doesNotMatch(file('files-mode.md'), /rerun up to five times/);
   assert.doesNotMatch(skill, /at most twice|once more/);
   assert.match(skill, /Call: Story written, Not ready yet, Not checked or Failed the checker/);
 });
@@ -463,4 +469,48 @@ test('files mode saves a duplicate story as -2 without asking, and names the fil
 // Trial 7b: read-only shell commands still ran, and with the recommended permissions each one asks the user.
 test('files mode reads files with the Read tool, not shell commands', () => {
   assert.ok(filesMode().includes("Read files with Claude Code's Read tool, not shell commands such as cat, ls or find."));
+  // Trial 8c: a cd into loupe/ moved the current directory, and two stories couldn't be saved.
+  assert.ok(filesMode().includes('Never change directory (no cd). Run every command from the project root, and use paths like loupe/stories/...'));
+  // Trial 8d: A-1 summed up its story in the reply and named two issues there without a source.
+  assert.ok(filesMode().includes("Your reply is the story exactly as saved, plus the checker's line. Never summarize it, and never name a tracker issue in the reply without its live source."));
+});
+
+// M4b: live context from a tracker, read-only.
+const tracker = () => file('tracker.md');
+
+test('SKILL.md points to the tracker steps when tracker tools are there, and says nothing of a tracker otherwise', () => {
+  const skill = file('SKILL.md');
+  // Trial 8's first run skipped a separate pointer, so the tracker search is part of step 1 of every story.
+  const step1 = storyMode().split('\n').find((line) => line.startsWith('1. ')) ?? '';
+  assert.ok(step1.includes('`SKILL/tracker.md`'), step1);
+  assert.match(step1, /If you have tools from an issue tracker, such as `mcp__pellwick-tracker__search_issues` or a Jira search, read `SKILL\/tracker\.md` and search the tracker now, before step 2/);
+  // Trial 8 step E mentioned the tracker when none was loaded.
+  assert.ok(step1.includes('If you have no tracker tools, skip the search and never mention a tracker, Jira or issue search in the reply or the story.'), step1);
+  assert.ok(skill.split('\n').length <= 80);
+});
+
+test('the tracker steps: search first, read at most 5, cite with a live source, and flag a likely duplicate', () => {
+  const text = tracker();
+  assert.match(text, /Read at most 5 issues/);
+  assert.ok(text.includes('"(Jira SUBS-142, read 2026-10-02 14:05)"'));
+  assert.match(text, /Use the read time the tool returned for that call/);
+  assert.ok(text.includes('"SUBS-142 looks like the same request. Should this be a new story or an update to it? (Jira SUBS-142, read 2026-10-02 14:05)"'));
+  // Trial 8 step A read SUBS-101 and cited nothing from it, and named two issues in questions without a live source.
+  assert.ok(text.includes("If you read an issue and it's relevant to the story, cite at least one fact from it as a Known line with its live source"));
+  assert.ok(text.includes("If an issue turns out not to be relevant, don't mention it."));
+  assert.match(text, /Any line that names an issue, in any section, ends with that issue's live source/);
+  // Trial 8d: A-2 cited three issues correctly, but only in questions and "Before release:", never as Known.
+  assert.ok(text.includes('When a relevant issue settles a fact the story relies on, put that fact on a Known line with the live source. Use questions only for what the issue leaves open.'));
+  assert.match(text, /never mention a tracker, Jira or issue search in the reply or the story/);
+  assert.match(text, /Write the story anyway/);
+});
+
+test('the tracker steps never write to the tracker, keep customer data out, and keep live facts live', () => {
+  const text = tracker();
+  assert.match(text, /Never create, change, comment on, close or move an issue, and never ask to/);
+  // Trial 8 step D refused, then ran on past one line.
+  assert.ok(text.includes("If asked to change the tracker, reply with exactly one line: Loupe can't change the tracker yet. Then stop, unless the user asked for something else in the same message."));
+  assert.match(text, /customers' names, emails, phone numbers and addresses/);
+  assert.match(text, /Never copy a fact read from the tracker into the context files or learned\.md/);
+  assert.match(file('learning.md'), /Never learn a fact read from a tracker/);
 });

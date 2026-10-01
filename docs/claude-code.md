@@ -58,7 +58,7 @@ The skill's own rule keeps Loupe inside `loupe/`: it writes only there, and runs
 {
   "permissions": {
     "allow": [
-      "Edit(loupe/**)",
+      "Edit(/loupe/**)",
       "Bash(node .claude/skills/loupe/src/run.js *)",
       "Bash(node */.claude/skills/loupe/src/run.js *)",
       "Bash(git diff *)",
@@ -70,7 +70,9 @@ The skill's own rule keeps Loupe inside `loupe/`: it writes only there, and runs
 
 Loupe can then edit inside `loupe/` and run its checker without asking, and Claude Code asks you before anything else. The first `node` rule covers a project install, run from the repository's root; the second covers a checker named by its full path, as with a personal install. If Claude still asks before running the checker, `Bash(node */src/run.js *)` works too, but it also lets Claude run any Node script whose arguments include `/src/run.js`. Allow nothing broader. Claude Code checks file writes against `Edit` rules; a `Write` rule is accepted but never used.
 
-Claude Code ignores allow rules in a repository's `.claude/settings.json` until you trust that folder: start Claude Code there once and accept its trust prompt. Until then, it asks before every edit.
+Keep the leading slash in `Edit(/loupe/**)`. In a settings file, it anchors the rule at your repository's root, so it still matches after Claude changes directory. Without it, `loupe/**` is relative to the current directory: after a `cd` into `loupe/`, it points at `loupe/loupe/`, and every save asks you first. Earlier versions of this guide had that rule.
+
+Claude Code ignores allow rules in a repository's `.claude/settings.json` until you trust that folder: start Claude Code there once and accept its trust prompt. Until then, it asks before every edit. To use these rules only for yourself, put the same block in `.claude/settings.local.json` instead: it needs no trust prompt as long as git doesn't track it.
 
 ## If you also use Loupe in claude.ai
 

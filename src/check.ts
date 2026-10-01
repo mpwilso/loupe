@@ -39,6 +39,8 @@ type StoryShape = Shape & {
   unchecked: { pattern: string; message?: string };
   failed: { pattern: string; message?: string };
   chatOnly: { pattern: string; message?: string };
+  liveSource: { key: string; detect: string; pattern: string; noSourceMessage?: string; noReadMessage?: string; badReadMessage?: string };
+  secrets: { message?: string };
   summary: {
     lines: LineRule[];
     calls: { story: string; notReady: string; unchecked: string; failed: string };
@@ -171,7 +173,7 @@ export function check(text: string, templates = builtIn): { errors: Problem[]; w
   if (hasSummary) checkLines(summary, story.summary.lines, 'The summary', 1, add);
   if (hasSummary) checkSummary(summary, rest, notReady, mark, add);
   const inBody = [...marks.map(({ line, text }) => ({ line, text })), ...checkShape(rest, shape, templates, offset > 0).map((e) => (e.line ? { ...e, line: e.line + skip } : e))];
-  const errors = [...found, ...chat.filter((e) => e.text), ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines)];
+  const errors = [...found, ...chat.filter((e) => e.text), ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines), ...checkLiveSources(lines), ...checkSecrets(lines).filter((e) => e.text)];
   return { errors: errors.map((e) => (e.line ? { ...e, line: e.line + offset } : e)), warnings: [] };
 }
 
@@ -352,6 +354,40 @@ function checkLines(body: Entry[], rules: LineRule[], name: string, anchor: numb
     }
   });
   if (body.length > next) add(body[next].line, fill(M.extraLine, { name, count: rules.length }));
+}
+
+// A tracker record, like SUBS-142, can be named anywhere in a story, but only on a line that ends with its live
+// source: the tracker, the record and when it was read, since tracker data changes.
+function checkLiveSources(lines: string[]): Problem[] {
+  const rule = story.liveSource;
+  const detect = new RegExp(fill(rule.detect, { key: rule.key }));
+  const pattern = new RegExp(fill(rule.pattern, { key: rule.key }));
+  return lines.flatMap((text, i) => {
+    const line = i + 1;
+    const sources = (text.match(/\(([^()]+)\)$/)?.[1].split('; ') ?? []).flatMap((source) => {
+      const key = detect.exec(source)?.[1];
+      return key ? [{ source, key }] : [];
+    });
+    const problems = sources.map(({ source }) => {
+      if (!/, read /.test(source)) return rule.noReadMessage;
+      const read = pattern.exec(source);
+      const time = read && Date.parse(`${read[2]}T00:00:00Z`);
+      const real = read && !Number.isNaN(time) && new Date(time!).toISOString().startsWith(read[2]);
+      return real ? undefined : rule.badReadMessage;
+    });
+    const cited = new Set(sources.map((s) => s.key));
+    const named = new Set([...text.matchAll(new RegExp(`\\b(${rule.key})\\b`, 'g'))].map((m) => m[1]));
+    for (const key of named) if (!cited.has(key)) problems.push(fill(rule.noSourceMessage, { key }));
+    return problems.flatMap((message) => (message ? [{ line, text: message }] : []));
+  });
+}
+
+// Secrets and customer data, with the same detector as the context files.
+const secretPatterns = loadSpec<{ secrets: { what: string; pattern: string; flags?: string }[] }>('context-file.json').secrets;
+function checkSecrets(lines: string[]): Problem[] {
+  return lines.flatMap((text, i) =>
+    secretPatterns.filter((s) => new RegExp(s.pattern, s.flags).test(text)).map((s) => ({ line: i + 1, text: fill(story.secrets.message, { what: s.what }) })),
+  );
 }
 
 function checkPlainLanguage(lines: string[]): Problem[] {

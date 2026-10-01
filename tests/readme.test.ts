@@ -119,7 +119,7 @@ test('what is different includes the learning loop, and what is next no longer l
   assert.ok(section("What's different").includes('- **It learns from corrections and answers.** Every learned fact names its source, and nothing is saved without your yes.'));
   const next = section("What's next");
   assert.doesNotMatch(next, /learning loop/i);
-  assert.match(next, /^1\. Live context in Claude Code/m);
+  assert.match(next, /^1\. Checks against your lower environments that read and never change anything/m);
 });
 
 test('the story section shows real lines from the example, then the whole story, collapsed', () => {
@@ -155,18 +155,20 @@ test('every proof line links its trial file, in plain words', () => {
   assert.ok(proof.includes('From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).'));
 });
 
-test('what the trials changed: six bullets in a fixed order, each linking the trial it came from and the next', () => {
+test('what the trials changed: seven bullets in a fixed order, each linking the trials it came from', () => {
   const items = section('What the trials changed').split('\n').filter((line) => line.startsWith('- '));
-  assert.deepEqual(items.map((item) => item.match(/^- \*\*(.+?)\*\*/)?.[1]), ['A fair baseline.', 'Guesses marked.', 'Starts every time.', 'Rules it missed.', 'One source per fact.', 'Learning that asks before saving.']);
+  assert.deepEqual(items.map((item) => item.match(/^- \*\*(.+?)\*\*/)?.[1]), ['A fair baseline.', 'Guesses marked.', 'Starts every time.', 'Rules it missed.', 'One source per fact.', 'Learning that asks before saving.', 'Tracker facts, sourced.']);
   const links = items.map((item) => [...item.matchAll(/\[(trial \d+[a-z]?)\]/g)].map((m) => m[1]).join(', '));
-  assert.deepEqual(links, ['trial 1, trial 2', 'trial 2, trial 3', 'trial 3, trial 4', 'trial 3, trial 4', 'trial 4, trial 5', 'trial 6, trial 6b']);
+  assert.deepEqual(links, ['trial 1, trial 2', 'trial 2, trial 3', 'trial 3, trial 4', 'trial 3, trial 4', 'trial 4, trial 5', 'trial 6, trial 6b', 'trial 8']);
   assert.ok(items[5].includes('trial 6b passed every step it reran'));
   assert.ok(items[0].includes('a usable estimate on 1 of 4 stories, against Loupe\'s 4 of 4'));
   assert.ok(items[1].includes('9 guessed behaviors') && items[1].includes('trial 3 had 0'));
   assert.ok(items[2].includes('1 of 6 runs') && items[2].includes('all 6 runs in trial 4'));
+  // Trial 8's rounds, 8 to 8e, share one record, so its bullet links that one.
+  assert.ok(items[6].includes('the checker now needs a live source for a ticket anywhere in a story') && items[6].includes('"always run the checker"') && items[6].includes('for v0.3.0 users too'));
   for (const item of items) {
     const trials = [...item.matchAll(/\]\((docs\/trials\/[\w.-]+\.md)\)/g)].map((m) => m[1]);
-    assert.ok(trials.length >= 2, `a trial and the next one: ${item}`);
+    assert.ok(trials.length >= (item === items[6] ? 1 : 2), `a trial and the next one: ${item}`);
     for (const file of trials) assert.ok(existsSync(join(root, file)), file);
   }
 });
@@ -222,5 +224,15 @@ test('setup covers Claude Code: the install commands, the guide, and what is tes
   assert.ok(section("What's different").includes('- **In Claude Code, it keeps to its folder.** It reads your team\'s context from a `loupe/` folder in your repository and writes nowhere else.'));
   const next = section("What's next");
   assert.doesNotMatch(next, /A VS Code version/);
-  assert.match(next, /^1\. Live context in Claude Code: checks against your lower environments that read but never change anything, and Jira, which never writes to the tracker without your approval\.$/m);
+  assert.match(next, /^1\. Checks against your lower environments that read and never change anything, and creating Jira tickets with your approval\.$/m);
+});
+
+// M4b: the tracker, in plain words, with its limits as measured in trial 8e.
+test('the README says what reading a tracker does, and its limits as measured', () => {
+  assert.ok(section("What's different").includes('- **In Claude Code, it can read your tracker.** It searches the team\'s tracker before writing, cites any ticket it uses with when it was read, flags likely duplicates, and never changes the tracker.'));
+  const limits = section('Limits');
+  assert.ok(limits.includes('- The customer-data detector catches emails and secrets, but not names, phone numbers or street addresses.'));
+  assert.ok(limits.includes('- The tracker work was tested on an invented mock tracker, never a real one.'));
+  assert.ok(limits.includes('- Where Loupe cites tracker facts still varies from run to run: in trial 8e, 2 of 3 stories listed a fact from a ticket under Known, and the third left it as a question.'));
+  assert.match(readFileSync(join(root, 'docs/trials/2026-09-30-trial-8.md'), 'utf8'), /\| 8e \| 2 of 3 \|/, 'the rate the README quotes is the one recorded');
 });

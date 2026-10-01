@@ -1,0 +1,138 @@
+{
+  "project": "SUBS",
+  "name": "Subscriptions",
+  "issues": [
+    {
+      "key": "SUBS-101",
+      "title": "Agents: skip a subscriber's next box in Stockroom",
+      "status": "Closed",
+      "type": "Task",
+      "created": "2026-03-02",
+      "updated": "2026-03-20",
+      "reporter": "Dana Ruiz",
+      "description": "Support agents skip a box for a subscriber by opening them in Stockroom, moving the next delivery date to the one after, and adding a note to the history. Written up as a Helpline macro so every agent does it the same way. Takes about three minutes per request.",
+      "labels": ["support", "stockroom", "skip"]
+    },
+    {
+      "key": "SUBS-118",
+      "title": "Update the refill catalogue photos",
+      "status": "Done",
+      "type": "Task",
+      "created": "2026-05-11",
+      "updated": "2026-06-02",
+      "reporter": "Priya Raman",
+      "description": "Replace the refill photos on the catalogue page with the new packaging shots.",
+      "labels": ["web-app", "content"]
+    },
+    {
+      "key": "SUBS-123",
+      "title": "Speed up the account page on mobile",
+      "status": "Open",
+      "type": "Story",
+      "created": "2026-06-18",
+      "updated": "2026-08-30",
+      "reporter": "Sam Okafor",
+      "description": "The account page takes several seconds to load on older phones. Look at image sizes and the number of requests on first load.",
+      "labels": ["web-app", "performance"]
+    },
+    {
+      "key": "SUBS-127",
+      "title": "Fix a typo in the cancellation email",
+      "status": "Done",
+      "type": "Bug",
+      "created": "2026-06-25",
+      "updated": "2026-06-26",
+      "reporter": "Dana Ruiz",
+      "description": "The cancellation email says \"we're sorry to see you go\" twice.",
+      "labels": ["email"]
+    },
+    {
+      "key": "SUBS-131",
+      "title": "Let subscribers pause their subscription",
+      "status": "Open",
+      "type": "Story",
+      "created": "2026-07-10",
+      "updated": "2026-09-12",
+      "reporter": "Dana Ruiz",
+      "description": "Subscribers ask to pause deliveries for a few weeks while they travel, and today support moves each box by hand in Stockroom. First raised by a subscriber, jordan.ellis@example.net, in Helpline ticket 47102, who wanted to pause for a month. Pausing would need to respect each box's cutoff.",
+      "labels": ["self-service", "pause"]
+    },
+    {
+      "key": "SUBS-134",
+      "title": "Show the next delivery date on the orders page",
+      "status": "Done",
+      "type": "Story",
+      "created": "2026-07-22",
+      "updated": "2026-08-19",
+      "reporter": "Priya Raman",
+      "description": "Subscribers can see their next delivery date on the orders page. The date comes from the subscriptions database the web app shares with Stockroom.",
+      "labels": ["web-app", "orders"]
+    },
+    {
+      "key": "SUBS-137",
+      "title": "Stockroom: show who changed a box's delivery date",
+      "status": "Open",
+      "type": "Story",
+      "created": "2026-08-05",
+      "updated": "2026-09-01",
+      "reporter": "Sam Okafor",
+      "description": "When a delivery date changes, agents can't tell whether the subscriber, an agent or the system changed it. Add who made the change to the box history in Stockroom.",
+      "labels": ["stockroom", "history"]
+    },
+    {
+      "key": "SUBS-142",
+      "title": "Let subscribers change their delivery address from their account",
+      "status": "Open",
+      "type": "Story",
+      "created": "2026-08-14",
+      "updated": "2026-09-03",
+      "reporter": "Dana Ruiz",
+      "description": "Address changes are one of the top Helpline reasons. Subscribers can't change their delivery address in the web app, so they email support and an agent updates it in Stockroom. Let them do it from their account page.",
+      "labels": ["self-service", "address"]
+    },
+    {
+      "key": "SUBS-145",
+      "title": "Refund part of a box when an item is out of stock",
+      "status": "Open",
+      "type": "Story",
+      "created": "2026-08-21",
+      "updated": "2026-08-21",
+      "reporter": "Theo Park",
+      "description": "When one refill is out of stock, the warehouse ships the rest of the box. Support refunds the missing item by hand. Look at refunding it automatically.",
+      "labels": ["warehouse", "refunds"]
+    },
+    {
+      "key": "SUBS-150",
+      "title": "\"Payment failed\" banner stays after a new card is charged",
+      "status": "In Progress",
+      "type": "Bug",
+      "created": "2026-09-25",
+      "updated": "2026-09-28",
+      "reporter": "Dana Ruiz",
+      "description": "After a failed charge, subscribers who add a new card still see the \"Payment failed\" banner on their account page, while Stockroom shows the charge as paid. 24 tickets in September so far, starting with Helpline ticket 48213. Reproduced in staging: the banner was still there 30 minutes after the new card was charged.",
+      "labels": ["web-app", "billing", "bug"]
+    },
+    {
+      "key": "SUBS-152",
+      "title": "Holiday cutoff: 96 hours from 1 December to 5 January",
+      "status": "Open",
+      "type": "Change request",
+      "created": "2026-09-26",
+      "updated": "2026-09-26",
+      "reporter": "Theo Park",
+      "description": "Warehouse operations asked for the box cutoff to move from 72 to 96 hours before the ship date from 1 December, and back to 72 hours on 5 January, because December volume nearly doubles.",
+      "labels": ["warehouse", "cutoff", "holiday"]
+    },
+    {
+      "key": "SUBS-155",
+      "title": "Update the help centre article on changing a box",
+      "status": "Open",
+      "type": "Task",
+      "created": "2026-09-27",
+      "updated": "2026-09-27",
+      "reporter": "Dana Ruiz",
+      "description": "The help centre article still says subscribers must contact support to change what is in their box. They can do it themselves on the \"change my box\" page.",
+      "labels": ["help-centre", "content"]
+    }
+  ]
+}

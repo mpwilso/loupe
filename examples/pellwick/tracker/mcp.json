@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "pellwick-tracker": {
+      "command": "node",
+      "args": ["mock/tracker/server.ts", "examples/pellwick/tracker/issues.json"]
+    }
+  }
+}

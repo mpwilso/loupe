@@ -231,8 +231,8 @@ test('the trials README lists and links every trial record, in order, and define
   const files = readdirSync(join(root, 'docs/trials'));
   // A rerun keeps its trial's number, with a letter: trial 6b reran trial 6.
   const records = files.filter((f) => /^\d{4}-\d{2}-\d{2}-trial-\d+[a-z]?\.md$/.test(f)).sort();
-  assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-6-plan.md', 'trial-7-plan.md'], 'records, the index and plans only');
-  assert.deepEqual(records, ['1', '2', '3', '4', '5', '6', '6b', '7'].map((n) => `2026-09-30-trial-${n}.md`), 'every record is named by its trial number');
+  assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-6-plan.md', 'trial-7-plan.md', 'trial-8-plan.md'], 'records, the index and plans only');
+  assert.deepEqual(records, ['1', '2', '3', '4', '5', '6', '6b', '7', '8'].map((n) => `2026-09-30-trial-${n}.md`), 'every record is named by its trial number');
   const index = read('docs/trials/README.md');
   const lines = index.split('\n').filter((line) => line.startsWith('- '));
   assert.deepEqual(lines.map((line) => line.match(/^- \[Trial (\d+[a-z]?)\]\(([^)]+)\)/)?.slice(1).join(' ')), records.map((f) => `${f.match(/trial-(\w+)\.md$/)![1]} ${f}`));
@@ -347,13 +347,17 @@ test('the Claude Code guide installs, sets up the folder, writes a story, learns
   // Trial 7: the recommended permissions, exactly, and nothing broader.
   const block = guide.split('## Recommended permissions\n')[1]?.split('\n## ')[0] ?? '';
   const settings = JSON.parse(block.match(/```json\n([\s\S]+?)\n```/)?.[1] ?? '{}');
-  // Trial 7b: Edit(loupe/**) is the form that worked; both forms anchor at the working directory in project settings.
+  // Trial 8c: Edit(loupe/**) is relative to the current directory, so a cd into loupe/ broke every save. In a settings
+  // file, the leading slash anchors at the repository's root, and a headless probe saved after a cd with it.
   // The narrow node rules matched in a headless probe: the relative path a project install uses, and a full path.
   assert.deepEqual(settings, {
-    permissions: { allow: ['Edit(loupe/**)', 'Bash(node .claude/skills/loupe/src/run.js *)', 'Bash(node */.claude/skills/loupe/src/run.js *)', 'Bash(git diff *)', 'Bash(git status *)'] },
+    permissions: { allow: ['Edit(/loupe/**)', 'Bash(node .claude/skills/loupe/src/run.js *)', 'Bash(node */.claude/skills/loupe/src/run.js *)', 'Bash(git diff *)', 'Bash(git status *)'] },
   });
   assert.match(block, /`Bash\(node \*\/src\/run\.js \*\)` works too, but it also lets Claude run any Node script whose arguments include `\/src\/run\.js`/);
   assert.match(block, /ignores allow rules in a repository's `\.claude\/settings\.json` until you trust that folder/);
+  assert.match(block, /Keep the leading slash in `Edit\(\/loupe\/\*\*\)`/);
+  assert.match(block, /after a `cd` into `loupe\/`, it points at `loupe\/loupe\/`/);
+  assert.match(block, /put the same block in `\.claude\/settings\.local\.json` instead: it needs no trust prompt as long as git doesn't track it/);
   assert.match(block, /The skill's own rule keeps Loupe inside `loupe\/`/);
   assert.match(block, /these permissions make Claude Code enforce it/i);
   assert.match(guide, /"skillOverrides": \{ "anthropic-skills:loupe": "off" \}/, 'how to turn off the synced copy');
@@ -387,4 +391,25 @@ test('the trial 7 plan has every step, pass lines, the after-check and a scoring
 
 test('the trial 7 record says the Read-tool line came after 7b and is not confirmed by a run', () => {
   assert.match(read('docs/trials/2026-09-30-trial-7.md'), /added after 7b, and no run has confirmed it yet/);
+});
+
+// Trial 8 is planned: the mock tracker, read-only, in a fresh repository.
+test('the trial 8 plan has every step, pass lines, the call log check and a scoring sheet, and its inputs exist', () => {
+  const plan = read('docs/trials/trial-8-plan.md');
+  assert.match(plan, /This is a plan, not a record/);
+  for (const step of ['A', 'B', 'C', 'D', 'E']) {
+    const body = plan.split(`## Step ${step}:`)[1]?.split('\n## ')[0] ?? '';
+    assert.match(body, /\*\*Pass:\*\*/, `step ${step}`);
+    assert.match(plan, new RegExp(`^\\| ${step} \\| .+ \\| +\\| +\\|$`, 'm'), `step ${step} is on the scoring sheet`);
+  }
+  assert.match(plan, /LOUPE_TRACKER_LOG/);
+  // Trial 8b: step E saw step A's story in the same folder and compared the two.
+  assert.match(plan, /Each step runs in its own fresh copy of that repository, with no stories from other steps in it/);
+  assert.match(plan, /Step D is the exception: it continues B's conversation, in B's copy/);
+  // Set after trial 8c, before 8d: the same bar the skill sets, so a run can't follow the skill and still fail.
+  assert.ok(plan.includes('**Pass:** The story is saved and passes the checker. At least one related issue is cited on a Known line with a valid live source. Every tracker key in the story and the reply has a valid live source. Only read tools were called. Issues read but judged not relevant may go unmentioned, as the skill allows.'));
+  for (const [, input] of plan.matchAll(/notes\/([\w.-]+\.md)/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
+  // Step C's input leads to the issue that holds an invented customer email.
+  const issues = JSON.parse(read('examples/pellwick/tracker/issues.json')).issues;
+  assert.match(issues.find((i: { key: string }) => i.key === 'SUBS-131').description, /@example\.net/);
 });
