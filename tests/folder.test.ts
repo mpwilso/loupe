@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
@@ -52,4 +52,23 @@ test('check-folder needs a team folder: no context folder is a usage error', () 
   assert.equal(run.status, 2);
   assert.match(run.stderr, /No context folder in .+\. A team folder holds context\/, learned\.md, templates\/ and stories\/\./);
   assert.equal(checkFolder('').status, 2);
+});
+
+// The Pellwick example, as a team folder: what a team keeps in its repo, and what trial 7 starts from.
+test('the Pellwick team folder builds with the right layout and passes check-folder, with and without stories', () => {
+  const out = join(temp, 'pellwick');
+  const build = spawnSync(process.execPath, [join(root, 'scripts/build-team-folder.ts'), out], { encoding: 'utf8' });
+  assert.equal(build.status, 0, build.stderr);
+  const dir = join(out, 'loupe');
+  assert.deepEqual(readdirSync(dir).sort(), ['context', 'learned.md', 'stories', 'templates']);
+  assert.ok(!readdirSync(join(dir, 'context')).includes('learned.md'), 'learned.md sits at the root, not in context/');
+  assert.deepEqual(readdirSync(join(dir, 'stories')), [], 'a fresh folder has no stories');
+  assert.equal(checkFolder(dir).status, 0, checkFolder(dir).stdout);
+  for (const story of readdirSync(join(root, 'examples/pellwick/expected'))) copyFileSync(join(root, 'examples/pellwick/expected', story), join(dir, 'stories', story));
+  const withStories = spawnSync(process.execPath, [join(root, 'src/run.js'), 'check-folder', dir], { encoding: 'utf8', env: { ...process.env, LOUPE_TODAY: '2026-09-30' } });
+  assert.deepEqual([withStories.status, withStories.stdout], [0, `Checked with Node ${process.version}.\n`]);
+  // It never overwrites a team folder that is already there.
+  const again = spawnSync(process.execPath, [join(root, 'scripts/build-team-folder.ts'), out], { encoding: 'utf8' });
+  assert.equal(again.status, 1);
+  assert.match(again.stderr, /already exists/);
 });
