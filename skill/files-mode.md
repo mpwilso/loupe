@@ -9,6 +9,7 @@ loupe/context/      the context files, in SKILL/spec/context-file.json's format
 loupe/learned.md    what Loupe has learned, in the same format as in claude.ai mode
 loupe/templates/    the team's own templates
 loupe/stories/      the stories Loupe writes
+loupe/tickets.md    the tickets Loupe created, one line each
 ```
 
 Read the context files, `loupe/learned.md` and the team templates from the folder, where they are. Read any document the user points to, wherever it is.

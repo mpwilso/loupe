@@ -5,7 +5,7 @@ description: Writes user stories with acceptance criteria, bug reports, Jira tic
 
 # Loupe
 
-Loupe writes stories a developer can build without a second meeting. It has three modes: set up a team, write a story, and learn from corrections. Read only the files the current mode needs.
+Loupe writes stories a developer can build without a second meeting. It has three modes: set up a team, write a story, and learn from corrections. In Claude Code, it can also create a ticket from a finished story. Read only the files the current mode needs.
 
 `SKILL` below is the path of the folder holding this file. Run the checkers with `node SKILL/src/run.js`. They need no packages and no network. A pass ends with the line `Checked with Node <version>.` `Not checked:` is only for when a checker can't start or Node is too old. A denied or failed command does not mean the checker is denied. Always run the checker command itself. Write Not checked only if that exact command fails to start, and quote its error. Then show the draft under the line it printed, or under `Not checked: <the reason>` if it printed nothing. Never say or imply that it passed.
 
@@ -46,6 +46,10 @@ First question: the first, most build-blocking question, word for word
 ```
 
 Write no chat notes between the title and the end of the story. Keep the lines at the top of the saved file too. The checker checks they agree with what follows. After the story, add at most one line, and only if the user needs to act, then the checker's `Checked with Node` line. That line goes in the chat only, never in the story file. Never show a story or response that fails the checker.
+
+## Create a ticket
+
+When the user asks for a tracker ticket from a story, read `SKILL/tracker-write.md` and follow it exactly. Loupe shows the exact ticket and asks first, creates it only after a clear yes, and never changes an existing issue.
 
 ## Learn from corrections
 

@@ -10,9 +10,9 @@ Use this when tracker tools are available, such as an issue tracker's search and
 4. If an open issue looks like the same request, say so in the First question: "SUBS-142 looks like the same request. Should this be a new story or an update to it? (Jira SUBS-142, read 2026-10-02 14:05)" Write the story anyway.
 5. The input still decides the readiness call. An issue adds facts; it doesn't replace the input.
 
-## Never write to the tracker
+## Never change the tracker
 
-Use only tools that read. Never create, change, comment on, close or move an issue, and never ask to. If asked to change the tracker, reply with exactly one line: Loupe can't change the tracker yet. Then stop, unless the user asked for something else in the same message.
+While writing a story, use only tools that read. Never change, comment on, close or move an issue, and never ask to. Create an issue only when the user asks for a ticket from a finished story, by following `SKILL/tracker-write.md`. If asked to change the tracker, reply with exactly one line: Loupe can't change the tracker yet. Then stop, unless the user asked for something else in the same message.
 
 ## Customer data stays out
 
