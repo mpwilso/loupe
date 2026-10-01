@@ -107,3 +107,22 @@ test('the example project config registers the mock as pellwick-tracker, with pa
   assert.equal(command, 'node');
   for (const path of args) assert.ok(existsSync(`${root}${path}`), path);
 });
+
+// The live-context guide allows exactly the mock's read tools, and for a real Jira server denies its write tools.
+test('the live-context guide allows exactly the three read tools, and denies a real Jira server\'s write tools', async () => {
+  const { readFileSync } = await import('node:fs');
+  const guide = readFileSync(`${root}docs/live-context.md`, 'utf8');
+  const blocks = [...guide.matchAll(/```json\n([\s\S]+?)\n```/g)].map((m) => JSON.parse(m[1]));
+  const mock = blocks.find((b) => b.permissions?.allow?.some((r: string) => r.startsWith('mcp__pellwick-tracker__')));
+  const { result } = await request('tools/list');
+  assert.deepEqual(mock.permissions.allow.filter((r: string) => r.startsWith('mcp__')), result.tools.map((t: { name: string }) => `mcp__pellwick-tracker__${t.name}`));
+  const jira = blocks.find((b) => b.permissions?.deny?.length);
+  assert.ok(jira, 'a block for a real Jira server');
+  for (const tool of ['createJiraIssue', 'editJiraIssue', 'transitionJiraIssue', 'addOrEditJiraIssueComment', 'deleteJiraIssue']) {
+    assert.ok(jira.permissions.deny.includes(`mcp__atlassian__${tool}`), tool);
+  }
+  for (const rule of jira.permissions.deny) assert.ok(soundsLikeWrite(rule.replace('mcp__atlassian__', '')) || /manage|watch|upload|convert/i.test(rule), `${rule} is a write tool`);
+  for (const rule of jira.permissions.allow) assert.ok(!soundsLikeWrite(rule.replace('mcp__atlassian__', '')), `${rule} reads`);
+  assert.match(guide, /support\.atlassian\.com\/atlassian-rovo-mcp-server\/docs\/supported-tools/);
+  assert.match(guide, /not tested/i);
+});
