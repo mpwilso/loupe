@@ -4,7 +4,7 @@ This is a plan, not a record. It tests M4b: Loupe in Claude Code reading the moc
 
 ## Before you start
 
-Make a fresh repository outside this one, as for [trial 7](trial-7-plan.md), with the Pellwick team folder, the inputs in `notes/` and the skill installed per project. Register the mock tracker as `pellwick-tracker`, as [live-context.md](../live-context.md) shows, with `LOUPE_TRACKER_LOG` set so every tool call is logged. The only allow rules are the ones in [claude-code.md](../claude-code.md) and [live-context.md](../live-context.md), and only the project's Loupe and the mock tracker are loaded. Use Sonnet 5.5 at Medium.
+Make a fresh repository outside this one, as for [trial 7](trial-7-plan.md), with the Pellwick team folder, the inputs in `notes/` and the skill installed per project. Register the mock tracker as `pellwick-tracker`, as [live-context.md](../live-context.md) shows, with `LOUPE_TRACKER_LOG` set so every tool call is logged. The only allow rules are the ones in [claude-code.md](../claude-code.md) and [live-context.md](../live-context.md), and only the project's Loupe and the mock tracker are loaded. Put the allow rules in the copy's `.claude/settings.local.json`, which git doesn't track: a headless run ignores allow rules in `.claude/settings.json` in a folder it hasn't been told to trust, and `Edit(/loupe/**)` passed on the command line matches nothing. Use Sonnet 5.5 at Medium.
 
 Each step runs in its own fresh copy of that repository, with no stories from other steps in it, and starts a new conversation. Step D is the exception: it continues B's conversation, in B's copy. Trial 8b ran step E in the same folder as step A, and E compared its story with A's.
 
@@ -15,7 +15,9 @@ Send:
 Write a story from notes/skip-a-box-meeting.md.
 ```
 
-**Pass:** it finds the closed skip issue, SUBS-101, and cites it on a Known line with a live source, such as "(Jira SUBS-101, read 2026-10-02 14:05)", and the story passes the checker.
+**Pass:** The story is saved and passes the checker. At least one related issue is cited on a Known line with a valid live source. Every tracker key in the story and the reply has a valid live source. Only read tools were called. Issues read but judged not relevant may go unmentioned, as the skill allows.
+
+This bar was set after trial 8c. The first bar required citing SUBS-101, the closed skip issue, but the skill lets Loupe leave out an issue it judges not relevant.
 
 ## Step B: a likely duplicate
 

@@ -347,13 +347,17 @@ test('the Claude Code guide installs, sets up the folder, writes a story, learns
   // Trial 7: the recommended permissions, exactly, and nothing broader.
   const block = guide.split('## Recommended permissions\n')[1]?.split('\n## ')[0] ?? '';
   const settings = JSON.parse(block.match(/```json\n([\s\S]+?)\n```/)?.[1] ?? '{}');
-  // Trial 7b: Edit(loupe/**) is the form that worked; both forms anchor at the working directory in project settings.
+  // Trial 8c: Edit(loupe/**) is relative to the current directory, so a cd into loupe/ broke every save. In a settings
+  // file, the leading slash anchors at the repository's root, and a headless probe saved after a cd with it.
   // The narrow node rules matched in a headless probe: the relative path a project install uses, and a full path.
   assert.deepEqual(settings, {
-    permissions: { allow: ['Edit(loupe/**)', 'Bash(node .claude/skills/loupe/src/run.js *)', 'Bash(node */.claude/skills/loupe/src/run.js *)', 'Bash(git diff *)', 'Bash(git status *)'] },
+    permissions: { allow: ['Edit(/loupe/**)', 'Bash(node .claude/skills/loupe/src/run.js *)', 'Bash(node */.claude/skills/loupe/src/run.js *)', 'Bash(git diff *)', 'Bash(git status *)'] },
   });
   assert.match(block, /`Bash\(node \*\/src\/run\.js \*\)` works too, but it also lets Claude run any Node script whose arguments include `\/src\/run\.js`/);
   assert.match(block, /ignores allow rules in a repository's `\.claude\/settings\.json` until you trust that folder/);
+  assert.match(block, /Keep the leading slash in `Edit\(\/loupe\/\*\*\)`/);
+  assert.match(block, /after a `cd` into `loupe\/`, it points at `loupe\/loupe\/`/);
+  assert.match(block, /put the same block in `\.claude\/settings\.local\.json` instead: it needs no trust prompt as long as git doesn't track it/);
   assert.match(block, /The skill's own rule keeps Loupe inside `loupe\/`/);
   assert.match(block, /these permissions make Claude Code enforce it/i);
   assert.match(guide, /"skillOverrides": \{ "anthropic-skills:loupe": "off" \}/, 'how to turn off the synced copy');
@@ -402,6 +406,8 @@ test('the trial 8 plan has every step, pass lines, the call log check and a scor
   // Trial 8b: step E saw step A's story in the same folder and compared the two.
   assert.match(plan, /Each step runs in its own fresh copy of that repository, with no stories from other steps in it/);
   assert.match(plan, /Step D is the exception: it continues B's conversation, in B's copy/);
+  // Set after trial 8c, before 8d: the same bar the skill sets, so a run can't follow the skill and still fail.
+  assert.ok(plan.includes('**Pass:** The story is saved and passes the checker. At least one related issue is cited on a Known line with a valid live source. Every tracker key in the story and the reply has a valid live source. Only read tools were called. Issues read but judged not relevant may go unmentioned, as the skill allows.'));
   for (const [, input] of plan.matchAll(/notes\/([\w.-]+\.md)/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
   // Step C's input leads to the issue that holds an invented customer email.
   const issues = JSON.parse(read('examples/pellwick/tracker/issues.json')).issues;
