@@ -469,6 +469,8 @@ test('files mode saves a duplicate story as -2 without asking, and names the fil
 // Trial 7b: read-only shell commands still ran, and with the recommended permissions each one asks the user.
 test('files mode reads files with the Read tool, not shell commands', () => {
   assert.ok(filesMode().includes("Read files with Claude Code's Read tool, not shell commands such as cat, ls or find."));
+  // Trial 8c: a cd into loupe/ moved the current directory, and two stories couldn't be saved.
+  assert.ok(filesMode().includes('Never change directory (no cd). Run every command from the project root, and use paths like loupe/stories/...'));
 });
 
 // M4b: live context from a tracker, read-only.
