@@ -96,6 +96,8 @@ function findProblems(text: string, today: Date, options: ContextOptions): { err
     } else {
       const days = Math.floor((Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()) - time) / DAY);
       if (days > spec.staleAfterDays) warnings.push({ line: date.line, text: fill(M.stale, { date: date.value, days }) });
+      // A date after today can't be when the facts were last checked.
+      if (days < 0) warnings.push({ line: date.line, text: fill(M.future, { field: spec.dateField, date: date.value, today: today.toISOString().slice(0, 10) }) });
     }
   }
 

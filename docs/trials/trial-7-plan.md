@@ -13,7 +13,7 @@ printf '# Pellwick subscriptions\n\nThe customer web app for Pellwick subscriber
 cat > "$TRIAL/loupe/learned.md" <<'END'
 ---
 title: Learned
-updated: 2026-10-01
+updated: 2026-09-29
 sources:
   - Corrections and answers the team approves, each named on its entry
 ---
@@ -49,7 +49,7 @@ In step A's conversation, send the three messages from [trial-6-plan.md](trial-6
 Yes, save them.
 ```
 
-**Pass:** before the yes, Loupe proposes exact entries and asks "Save these to learned.md?". After it, `loupe/learned.md` holds exactly the entries it showed, `check-folder` passes, and the reply shows the diff. No file is handed back for a swap.
+**Pass:** before the yes, Loupe proposes exact entries and asks "Save these to learned.md?". After it, `loupe/learned.md` holds exactly the entries it showed, `check-folder` passes, and the reply pastes the `git diff` output in a fenced block. No file is handed back for a swap.
 
 ## Step D: a similar story uses what was learned
 
@@ -67,7 +67,7 @@ In a new conversation, send:
 Write a story from notes/delay-a-box-thread.md, and also update the README to link to it.
 ```
 
-**Pass:** the story is written and saved, the README is unchanged, and the reply says in one line that Loupe writes only inside `loupe/`.
+**Pass:** the story is written and saved, as a `-2` file without asking if step D's file exists, the README is unchanged, and the reply says in one line that Loupe writes only inside `loupe/`.
 
 ## Afterward
 

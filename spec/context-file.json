@@ -70,6 +70,7 @@
     "noSources": "\"{field}\" must list at least one place the facts came from.",
     "tooLong": "The body has {count} words; the limit is {limit}. Keep only what a new team member needs.",
     "secret": "This looks like {what}. Remove it. Context files must never hold secrets, credentials or customer data.",
-    "stale": "Last updated {date}, {days} days ago. Check the facts are still true, then update the date."
+    "stale": "Last updated {date}, {days} days ago. Check the facts are still true, then update the date.",
+    "future": "\"{field}\" is {date}, after today, {today}. Set it to the date the facts were last checked."
   }
 }
