@@ -83,3 +83,11 @@ test('check-folder checks tickets.md: a ticket for a finished story passes, one 
   assert.equal(run.status, 1);
   assert.ok(run.stdout.includes(`${join(dir, 'tickets.md')}:\n  line 2: There is no story 2026-10-02-gone.md in stories/.\n`), run.stdout);
 });
+
+// Story format v2: a team folder can hold stories saved in v1 next to new ones in v2.
+test('check-folder passes a folder with a saved v1 story and a new v2 story', () => {
+  const dir = teamFolder('v1-and-v2', 'good-story.md');
+  copyFileSync(join(fixtures, 'good-v2-story.md'), join(dir, 'stories/2026-10-03-next-delivery-date-v2.md'));
+  const run = checkFolder(dir);
+  assert.deepEqual([run.status, run.stdout], [0, `Checked with Node ${process.version}.\n`]);
+});

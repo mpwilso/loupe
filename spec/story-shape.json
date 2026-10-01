@@ -69,6 +69,56 @@
       "itemPattern": "^(- |\\d+\\. )Given .+, when .+, then .+",
       "itemMessage": "Each acceptance criterion must read \"Given ..., when ..., then ...\"."
     },
+    {
+      "heading": "## Background",
+      "name": "Background",
+      "kind": "sourced",
+      "itemPattern": "^(?!- |\\d+\\. ).+ \\([^()]+\\)$",
+      "itemMessage": "Each line of Background is one plain sentence, not a list item, ending with its source in parentheses, like a Known line. Move anything without a source to Unknown or Assumed."
+    },
+    {
+      "heading": "## Example",
+      "name": "Example",
+      "kind": "sourced",
+      "noneText": "None given.",
+      "itemPattern": "^(?!- |\\d+\\. ).+ \\([^()]+\\)$",
+      "itemMessage": "Each line of Example is one sentence from the input, not a list item, ending with its source in parentheses. If the input gives no example, write \"None given.\" Never invent one."
+    },
+    {
+      "heading": "## Requirements",
+      "name": "Requirements",
+      "kind": "list",
+      "itemPattern": "^\\d+\\. \\S",
+      "itemMessage": "Each requirement must be numbered, like \"1. Subscribers can skip their next box.\""
+    },
+    { "heading": "## Notes", "name": "Notes", "kind": "list", "allowNone": true },
+    {
+      "heading": "## Test scenarios",
+      "name": "Test scenarios",
+      "kind": "scenarios",
+      "scenarios": {
+        "scenario": "^TEST SCENARIO: \\S",
+        "happy": "^HAPPY PATH: \\S",
+        "unhappy": "^UNHAPPY PATH: \\S",
+        "when": "^WHEN \\S",
+        "then": "^THEN \\S",
+        "and": "^AND \\S",
+        "warnAbove": 5,
+        "failAbove": 10,
+        "messages": {
+          "notALine": "Test scenarios holds only TEST SCENARIO:, HAPPY PATH:, UNHAPPY PATH:, WHEN, AND and THEN lines.",
+          "noScenario": "Start each test scenario with a \"TEST SCENARIO:\" line saying what is being tested.",
+          "noPath": "Start each path with \"HAPPY PATH:\" or \"UNHAPPY PATH:\" and a short label.",
+          "thenWithoutWhen": "This THEN has no WHEN before it. Each path reads WHEN, then THEN.",
+          "incompletePath": "This path needs a WHEN line and a THEN line.",
+          "pathOrder": "Each path reads WHEN, then any AND lines, then THEN, then any AND lines.",
+          "happyCount": "Each test scenario needs exactly one HAPPY PATH. This one has {count}.",
+          "noUnhappy": "Each test scenario needs at least one UNHAPPY PATH, so the failure case is covered on purpose.",
+          "tooMany": "Test scenarios has {count} scenarios; the limit is {limit}. Split the story, or consider a spike first.",
+          "many": "Test scenarios has {count} scenarios; {usual} is the usual. Check the story isn't doing too much."
+        }
+      }
+    },
     { "heading": "## Not included", "name": "Not included", "kind": "list", "allowNone": true },
     {
       "heading": "## Known",
@@ -127,6 +177,24 @@
       }
     }
   ],
+  "shapes": [
+    {
+      "name": "v2",
+      "headings": ["## The story", "## Background", "## Example", "## Requirements", "## Not included", "## Notes", "## Test scenarios", "## Known", "## Unknown", "## Assumed", "## Confidence", "## Estimate", "## Questions before building"],
+      "storyLines": {
+        "max": 1,
+        "message": "In this shape, The story is one sentence: \"As a ..., I want ..., so that ...\", or for a job story \"When ..., I want to ..., so I can ...\"."
+      }
+    },
+    {
+      "name": "v1",
+      "headings": ["## The story", "## Acceptance criteria", "## Not included", "## Known", "## Unknown", "## Assumed", "## Confidence", "## Estimate", "## Questions before building"]
+    },
+    {
+      "name": "v2 bug",
+      "headings": ["## The story", "## Test scenarios", "## Not included", "## Known", "## Unknown", "## Assumed", "## Confidence", "## Estimate", "## Questions before building"]
+    }
+  ],
   "messages": {
     "extraTitle": "Only the first line can be a title. Start section headings with \"## \".",
     "strayText": "This text sits above the first section. Only the title goes there.",
@@ -143,7 +211,9 @@
     "extraLine": "{name} has an extra line. It should have exactly {count} lines.",
     "noTemplate": "The story section doesn't follow any template. Tried: {names}. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.",
     "templateMissingField": "The template's front matter is missing \"{field}\": {help}.",
-    "templateBadPattern": "\"{pattern}\" is not a valid pattern."
+    "templateBadPattern": "\"{pattern}\" is not a valid pattern.",
+    "oneSentence": "Put each sentence of {name} on its own line, ending with its own source.",
+    "noneGivenMixed": "{name} says \"None given.\" but also gives an example. Use one or the other."
   },
   "errors": {
     "templateFolder": "Can't read the templates folder \"{folder}\"."

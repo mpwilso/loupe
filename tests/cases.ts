@@ -60,6 +60,8 @@ export const badCases: { name: string; problems: () => Problem[] }[] = [
   ...files('bad/context/').map((name) => ({ name, problems: () => context(fixture(name)) })),
   ...files('bad/learned/').map((name) => ({ name, problems: () => learned(fixture(name)) })),
   ...files('bad/tickets/').map((name) => ({ name, problems: () => tickets(fixture(name)) })),
+  ...files('bad/v2/').map((name) => ({ name, problems: () => story(fixture(name)) })),
+  { name: 'warn/many-scenarios.md', problems: () => check(fixture('warn/many-scenarios.md')).warnings },
   { name: 'warn/stale.md', problems: () => context(fixture('warn/stale.md'), new Date('2027-01-01T00:00:00Z')) },
   { name: 'warn/future.md', problems: () => context(fixture('warn/future.md')) },
   { name: 'a story with an em dash', problems: () => story(emDash()) },

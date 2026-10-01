@@ -100,6 +100,23 @@ const bad: Record<string, string> = {
   'summary-question-mismatch': 'line 3: "First question:" must repeat the first item under ## Questions before building, word for word.',
   'checked-line-in-file': 'line 38: "Checked with Node" belongs in the chat, after the story, not in the story file.',
   'not-ready-extra-section': 'line 14: "## Known" is not an allowed section. The sections are: "## Questions".',
+  // v2: the shape for developers and QA, with Background, Example, Requirements, Notes and Test scenarios.
+  'v2/missing-background': 'The "## Background" section is missing.',
+  'v2/story-two-lines': 'line 9: In this shape, The story is one sentence: "As a ..., I want ..., so that ...", or for a job story "When ..., I want to ..., so I can ...".',
+  'v2/background-no-source': 'line 11: Each line of Background is one plain sentence, not a list item, ending with its source in parentheses, like a Known line. Move anything without a source to Unknown or Assumed.',
+  'v2/background-two-sentences': 'line 11: Put each sentence of Background on its own line, ending with its own source.',
+  'v2/example-invented': 'line 15: Each line of Example is one sentence from the input, not a list item, ending with its source in parentheses. If the input gives no example, write "None given." Never invent one.',
+  'v2/example-none-mixed': 'line 15: Example says "None given." but also gives an example. Use one or the other.',
+  'v2/requirement-not-numbered': 'line 18: Each requirement must be numbered, like "1. Subscribers can skip their next box."',
+  'v2/no-unhappy': 'line 28: Each test scenario needs at least one UNHAPPY PATH, so the failure case is covered on purpose.',
+  'v2/two-happy': 'line 28: Each test scenario needs exactly one HAPPY PATH. This one has 2.',
+  'v2/then-without-when': 'line 30: This THEN has no WHEN before it. Each path reads WHEN, then THEN.',
+  'v2/when-without-then': 'line 29: This path needs a WHEN line and a THEN line.',
+  'v2/path-order': 'line 30: Each path reads WHEN, then any AND lines, then THEN, then any AND lines.',
+  'v2/no-path': 'line 29: Start each path with "HAPPY PATH:" or "UNHAPPY PATH:" and a short label.',
+  'v2/no-scenario': 'line 28: Start each test scenario with a "TEST SCENARIO:" line saying what is being tested.',
+  'v2/not-a-line': 'line 28: Test scenarios holds only TEST SCENARIO:, HAPPY PATH:, UNHAPPY PATH:, WHEN, AND and THEN lines.',
+  'v2/too-many-scenarios': 'line 27: Test scenarios has 11 scenarios; the limit is 10. Split the story, or consider a spike first.',
 };
 
 for (const [name, message] of Object.entries(bad)) {
@@ -117,6 +134,31 @@ test('a story with an em dash fails', () => {
 test('the good fixtures pass', () => {
   assert.deepEqual(problems(fixture('good-story.md')), []);
   assert.deepEqual(problems(fixture('good-not-ready.md')), []);
+});
+
+// v2 is the default for new stories. Stories saved in v1 still pass: the checker tells the shapes apart by their headings.
+test('a v2 story passes, a v1 story still passes, and each is checked against its own shape', () => {
+  assert.deepEqual(problems(fixture('good-v2-story.md')), []);
+  assert.deepEqual(problems(fixture('good-story.md')), [], 'v1');
+  // A bug keeps its own fields, with test scenarios in place of acceptance criteria.
+  assert.deepEqual(problems(fixture('good-v2-bug.md')), [], 'the v2 bug shape');
+  assert.equal(problems(fixture('good-v2-bug.md').replace('UNHAPPY PATH: Payment fixed', 'HAPPY PATH: Payment fixed')).length, 2, 'two happy paths and no unhappy one');
+  // An Example of "None given." is fine; one that states something needs a source.
+  assert.deepEqual(problems(fixture('good-v2-story.md').replace(/## Example\n.*\n/, '## Example\nNone given.\n')), []);
+  // A v1 heading in a v2 story is out of place, and the message lists the v2 sections.
+  const mixed = problems(fixture('good-v2-story.md').replace('## Notes\n', '## Acceptance criteria\n- Given a, when b, then c.\n\n## Notes\n'));
+  assert.equal(mixed.length, 1);
+  assert.match(mixed[0], /"## Acceptance criteria" is not an allowed section\. The sections are: "## The story", "## Background", "## Example", "## Requirements"/);
+});
+
+test('six to ten test scenarios warn, and still pass; more than ten fail', () => {
+  const six = check(fixture('warn/many-scenarios.md'));
+  assert.deepEqual(six.errors, []);
+  assert.deepEqual(six.warnings.map(format), ['line 27: Test scenarios has 6 scenarios; 5 is the usual. Check the story isn\'t doing too much.']);
+  const run = cli('tests/fixtures/warn/many-scenarios.md');
+  assert.equal(run.status, 0, 'a warning is not a failure');
+  assert.match(run.stdout, /^warning: line 27: /m);
+  assert.equal(check(fixture('good-v2-story.md')).warnings.length, 0);
 });
 
 test('five questions and the overflow line pass when Confidence is not High', () => {
