@@ -475,7 +475,8 @@ test('SKILL.md points to the tracker steps when tracker tools are there, and say
   const step1 = storyMode().split('\n').find((line) => line.startsWith('1. ')) ?? '';
   assert.ok(step1.includes('`SKILL/tracker.md`'), step1);
   assert.match(step1, /If you have tools from an issue tracker, such as `mcp__pellwick-tracker__search_issues` or a Jira search, read `SKILL\/tracker\.md` and search the tracker now, before step 2/);
-  assert.match(step1, /If you don't, skip it and don't mention a tracker/);
+  // Trial 8 step E mentioned the tracker when none was loaded.
+  assert.ok(step1.includes('If you have no tracker tools, skip the search and never mention a tracker, Jira or issue search in the reply or the story.'), step1);
   assert.ok(skill.split('\n').length <= 80);
 });
 
@@ -484,14 +485,20 @@ test('the tracker steps: search first, read at most 5, cite with a live source, 
   assert.match(text, /Read at most 5 issues/);
   assert.ok(text.includes('"(Jira SUBS-142, read 2026-10-02 14:05)"'));
   assert.match(text, /Use the read time the tool returned for that call/);
-  assert.ok(text.includes('"SUBS-142 looks like the same request. Should this be a new story or an update to it?"'));
+  assert.ok(text.includes('"SUBS-142 looks like the same request. Should this be a new story or an update to it? (Jira SUBS-142, read 2026-10-02 14:05)"'));
+  // Trial 8 step A read SUBS-101 and cited nothing from it, and named two issues in questions without a live source.
+  assert.ok(text.includes("If you read an issue and it's relevant to the story, cite at least one fact from it as a Known line with its live source"));
+  assert.ok(text.includes("If an issue turns out not to be relevant, don't mention it."));
+  assert.match(text, /Any line that names an issue, in any section, ends with that issue's live source/);
+  assert.match(text, /never mention a tracker, Jira or issue search in the reply or the story/);
   assert.match(text, /Write the story anyway/);
 });
 
 test('the tracker steps never write to the tracker, keep customer data out, and keep live facts live', () => {
   const text = tracker();
   assert.match(text, /Never create, change, comment on, close or move an issue, and never ask to/);
-  assert.ok(text.includes('"Loupe can\'t change the tracker yet."'));
+  // Trial 8 step D refused, then ran on past one line.
+  assert.ok(text.includes("If asked to change the tracker, reply with exactly one line: Loupe can't change the tracker yet. Then stop, unless the user asked for something else in the same message."));
   assert.match(text, /customers' names, emails, phone numbers and addresses/);
   assert.match(text, /Never copy a fact read from the tracker into the context files or learned\.md/);
   assert.match(file('learning.md'), /Never learn a fact read from a tracker/);
