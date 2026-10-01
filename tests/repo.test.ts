@@ -348,7 +348,11 @@ test('the Claude Code guide installs, sets up the folder, writes a story, learns
   const block = guide.split('## Recommended permissions\n')[1]?.split('\n## ')[0] ?? '';
   const settings = JSON.parse(block.match(/```json\n([\s\S]+?)\n```/)?.[1] ?? '{}');
   // Trial 7b: Edit(loupe/**) is the form that worked; both forms anchor at the working directory in project settings.
-  assert.deepEqual(settings, { permissions: { allow: ['Edit(loupe/**)', 'Bash(node */src/run.js *)', 'Bash(git diff *)', 'Bash(git status *)'] } });
+  // The narrow node rules matched in a headless probe: the relative path a project install uses, and a full path.
+  assert.deepEqual(settings, {
+    permissions: { allow: ['Edit(loupe/**)', 'Bash(node .claude/skills/loupe/src/run.js *)', 'Bash(node */.claude/skills/loupe/src/run.js *)', 'Bash(git diff *)', 'Bash(git status *)'] },
+  });
+  assert.match(block, /`Bash\(node \*\/src\/run\.js \*\)` works too, but it also lets Claude run any Node script whose arguments include `\/src\/run\.js`/);
   assert.match(block, /ignores allow rules in a repository's `\.claude\/settings\.json` until you trust that folder/);
   assert.match(block, /The skill's own rule keeps Loupe inside `loupe\/`/);
   assert.match(block, /these permissions make Claude Code enforce it/i);
