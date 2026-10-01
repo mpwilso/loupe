@@ -112,6 +112,7 @@
           "thenWithoutWhen": "This THEN has no WHEN before it. Each path reads WHEN, then THEN.",
           "incompletePath": "This path needs a WHEN line and a THEN line.",
           "pathOrder": "Each path reads WHEN, then any AND lines, then THEN, then any AND lines.",
+          "repeatedLine": "This line repeats the one before it. Remove one.",
           "happyCount": "Each test scenario needs exactly one HAPPY PATH. This one has {count}.",
           "noUnhappy": "Each test scenario needs at least one UNHAPPY PATH, so the failure case is covered on purpose.",
           "tooMany": "Test scenarios has {count} scenarios; the limit is {limit}. Split the story, or consider a spike first.",

@@ -116,6 +116,7 @@ const bad: Record<string, string> = {
   'v2/no-path': 'line 29: Start each path with "HAPPY PATH:" or "UNHAPPY PATH:" and a short label.',
   'v2/no-scenario': 'line 28: Start each test scenario with a "TEST SCENARIO:" line saying what is being tested.',
   'v2/not-a-line': 'line 28: Test scenarios holds only TEST SCENARIO:, HAPPY PATH:, UNHAPPY PATH:, WHEN, AND and THEN lines.',
+  'v2/repeated-line': 'line 35: This line repeats the one before it. Remove one.',
   'v2/too-many-scenarios': 'line 27: Test scenarios has 11 scenarios; the limit is 10. Split the story, or consider a spike first.',
 };
 

@@ -369,7 +369,10 @@ function checkScenarios(rule: Scenarios, headingLine: number, body: Entry[], add
     if (happy !== 1) add(last.line, fill(T.happyCount, { count: happy }));
     if (!last.paths.some((p) => !p.happy)) add(last.line, T.noUnhappy);
   };
+  let previous: Entry | undefined;
   for (const entry of body) {
+    if (previous?.text === entry.text) add(entry.line, T.repeatedLine);
+    previous = entry;
     const path = scenarios.at(-1)?.paths.at(-1);
     if (is(rule.scenario, entry)) {
       endScenario();
