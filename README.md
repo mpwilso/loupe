@@ -147,6 +147,7 @@ Before release: Tell support that subscribers can skip online and how skips show
 - **It refuses thin input.** Below the bar you get "Not ready yet" and the questions to ask, not a story.
 - **Every known fact names its source.** A fact with no source is unknown, and the story says so.
 - **Guesses are marked "To confirm".** They are never stated as fact.
+- **Stories are written for developers and QA.** User and job stories have a background, numbered requirements and test scenarios, each scenario with a happy path and at least one unhappy path.
 - **A checker enforces the shape.** Loupe keeps fixing the story until it passes.
 - **It learns your team from your own documents.** It turns them into short context files, every fact with its source.
 - **It learns from corrections and answers.** Every learned fact names its source, and nothing is saved without your yes.
@@ -191,7 +192,7 @@ Loupe learns your team once, from your own documents. Each input then gets a rea
 - The customer-data detector catches emails and secrets, but not names, phone numbers or street addresses.
 - Reading a tracker and creating tickets were tested on an invented mock tracker, never a real one, with Claude Code's own permission prompt stood in for in trial 9.
 - Where Loupe cites tracker facts still varies from run to run: in trial 8e, 2 of 3 stories listed a fact from a ticket under Known, and the third left it as a question.
-- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trial 9 were measured by the Claude Code session that ran them. A separate reviewer scored trials 2 and 3 blind.
+- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trials 9 and 10 were measured by the Claude Code session that ran them, with Matt Wilson reviewing two readings in 10c. A separate reviewer scored trials 2 and 3 blind.
 
 ## Setup
 
@@ -240,7 +241,7 @@ It prints `Checked with Node` and the version when the story passes, or one line
 
 ## How it was built
 
-Designed and directed by Matt Wilson, who set the quality bar, designed nine trials, with reruns, and fixed what each exposed. Trials 1 to 6b were run in claude.ai, and trials 7 to 9 in Claude Code. Two of the trials were scored in blind review, one of them against plain Claude. Claude Code wrote most of the code. The trials are in [docs/trials](docs/trials/).
+Designed and directed by Matt Wilson, who set the quality bar, designed ten trials, with reruns, and fixed what each exposed. Trials 1 to 6b were run in claude.ai, and trials 7 to 10 in Claude Code. Two of the trials were scored in blind review, one of them against plain Claude. Claude Code wrote most of the code. The trials are in [docs/trials](docs/trials/).
 
 ## What's next
 

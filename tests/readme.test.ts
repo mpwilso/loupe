@@ -183,7 +183,7 @@ test('what the trials changed: nine bullets in a fixed order, each linking the t
 });
 
 test('the limits say exactly who ran and scored the trials', () => {
-  assert.ok(section('Limits').includes('- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trial 9 were measured by the Claude Code session that ran them. A separate reviewer scored trials 2 and 3 blind.'));
+  assert.ok(section('Limits').includes('- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trials 9 and 10 were measured by the Claude Code session that ran them, with Matt Wilson reviewing two readings in 10c. A separate reviewer scored trials 2 and 3 blind.'));
   assert.ok(section('Limits').includes("- In claude.ai, you swap the updated learned.md into the project's files by hand; in Claude Code, Loupe edits it in place. Learning has been tested on the invented team and no other."));
   assert.doesNotMatch(readme, /doesn't learn from corrections yet/);
 });
@@ -214,7 +214,7 @@ test('how it was built says who directed it and links the trials', () => {
   const built = section('How it was built');
   assert.ok(built.includes('Designed and directed by Matt Wilson'));
   assert.ok(built.includes('Claude Code wrote most of the code.'));
-  assert.ok(built.includes('designed nine trials, with reruns, and fixed what each exposed. Trials 1 to 6b were run in claude.ai, and trials 7 to 9 in Claude Code.'));
+  assert.ok(built.includes('designed ten trials, with reruns, and fixed what each exposed. Trials 1 to 6b were run in claude.ai, and trials 7 to 10 in Claude Code.'));
   assert.ok(built.includes('Two of the trials were scored in blind review, one of them against plain Claude.'));
   assert.doesNotMatch(built, /tested live in claude\.ai/, 'trials 7 to 9 ran in Claude Code');
   assert.ok(built.includes('[docs/trials](docs/trials/)'));
@@ -249,6 +249,7 @@ test('the README says what reading a tracker does, and its limits as measured', 
   assert.ok(limits.includes('- The customer-data detector catches emails and secrets, but not names, phone numbers or street addresses.'));
   assert.ok(limits.includes("- Reading a tracker and creating tickets were tested on an invented mock tracker, never a real one, with Claude Code's own permission prompt stood in for in trial 9."));
   // M4c, trial 9.
+  assert.ok(section("What's different").includes('- **Stories are written for developers and QA.** User and job stories have a background, numbered requirements and test scenarios, each scenario with a happy path and at least one unhappy path.'));
   assert.ok(section("What's different").includes('- **It can create a ticket from a finished story.** It shows exactly what it will create and asks before it does, and it never changes an existing ticket.'));
   assert.ok(limits.includes('- Where Loupe cites tracker facts still varies from run to run: in trial 8e, 2 of 3 stories listed a fact from a ticket under Known, and the third left it as a question.'));
   assert.match(readFileSync(join(root, 'docs/trials/2026-09-30-trial-8.md'), 'utf8'), /\| 8e \| 2 of 3 \|/, 'the rate the README quotes is the one recorded');
