@@ -22,10 +22,10 @@ Loupe reads and writes only inside `loupe/`. It never changes any other file in 
 Run the checker on the whole folder, from the repository's root:
 
 ```
-node path/to/loupe-skill/src/run.js check-folder loupe
+node ~/.claude/skills/loupe/src/run.js check-folder loupe
 ```
 
-It checks the context files, learned.md, the templates and every story, and ends with `Checked with Node` and the version when everything passes.
+It checks the context files, learned.md, the templates and every story, and ends with `Checked with Node` and the version when everything passes. For a per-project install, the checker is in `.claude/skills/loupe/src/run.js`.
 
 ## Try it with the example team
 

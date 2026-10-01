@@ -329,3 +329,19 @@ test('the project instructions send corrections, answers and "remember" requests
   assert.match(section, /Claude's project memory is separate/);
   assert.match(section, /doesn't cite sources/);
 });
+
+// M4a: the Claude Code guide gives the real install command and the real checker path, and claims no more than was tested.
+test('the Claude Code guide installs, sets up the folder, writes a story, learns, and says what to commit', () => {
+  const guide = read('docs/claude-code.md');
+  assert.ok(guide.includes('node scripts/install-claude-code.ts\n'), 'per user');
+  assert.ok(guide.includes('node scripts/install-claude-code.ts --project '), 'per project');
+  assert.ok(guide.includes('node ~/.claude/skills/loupe/src/run.js check-folder loupe'), 'the checker at its installed path');
+  assert.ok(guide.includes('[team-folder.md](team-folder.md)'));
+  assert.match(guide, /^## What to commit$/m);
+  assert.match(guide, /Commit `loupe\/context\/`, `loupe\/learned\.md` and `loupe\/templates\/`/);
+  assert.match(guide, /Whether to commit `loupe\/stories\/` is your team's choice/);
+  assert.match(guide, /Edit\(\/loupe\/\*\*\)/, 'the docs say Write rules are never consulted, so the tip uses Edit');
+  assert.match(guide, /Codex/);
+  assert.match(guide, /only Claude Code has been tested/);
+  assert.ok(read('docs/team-folder.md').includes('node ~/.claude/skills/loupe/src/run.js check-folder loupe'));
+});
