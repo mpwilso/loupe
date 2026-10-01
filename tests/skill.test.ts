@@ -334,6 +334,11 @@ test('story mode reruns the checker up to five times, and keeps "Not checked" fo
   assert.match(story, /Fix every line the checker reports and run it again, until it passes, up to five runs\./);
   assert.match(story, /If it still fails after five runs, show the draft with the line `Failed the checker after five runs:` and the remaining messages right under the summary, and `Call: Failed the checker`\. Never call it passed\./);
   assert.match(skill, /`Not checked:` is only for when a checker can't start or Node is too old\./);
+  // Trial 8b: step A marked a story "Not checked" without trying, after an unrelated command was denied, and step E ran six times.
+  assert.ok(skill.includes('A denied or failed command does not mean the checker is denied. Always run the checker command itself. Write Not checked only if that exact command fails to start, and quote its error.'));
+  assert.ok(story.includes('Count every run, the first and any after step 6 included: the limit is five checker runs per story.'));
+  assert.ok(file('files-mode.md').includes('at most five runs in all, as in SKILL.md.'));
+  assert.doesNotMatch(file('files-mode.md'), /rerun up to five times/);
   assert.doesNotMatch(skill, /at most twice|once more/);
   assert.match(skill, /Call: Story written, Not ready yet, Not checked or Failed the checker/);
 });
