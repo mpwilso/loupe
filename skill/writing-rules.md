@@ -32,6 +32,9 @@ User stories, job stories and bugs use these sections, as their templates show. 
   - Bad: `A subscriber who moves house emails support, and an agent updates the address in Stockroom.` The thread never says anyone moved house.
   - Good: `Subscribers can't change their address in the web app, so they email support and an agent updates it in Stockroom.`
 - Requirements: a numbered list of what must be true when it's done. Every requirement comes from the input or the context files. Anything else, such as a behavior carried over from another story, ends with To confirm or goes to Questions before building.
+  - If the input and context files don't settle a behavior, don't state it as a requirement. Write the whole requirement as a question to confirm, like: `5. To confirm: whether the page checks the address before saving.` Marking only its details To confirm is not enough.
+  - Bad: `5. The page checks the new address before saving it. To confirm: which checks, and what the page shows when one fails.` The thread never says the page checks anything.
+  - Good: `5. To confirm: whether the page checks the address before saving.`
 - Notes: technical notes from the input or the context files, or "None."
 - Test scenarios: five is the usual, and more than ten means split the story or suggest a spike. Cover every requirement with at least one scenario.
 - Use happy and unhappy paths to cover failure cases on purpose. Each scenario has one happy path and at least one unhappy path, such as a refused action or a passed deadline.

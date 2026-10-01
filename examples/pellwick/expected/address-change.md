@@ -18,7 +18,7 @@ None given.
 1. A subscriber can save a new delivery address from their account.
 2. Before the next box's cutoff, 72 hours before the ship date today, the next box goes to the new address.
 3. After the cutoff, that box goes to the old address and the one after it to the new.
-4. The account page shows the result of saving a new address after the cutoff. To confirm: what it shows; the input doesn't say.
+4. To confirm: whether and how the account page tells a subscriber who saves a new address after the cutoff which box it applies to.
 5. An agent sees the new address in Stockroom within a minute.
 
 ## Not included
@@ -38,7 +38,6 @@ WHEN my next box's cutoff has passed
 AND I save a new address
 THEN that box goes to the old address
 AND the box after it goes to the new address
-AND the account page shows the result. To confirm: what it shows; the input doesn't say.
 
 TEST SCENARIO: Stockroom shows the new address
 HAPPY PATH: A minute after saving

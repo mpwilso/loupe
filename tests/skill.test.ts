@@ -588,3 +588,16 @@ test('Examples and requirements keep to what the input states, and the truth ste
   assert.ok(rules.includes('Every requirement comes from the input or the context files. Anything else, such as a behavior carried over from another story, ends with To confirm or goes to Questions before building.'));
   assert.match(storyMode(), /Reread every Known line against the source it cites, and the Example, every Background line and every requirement against the input, the same way\./);
 });
+
+// Trial 10b: three requirements stated a behavior the thread never mentions, with only its details marked To confirm.
+test('a behavior the input does not settle is a whole To confirm requirement, and the truth step asks about the behavior itself', () => {
+  const rules = file('writing-rules.md');
+  assert.ok(rules.includes("If the input and context files don't settle a behavior, don't state it as a requirement. Write the whole requirement as a question to confirm, like: `5. To confirm: whether the page checks the address before saving.` Marking only its details To confirm is not enough."));
+  assert.ok(rules.includes('- Bad: `5. The page checks the new address before saving it. To confirm: which checks, and what the page shows when one fails.`'));
+  assert.ok(rules.includes('- Good: `5. To confirm: whether the page checks the address before saving.`'));
+  assert.match(storyMode(), /For each requirement, ask whether the input or a context file settles the behavior itself, not just its details\./);
+  // The expected address-change story follows the rule it teaches.
+  const story = readFileSync(join(root, 'examples/pellwick/expected/address-change.md'), 'utf8');
+  assert.match(story, /^4\. To confirm: whether and how the account page tells a subscriber who saves a new address after the cutoff which box it applies to\.$/m);
+  assert.doesNotMatch(story, /shows the result/);
+});
