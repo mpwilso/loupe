@@ -134,14 +134,16 @@ test('the story section shows real lines from the example, then the whole story,
   for (const line of quote.filter(Boolean)) {
     const bold = line.match(/^\*\*(.+)\*\*$/);
     if (bold) assert.ok(lines.includes(`## ${bold[1]}`), `no section "${bold[1]}" in skip-a-box.md`);
-    else excerpt.push(line.replace(/<br>$/, ''));
+    else excerpt.push(...line.split('<br>').filter(Boolean));
   }
   assert.deepEqual(quote.filter((line) => line.endsWith('<br>')).length, 2, 'the three summary lines stay on separate lines');
   for (const line of excerpt) assert.ok(lines.includes(line), `not in skip-a-box.md: ${line}`);
   const after = (heading: string, n: number) => story.split(`${heading}\n`)[1].split('\n').slice(0, n);
   for (const line of [...lines.slice(0, 3), ...after('## Known', 2), ...after('## Unknown', 1)]) assert.ok(excerpt.includes(line), line);
   assert.ok(excerpt.some((line) => line.includes('To confirm:')), 'a "To confirm" line');
-  assert.ok(body.includes('The full story, with acceptance criteria, estimate and questions, is below.'));
+  // v2: the excerpt shows a whole test scenario, with its happy and unhappy paths.
+  for (const start of ['TEST SCENARIO: ', 'HAPPY PATH: ', 'UNHAPPY PATH: ', 'WHEN ', 'THEN ']) assert.ok(excerpt.some((line) => line.startsWith(start)), start);
+  assert.ok(body.includes('The full story, with its background, requirements, test scenarios, estimate and questions, is below.'));
   assert.ok(body.includes('<details>') && body.includes('```markdown\n' + story + '```\n'), 'the full story, word for word');
 });
 

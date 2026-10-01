@@ -15,12 +15,31 @@ Actual: The banner stays and says the box is on hold, while Stockroom shows the 
 Environment: Customer web app, account page. Seen in staging and production, in Safari on iPhone and Chrome on a laptop.
 Impact: Subscribers who update their card after a failed charge. 24 have written to support in September so far. They are told their box is on hold when it is not.
 
-## Acceptance criteria
-- Given a failed charge was followed by a successful charge on a new card, when the subscriber opens their account page, then no "Payment failed" banner shows.
-- Given a charge succeeded, when the subscriber views their next box, then its status matches Stockroom.
-- Given the charge on the new card also fails, when the subscriber opens their account page, then the banner still shows.
-- Given the payment status arrives late, when the subscriber reloads after it arrives, then the banner is gone.
-- Given the new card was charged but the payment status has not arrived yet, when the subscriber opens their account page, then what do they see? The product manager must confirm this; the input doesn't say.
+## Test scenarios
+TEST SCENARIO: The banner clears once the new card is charged
+HAPPY PATH: New card charged
+WHEN a charge fails
+AND the subscriber adds a new card that is charged
+AND the payment status arrives
+THEN no "Payment failed" banner shows on the account page
+AND the next box's status matches Stockroom
+UNHAPPY PATH: New card also fails
+WHEN the charge on the new card also fails
+THEN the banner still shows
+UNHAPPY PATH: Payment status not here yet
+WHEN the new card was charged
+AND the payment status has not arrived yet
+THEN the account page shows a status not yet decided. To confirm: what it shows; the input doesn't say.
+
+TEST SCENARIO: The payment status arrives late
+HAPPY PATH: Reload after it arrives
+WHEN the payment status arrives up to 10 minutes after the charge
+AND the subscriber reloads the account page
+THEN the banner is gone
+UNHAPPY PATH: No reload
+WHEN the payment status arrives
+AND the subscriber does not reload the account page
+THEN the banner may still show. To confirm: whether it should clear without a reload.
 
 ## Not included
 None.
