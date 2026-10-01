@@ -58,7 +58,7 @@ The skill's own rule keeps Loupe inside `loupe/`: it writes only there, and runs
 {
   "permissions": {
     "allow": [
-      "Edit(/loupe/**)",
+      "Edit(loupe/**)",
       "Bash(node */src/run.js *)",
       "Bash(git diff *)",
       "Bash(git status *)"
@@ -68,6 +68,8 @@ The skill's own rule keeps Loupe inside `loupe/`: it writes only there, and runs
 ```
 
 Loupe can then edit inside `loupe/` and run its checker without asking, and Claude Code asks you before anything else. Allow nothing broader. Claude Code checks file writes against `Edit` rules; a `Write` rule is accepted but never used.
+
+Claude Code ignores allow rules in a repository's `.claude/settings.json` until you trust that folder: start Claude Code there once and accept its trust prompt. Until then, it asks before every edit.
 
 ## If you also use Loupe in claude.ai
 

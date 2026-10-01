@@ -232,7 +232,7 @@ test('the trials README lists and links every trial record, in order, and define
   // A rerun keeps its trial's number, with a letter: trial 6b reran trial 6.
   const records = files.filter((f) => /^\d{4}-\d{2}-\d{2}-trial-\d+[a-z]?\.md$/.test(f)).sort();
   assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-6-plan.md', 'trial-7-plan.md'], 'records, the index and plans only');
-  assert.deepEqual(records, ['1', '2', '3', '4', '5', '6', '6b'].map((n) => `2026-09-30-trial-${n}.md`), 'every record is named by its trial number');
+  assert.deepEqual(records, ['1', '2', '3', '4', '5', '6', '6b', '7'].map((n) => `2026-09-30-trial-${n}.md`), 'every record is named by its trial number');
   const index = read('docs/trials/README.md');
   const lines = index.split('\n').filter((line) => line.startsWith('- '));
   assert.deepEqual(lines.map((line) => line.match(/^- \[Trial (\d+[a-z]?)\]\(([^)]+)\)/)?.slice(1).join(' ')), records.map((f) => `${f.match(/trial-(\w+)\.md$/)![1]} ${f}`));
@@ -343,7 +343,9 @@ test('the Claude Code guide installs, sets up the folder, writes a story, learns
   // Trial 7: the recommended permissions, exactly, and nothing broader.
   const block = guide.split('## Recommended permissions\n')[1]?.split('\n## ')[0] ?? '';
   const settings = JSON.parse(block.match(/```json\n([\s\S]+?)\n```/)?.[1] ?? '{}');
-  assert.deepEqual(settings, { permissions: { allow: ['Edit(/loupe/**)', 'Bash(node */src/run.js *)', 'Bash(git diff *)', 'Bash(git status *)'] } });
+  // Trial 7b: Edit(loupe/**) is the form that worked; both forms anchor at the working directory in project settings.
+  assert.deepEqual(settings, { permissions: { allow: ['Edit(loupe/**)', 'Bash(node */src/run.js *)', 'Bash(git diff *)', 'Bash(git status *)'] } });
+  assert.match(block, /ignores allow rules in a repository's `\.claude\/settings\.json` until you trust that folder/);
   assert.match(block, /The skill's own rule keeps Loupe inside `loupe\/`/);
   assert.match(block, /these permissions make Claude Code enforce it/i);
   assert.match(guide, /"skillOverrides": \{ "anthropic-skills:loupe": "off" \}/, 'how to turn off the synced copy');
