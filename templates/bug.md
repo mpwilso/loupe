@@ -18,8 +18,14 @@ Actual: [What happens instead.]
 Environment: [Where it happens: application, browser or device, account type.]
 Impact: [Who is affected and how many, in plain words.]
 
-## Acceptance criteria
-- Given [a starting situation], when [someone does something], then [what they see or get].
+## Test scenarios
+TEST SCENARIO: [What is being tested]
+HAPPY PATH: [Short label: the fix works]
+WHEN [the steps that broke before]
+THEN [the expected behavior]
+UNHAPPY PATH: [Short label for a related failure case]
+WHEN [someone does something that should still fail or be refused]
+THEN [what they see or get instead. To confirm: any screen detail the input doesn't settle.]
 
 ## Not included
 - [Something this story deliberately leaves out, and who decided. Write "None." if nothing.]

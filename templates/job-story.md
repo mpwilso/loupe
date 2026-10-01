@@ -8,11 +8,30 @@ patterns:
 ## The story
 When [a situation], I want to [do something], so I can [the result].
 
-## Acceptance criteria
-- Given [a starting situation], when [someone does something], then [what they see or get].
+## Background
+[Why this came up: the problem and who it affects, one sentence per line.] ([Where it came from, for example: Dana, meeting 2026-09-22])
+
+## Example
+[One real case of the problem today, taken from the input, one sentence per line, or "None given." if the input has none.] ([Where it came from])
+
+## Requirements
+1. [What must be true when it's done. Anything the input doesn't settle ends with "To confirm: ..."]
 
 ## Not included
 - [Something this story deliberately leaves out, and who decided. Write "None." if nothing.]
+
+## Notes
+- [A technical note for the developer. Write "None." if there are none.]
+
+## Test scenarios
+TEST SCENARIO: [What is being tested]
+HAPPY PATH: [Short label]
+WHEN [someone does something]
+AND [another action, if needed]
+THEN [what they see or get]
+UNHAPPY PATH: [Short label for a failure case]
+WHEN [someone does something that should fail or be refused]
+THEN [what they see or get instead. To confirm: any screen detail the input doesn't settle.]
 
 ## Known
 - [A fact you can point to.] ([Where it came from, for example: Dana, meeting 2026-09-22])

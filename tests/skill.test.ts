@@ -237,8 +237,9 @@ test('each context-file fact names its own source, and Known lines cite that sou
 test('screen details the input does not state are flagged for confirmation, with a bad and a good example', () => {
   const rules = file('writing-rules.md');
   assert.match(rules, /any wording, message, note or display detail the input doesn't state/);
-  assert.match(rules, /- Bad: `Given .+`/);
-  assert.match(rules, /- Good: `Given .+ To confirm: .+`/);
+  // v2: the THEN line of a test scenario is where an undecided detail shows.
+  assert.match(rules, /- Bad: `THEN .+`/);
+  assert.match(rules, /- Good: `THEN .+ To confirm: .+`/);
 });
 
 test('a bug always asks about records the bug already damaged', () => {
@@ -280,7 +281,7 @@ test('the kind of work picks the template, and a bug always uses the bug templat
 test('a team done section holds only what the input settles, with a bad and a good example', () => {
   const rules = file('writing-rules.md');
   assert.match(rules, /its own done section, such as `Done when:`, fill it only with what the input settles/);
-  assert.match(rules, /Anything undecided goes in the acceptance criteria marked "To confirm", never stated as settled in the done section/);
+  assert.match(rules, /Anything undecided goes in a requirement, test scenario or acceptance criterion marked "To confirm", never stated as settled in the done section/);
   assert.match(rules, /- Bad: `Done when: .+`/);
   assert.match(rules, /- Good: `Done when: .+`/);
 });
@@ -311,7 +312,8 @@ test('a story names the team rule it depends on and asks about known changes to 
   assert.match(file('writing-rules.md'), /refer to the rule \("the box's cutoff, 72 hours today"\) and ask whether any known upcoming change to that rule affects the story/);
   for (const name of ['skip-a-box.md', 'address-change.md']) {
     const text = readFileSync(join(root, 'examples/pellwick/expected', name), 'utf8');
-    const criteria = text.split('## Acceptance criteria\n')[1].split('\n## ')[0];
+    // v2: the rule is named where the story says what must be true.
+    const criteria = text.split('## Requirements\n')[1].split('\n## ')[0];
     assert.match(criteria, /box's cutoff, 72 hours before the ship date today/, name);
     assert.doesNotMatch(criteria, /ships (in more than|within) 72 hours/, name);
     assert.match(text.split('## Questions before building\n')[1], /Is any change to the box's cutoff, 72 hours today, planned while .+ live\?/, name);
@@ -563,4 +565,16 @@ test('the ticket steps never change an existing issue, never ask twice, and keep
   assert.match(text, /Never create a second ticket for a story\./);
   assert.match(text, /Never update, comment on, move, assign, close or delete an issue, even one Loupe created\. If asked to change an issue, reply with exactly one line: Loupe can't change the tracker yet\./);
   assert.match(text, /Never put customer data in a ticket\./);
+});
+
+// Story format v2: the writing rules for its sections, and when a story keeps acceptance criteria.
+test('the writing rules cover the v2 sections: one-sentence story, sourced Background, a real Example, and happy and unhappy paths', () => {
+  const rules = file('writing-rules.md');
+  assert.match(rules, /User stories, job stories and bugs use these sections, as their templates show\. Spikes and team templates keep their own, with acceptance criteria\./);
+  assert.match(rules, /Background: why this came up, the problem and who it affects\. One plain sentence per line, each ending with its source, like a Known line\./);
+  assert.match(rules, /Example: one concrete case of the problem as it happens today, taken from the input, with its source\. If the input gives none, write "None given\." Never invent one\./);
+  assert.match(rules, /Cover every requirement with at least one scenario\./);
+  assert.match(rules, /Use happy and unhappy paths to cover failure cases on purpose\. Each scenario has one happy path and at least one unhappy path/);
+  assert.match(rules, /five is the usual, and more than ten means split the story or suggest a spike/);
+  assert.match(storyMode(), /User stories, job stories and bugs use the shape their template shows: Background, Example, numbered Requirements, Notes and Test scenarios, with no acceptance criteria\. Spikes and team templates keep their own sections\./);
 });
