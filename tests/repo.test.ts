@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -40,8 +41,12 @@ test('every expected example passes the checker, with the team templates it find
 
 test('every example context file passes, with no warnings on the day it was written for', () => {
   for (const team of teams) {
-    for (const path of list(`examples/${team}/context`)) {
-      const result = checkContext(read(path), new Date('2026-09-30T00:00:00Z'));
+    const paths = list(`examples/${team}/context`);
+    for (const path of paths) {
+      // learned.md is checked against the team's other context files, which its "replaces:" lines quote.
+      const learned = path.endsWith('/learned.md');
+      const others = learned ? paths.filter((p) => p !== path).map(read) : [];
+      const result = checkContext(read(path), new Date('2026-09-30T00:00:00Z'), { learned, others });
       assert.deepEqual([...result.errors, ...result.warnings].map(format), [], path);
     }
   }
@@ -133,7 +138,20 @@ test('every CI action is pinned to a commit, and the trial kit stays blind', () 
   for (const name of ['loupe-skill', 'pellwick-trial-kit']) assert.ok(workflow.includes(`name: ${name}\n`), name);
   assert.equal(workflow.match(/retention-days: 7\n/g)?.length, 2);
   assert.doesNotMatch(workflow, /examples\/pellwick\/expected/);
-  for (const folder of ['context', 'templates', 'inputs', 'raw']) assert.ok(workflow.includes(`examples/pellwick/${folder}/\n`), folder);
+  // The kit is one folder, built by a script, so its files sit at its root: context/, inputs/ and so on.
+  assert.ok(workflow.includes('- run: scripts/build-trial-kit.sh\n'), 'CI builds the kit with the script');
+  assert.match(workflow, /name: pellwick-trial-kit\n\s+path: build\/pellwick-trial-kit\/\n/);
+  const out = mkdtempSync(join(tmpdir(), 'loupe-kit-'));
+  try {
+    execFileSync('bash', ['scripts/build-trial-kit.sh', join(out, 'kit')], { cwd: root });
+    assert.deepEqual(readdirSync(join(out, 'kit')).sort(), ['context', 'inputs', 'raw', 'templates', 'trial-6-plan.md']);
+    assert.ok(!existsSync(join(out, 'kit', 'expected')), 'no expected stories');
+  } finally {
+    rmSync(out, { recursive: true });
+  }
+  // The trial 6 plan's inputs are in the kit's inputs/ folder.
+  const plan = read('docs/trials/trial-6-plan.md');
+  for (const [, input] of plan.matchAll(/`inputs\/([\w.-]+\.md)`/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
 });
 
 // Trial 3: the skill did not start in 1 of 6 runs. The project instructions name it first, and the trial counts a run without it.
@@ -210,11 +228,14 @@ test('the setup guide gets the skill from the latest release, and nowhere else',
 
 // The trials folder explains itself: what the trials are, who "the advisor" is, and one line per trial.
 test('the trials README lists and links every trial record, in order, and defines the advisor', () => {
-  const records = readdirSync(join(root, 'docs/trials')).filter((f) => f !== 'README.md').sort();
-  assert.deepEqual(records, [1, 2, 3, 4, 5].map((n) => `2026-09-30-trial-${n}.md`), 'every record is named by its trial number');
+  const files = readdirSync(join(root, 'docs/trials'));
+  // A rerun keeps its trial's number, with a letter: trial 6b reran trial 6.
+  const records = files.filter((f) => /^\d{4}-\d{2}-\d{2}-trial-\d+[a-z]?\.md$/.test(f)).sort();
+  assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-6-plan.md'], 'records, the index and plans only');
+  assert.deepEqual(records, ['1', '2', '3', '4', '5', '6', '6b'].map((n) => `2026-09-30-trial-${n}.md`), 'every record is named by its trial number');
   const index = read('docs/trials/README.md');
   const lines = index.split('\n').filter((line) => line.startsWith('- '));
-  assert.deepEqual(lines.map((line) => line.match(/^- \[Trial (\d)\]\(([^)]+)\)/)?.slice(1).join(' ')), records.map((f, i) => `${i + 1} ${f}`));
+  assert.deepEqual(lines.map((line) => line.match(/^- \[Trial (\d+[a-z]?)\]\(([^)]+)\)/)?.slice(1).join(' ')), records.map((f) => `${f.match(/trial-(\w+)\.md$/)![1]} ${f}`));
   // Each line says who scored the trial and whether it was blind.
   for (const line of lines) {
     assert.match(line, /Scored .*(the advisor|a separate reviewer)/, line);
@@ -256,4 +277,55 @@ test('SECURITY.md says how to report a problem privately, and that there is no b
   const text = read('SECURITY.md');
   assert.match(text, /\*\*Report a vulnerability\*\*/);
   assert.match(text, /There is no bug bounty\./);
+});
+
+// Trial 6 is planned, not run: every step has scripted messages to paste and a pass line to score against.
+test('the trial 6 plan has every step, scripted messages, pass lines and a scoring sheet', () => {
+  const plan = read('docs/trials/trial-6-plan.md');
+  for (const step of ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']) {
+    const body = plan.split(`## Step ${step}:`)[1]?.split('\n## ')[0] ?? '';
+    assert.ok(body, `step ${step}`);
+    assert.match(body, /\*\*Pass:\*\*/, `step ${step} has a pass line`);
+    if (step !== 'C' && step !== 'D') assert.match(body, /```\n[^`]+\n```/, `step ${step} has a message to paste`);
+    assert.match(plan, new RegExp(`^\\| ${step} \\| .+ \\| +\\| +\\|$`, 'm'), `step ${step} is on the scoring sheet`);
+  }
+  assert.match(plan, /This is a plan, not a record/);
+  // Trial 6 found the scripted correction never said who made it.
+  assert.match(plan.split('## Step A:')[1].split('\n## ')[0], /```\nA correction from Priya Raman: /);
+  const h = plan.split('## Step H:')[1].split('\n## ')[0];
+  assert.match(h, /```\nRemember this for next time: /);
+  assert.match(h, /not (a )?(Claude's )?(project )?memory/i);
+  assert.match(plan, /jane\.doe@example\.com/, 'step G uses a fake customer email');
+  // The empty learned.md the trial starts from passes check-context as written.
+  const empty = plan.match(/```\n(---\ntitle: Learned[\s\S]*?)```/)?.[1] ?? '';
+  const others = list('examples/pellwick/context').filter((p) => !p.endsWith('/learned.md')).map(read);
+  assert.deepEqual(checkContext(empty, new Date('2026-10-01T00:00:00Z'), { learned: true, others }), { errors: [], warnings: [] });
+});
+
+// M3 is described as built, with its manual step; M4 and M5 stay planned. The README waits for trial 6.
+test('the docs describe the learning loop as it works, including the manual swap', () => {
+  const direction = read('docs/direction.md');
+  const learns = direction.split('\n').find((line) => line.startsWith('9. Learns'))!;
+  assert.doesNotMatch(learns, /planned/);
+  assert.match(learns, /learned\.md/);
+  assert.match(learns, /nothing without (a|the user's) yes/);
+  assert.match(learns, /replaces learned\.md in the project's files/);
+  assert.match(direction, /planned \(M5\)/);
+  assert.match(direction, /A VS Code version is planned/);
+  const guide = read('docs/claude-project.md');
+  const section = guide.split('## Keeping Loupe up to date\n')[1]?.split('\n## ')[0] ?? '';
+  assert.ok(section, 'the setup guide has the section');
+  for (const phrase of [/learned\.md/, /Save these to learned\.md\?/, /delete the old learned\.md/i, /upload the new one/i]) assert.match(section, phrase);
+  assert.doesNotMatch(guide, /doesn't learn from your corrections yet/);
+  assert.doesNotMatch(section, /automatic/i);
+});
+
+// Trial 6: Claude's project memory took a "remember this" request, with no source and no question.
+test('the project instructions send corrections, answers and "remember" requests to Loupe, not memory', () => {
+  const guide = read('docs/claude-project.md');
+  const instructions = guide.split('```\n')[1] ?? '';
+  assert.ok(instructions.includes("When I correct a story, answer one of its questions, or ask you to remember something about the team, use the loupe skill's learning steps and learned.md, not memory."));
+  const section = guide.split('## Keeping Loupe up to date\n')[1]?.split('\n## ')[0] ?? '';
+  assert.match(section, /Claude's project memory is separate/);
+  assert.match(section, /doesn't cite sources/);
 });

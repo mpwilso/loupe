@@ -14,7 +14,7 @@ Every CI run keeps two downloads for 7 days.
 2. Click the latest run of **tests** on the branch you are trying. Note its commit id, shown on the run page.
 3. Scroll to **Artifacts** at the bottom and download both:
    - **loupe-skill**: this download is the skill. Don't unzip it. It holds one folder, `loupe/`.
-   - **pellwick-trial-kit**: unzip it. It holds `raw/`, `context/`, `templates/` and `inputs/`. It leaves out the expected stories, so the trial stays blind. Don't look at `examples/pellwick/expected/` until you finish.
+   - **pellwick-trial-kit**: unzip it. It holds `raw/`, `context/`, `templates/`, `inputs/` and the current trial plan. It leaves out the expected stories, so the trial stays blind. Don't look at `examples/pellwick/expected/` until you finish.
 
 Skills belong to your account, not a project. Upload `loupe-skill.zip` once, as described in [claude-project.md](claude-project.md), step 2, and switch it off or on in **Customize**, then **Skills**, as each pass says.
 

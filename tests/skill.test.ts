@@ -33,6 +33,7 @@ const file = (name: string) => entries.find((e) => e.name === `loupe/${name}`)?.
 const sources: Record<string, string> = {
   'SKILL.md': 'skill/SKILL.md',
   'writing-rules.md': 'skill/writing-rules.md',
+  'learning.md': 'skill/learning.md',
   'src/run.js': 'src/run.js',
   'src/node-version.js': 'src/node-version.js',
   'src/check.ts': 'src/check.ts',
@@ -332,4 +333,70 @@ test('story mode reruns the checker up to five times, and keeps "Not checked" fo
   assert.match(skill, /`Not checked:` is only for when a checker can't start or Node is too old\./);
   assert.doesNotMatch(skill, /at most twice|once more/);
   assert.match(skill, /Call: Story written, Not ready yet, Not checked or Failed the checker/);
+});
+
+// M3: corrections and answers stick for the whole team, but only with a person's yes, and only as a file they swap in.
+const learningText = () => `${file('SKILL.md')}\n${file('learning.md')}`;
+
+test('the skill sorts each correction or answer into a fact, a rule, or a one-off fix it never learns', () => {
+  const skill = file('SKILL.md');
+  assert.match(skill, /^## Learn from corrections$/m);
+  assert.ok(skill.includes('`SKILL/learning.md`'), 'SKILL.md points to the learning reference');
+  const text = learningText();
+  for (const kind of [/a fact about the team/i, /a rule for how (the team|they) wants? stories written/i, /a one-off fix to this story/i]) assert.match(text, kind);
+  assert.match(text, /answers? (to )?(one of )?its questions|"To confirm"/i);
+  assert.match(text, /If you can't tell, ask one short question/);
+});
+
+test('the skill asks before it saves, and hands back a file for the user to swap in', () => {
+  const text = learningText();
+  assert.ok(text.includes('"Save these to learned.md?"'));
+  assert.match(text, /Save nothing without a clear yes/);
+  assert.match(text, /node SKILL\/src\/run\.js check-context learned\.md/);
+  assert.match(text, /replace learned\.md in the project's files/i);
+  assert.match(text, /If there is no learned\.md yet/i);
+  assert.doesNotMatch(text, /automatically (saves|updates)/i);
+});
+
+test('the skill shows both sides of a conflict and never picks silently', () => {
+  const text = learningText();
+  assert.match(text, /show both/i);
+  assert.match(text, /sources and dates/i);
+  assert.match(text, /applies:/);
+  assert.match(text, /Never pick one silently/);
+});
+
+test('the Never list holds for learning: no invented facts, secrets, credentials or customer data, even when asked', () => {
+  const text = learningText();
+  assert.match(text, /Never learn an invented fact, a secret, a credential or customer data, even if asked/);
+  assert.match(text, /Say why in one line/);
+});
+
+test('story mode reads learned.md like any context file, and a replacing entry wins', () => {
+  const story = storyMode();
+  assert.match(story, /learned\.md/);
+  assert.match(story, /the entry that replaces the other wins/);
+  assert.match(file('writing-rules.md'), /via the Learned context file/);
+});
+
+// Trial 6 fixes: a source always names a real person, what's approved is what's saved, and "remember" goes through Loupe.
+test('the skill asks who said it rather than using a stand-in, and never changes an entry after the yes', () => {
+  const text = learningText();
+  assert.ok(text.includes('"Who should I name as the source for this?"'));
+  assert.match(text, /Never use a stand-in like "Story author"/);
+  assert.match(text, /What you show is what you save/);
+  assert.match(text, /show the change and ask again/i);
+  assert.match(text, /nothing after the date/i);
+});
+
+test('the skill treats "remember this" about the team as a learning request, not memory', () => {
+  const text = learningText();
+  for (const phrase of ['"remember this"', '"note that"', '"for next time"']) assert.ok(text.includes(phrase), phrase);
+  assert.match(text, /not (Claude's )?(project )?memory/i);
+});
+
+test('the skill offers to fold entries in when learned.md passes 480 words', () => {
+  const text = learningText();
+  assert.match(text, /480 words/);
+  assert.match(text, /fold its entries into the main context files at the next setup refresh/);
 });

@@ -73,7 +73,8 @@ test('every key fact in the context files is also in raw/, however it is worded'
 // Every body line of a context file that states a fact needs at least one key fact above.
 test('every fact line in the context files has a key fact', () => {
   const uncovered: string[] = [];
-  for (const file of readdirSync(dir('context'))) {
+  // learned.md comes from corrections and answers, not from raw/; its sources are traced in the next test.
+  for (const file of readdirSync(dir('context')).filter((f) => f !== 'learned.md')) {
     const lines = readFileSync(new URL(file, dir('context')), 'utf8').split('\n');
     const body = lines.slice(lines.indexOf('---', 1) + 1).filter((line) => line.trim() && !line.startsWith('#'));
     const mine = facts.filter(([name]) => `${name}.md` === file).map(([, context]) => context);
@@ -93,4 +94,25 @@ test('no file in raw/ mentions Loupe or uses a Loupe section heading', () => {
     return [...(/loupe/i.test(text) ? [`${file}: mentions Loupe`] : []), ...text.split('\n').filter((line) => loupeLine.test(line.trim())).map((line) => `${file}: ${line}`)];
   });
   assert.deepEqual(found, []);
+});
+
+// The example learned.md is the real file from trial 6b: every entry's source is quoted in that trial's record,
+// and every entry says what the trial's scripted correction or answer said.
+test('every entry in the example learned.md traces to trial 6b', () => {
+  const learned = readFileSync(new URL('learned.md', dir('context')), 'utf8');
+  const record = readFileSync(new URL('../docs/trials/2026-09-30-trial-6b.md', import.meta.url), 'utf8');
+  const plan = readFileSync(new URL('../docs/trials/trial-6-plan.md', import.meta.url), 'utf8');
+  const entries = [...learned.matchAll(/^- (.+)\n  kind: (\w+)\n  source: (.+), \S+ on ([\w-]+), (\d{4}-\d{2}-\d{2})$/gm)];
+  assert.equal(entries.length, 3);
+  const inputs = readdirSync(dir('inputs'));
+  for (const [, text, , who, story, date] of entries) {
+    assert.ok(record.includes(`${who}, `) && record.includes(`on ${story}, ${date}`), `${text}: its source is not in trial 6b's record`);
+    assert.ok(inputs.some((f) => f.startsWith(story)), `${story} is an input`);
+    const words = text.toLowerCase().match(/[a-z]{5,}/g) ?? [];
+    const said = plan.toLowerCase();
+    assert.ok(words.filter((w) => said.includes(w)).length / words.length >= 0.6, `${text}: not what the trial's scripted messages said`);
+  }
+  // "rule", "applies:" and "replaces:" have no real example yet, so a passing fixture keeps them covered.
+  const fixture = readFileSync(new URL('fixtures/good-learned.md', import.meta.url), 'utf8');
+  for (const field of ['kind: rule', 'applies: ', 'replaces: "']) assert.ok(fixture.includes(`  ${field}`), field);
 });

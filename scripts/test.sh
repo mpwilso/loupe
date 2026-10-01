@@ -25,7 +25,14 @@ run() {
 for f in templates/*.md; do [ "$f" = templates/definition-of-ready.md ] || run src/check.ts "$f"; done
 # The checker finds each team's templates folder on its own.
 for f in examples/*/templates/*.md examples/*/expected/*.md; do [ -e "$f" ] && run src/check.ts "$f"; done
-for f in examples/*/context/*.md; do run src/check-context.ts "$f"; done
+# learned.md is checked with its team's other context files, which its "replaces:" lines quote.
+for f in examples/*/context/*.md; do
+  if [ "$(basename "$f")" = learned.md ]; then
+    run src/check-context.ts $(ls "$(dirname "$f")"/*.md | grep -v '/learned\.md$') "$f"
+  else
+    run src/check-context.ts "$f"
+  fi
+done
 echo "checked files: $((pass + fail)), passed: $pass, failed: $fail"
 [ "$fail" -eq 0 ] || failed=1
 

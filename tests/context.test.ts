@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { checkContext } from '../src/check-context.ts';
+import { checkContext, contextSpec } from '../src/check-context.ts';
 import { format } from '../src/spec.ts';
-import { fixture, secretLine, secrets, shortLookalikes, today, withLine } from './cases.ts';
+import { fixture, learnedOptions, secretLine, secrets, shortLookalikes, today, withLine } from './cases.ts';
 
 const secret = (what: string) =>
-  `line 8: This looks like ${what}. Remove it. Context files must never hold secrets or credentials.`;
+  `line 8: This looks like ${what}. Remove it. Context files must never hold secrets, credentials or customer data.`;
 
 const bad: Record<string, string> = {
   'no-front-matter': 'line 1: The file must start with front matter between two "---" lines.',
@@ -16,6 +16,7 @@ const bad: Record<string, string> = {
   password: secret('a password'),
   'private-key': secret('a private key'),
   token: secret('a secret or token'),
+  email: secret('an email address'),
   'too-long': 'The body has 315 words; the limit is 300. Keep only what a new team member needs.',
   'paragraph-no-source': 'line 8: This fact doesn\'t say where it came from. End the line with its own source in parentheses, like "(planning email, Priya Raman, 2026-09-18)".',
   'numbered-no-source': 'line 10: This fact doesn\'t say where it came from. End the line with its own source in parentheses, like "(planning email, Priya Raman, 2026-09-18)".',
@@ -72,4 +73,56 @@ test('every fact line needs a source, whether bullet, numbered or paragraph, but
   const text = `${fixture('good-context.md')}## Staff tools\nStockroom is the staff tool. (engineering lead, 2026-09-01)\n`;
   assert.deepEqual(checkContext(text, today).errors, []);
   assert.equal(checkContext(`${text}Agents use it every day.\n`, today).errors.length, 1);
+});
+
+const learnedBad: Record<string, string> = {
+  'no-approval-header': 'line 7: Start learned.md with a short line saying Loupe proposes these entries and a person approves each one.',
+  'stray-line': 'line 12: Each line after the header is an entry starting "- ", or one of its fields, indented, like "  kind: fact".',
+  'two-sentences': 'line 9: Write each entry as one plain sentence, ending with a period.',
+  'no-kind': 'line 9: This entry needs "kind: fact" (about the team, product or systems) or "kind: rule" (how the team wants stories written).',
+  'partial-source': 'line 11: This entry needs a full source: who said it, how, on which story, and the date, like "source: Priya Raman, correction on skip-a-box, 2026-10-02".',
+  'bad-source-date': 'line 11: The date in this source must be a real date like 2026-10-02.',
+  'bad-applies': 'line 12: "applies:" must say when the entry holds, from a start to an end, like "applies: 1 December to 5 January".',
+  'unquoted-replaces': 'line 12: "replaces:" must quote the earlier fact exactly, in double quotes.',
+  'replaces-not-found':
+    'line 12: "replaces:" quotes "The web app is where staff manage refunds.", but no other context file or earlier entry says that. Quote the earlier fact exactly, and check learned.md together with the other context files.',
+  'duplicate-replaces': 'line 16: Two entries replace "The web app is where customers manage their orders.". Keep one, or have the newer entry replace the older one.',
+  'unknown-field': 'line 12: "said:" is not an entry field. The fields are kind, source, applies and replaces.',
+  'fold-soon': 'warning: learned.md has 570 words. Past 480, say so in one line and offer to fold its entries into the main context files at the next setup refresh.',
+  'too-long': 'The body has 745 words; the limit is 600. Keep only what a new team member needs.',
+};
+
+for (const [name, message] of Object.entries(learnedBad)) {
+  test(`bad/learned/${name}.md fails with one plain message`, () => {
+    const { errors, warnings } = checkContext(fixture(`bad/learned/${name}.md`), today, learnedOptions());
+    assert.deepEqual([...errors.map(format), ...warnings.map((w) => `warning: ${format(w)}`)], [message]);
+  });
+}
+
+test('a learned.md with a fact, a rule, a time window and a chain of replacements passes', () => {
+  assert.deepEqual(checkContext(fixture('good-learned.md'), today, learnedOptions()), { errors: [], warnings: [] });
+});
+
+test('a learned.md with no entries yet passes, so a team can start with an empty one', () => {
+  const empty = fixture('good-learned.md').split('\n- ')[0];
+  assert.deepEqual(checkContext(empty, today, learnedOptions()), { errors: [], warnings: [] });
+});
+
+test('a "replaces:" line can only be checked against the other context files, so alone it fails', () => {
+  const alone = checkContext(fixture('good-learned.md'), today, { learned: true, others: [] }).errors.map(format);
+  assert.equal(alone.length, 1);
+  assert.match(alone[0], /^line 12: "replaces:" quotes "The web app is where customers manage their orders\."/);
+});
+
+test('an ordinary context file still needs a source on every line; learned.md uses its entry fields instead', () => {
+  assert.equal(checkContext(fixture('good-learned.md'), today).errors.length > 0, true);
+});
+
+// Trial 6: three entries came to 161 words, so 300 held about 7. learned.md gets its own, larger limit.
+test('learned.md has its own word limit of 600, and a nudge to fold entries in past 480', () => {
+  assert.equal(contextSpec.learned.maxBodyWords, 600);
+  assert.equal(contextSpec.learned.foldAfterWords, 480);
+  assert.equal(contextSpec.maxBodyWords, 300, 'the other context files keep 300');
+  assert.deepEqual(checkContext(fixture('good-learned-long.md'), today, learnedOptions()), { errors: [], warnings: [] });
+  assert.equal(checkContext(fixture('good-learned-long.md'), today).errors.some((e) => /limit is 300/.test(e.text)), true, 'as an ordinary context file it is too long');
 });
