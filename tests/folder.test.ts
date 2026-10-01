@@ -72,3 +72,14 @@ test('the Pellwick team folder builds with the right layout and passes check-fol
   assert.equal(again.status, 1);
   assert.match(again.stderr, /already exists/);
 });
+
+// M4c: tickets.md, at the folder's root, is checked against the stories it names.
+test('check-folder checks tickets.md: a ticket for a finished story passes, one for a missing story fails', () => {
+  const dir = teamFolder('tickets', 'good-story.md');
+  writeFileSync(join(dir, 'tickets.md'), 'SUBS-156, 2026-10-02-next-delivery-date.md, created 2026-10-02 14:05\n');
+  assert.deepEqual([checkFolder(dir).status, checkFolder(dir).stdout], [0, `Checked with Node ${process.version}.\n`]);
+  writeFileSync(join(dir, 'tickets.md'), 'SUBS-156, 2026-10-02-next-delivery-date.md, created 2026-10-02 14:05\nSUBS-157, 2026-10-02-gone.md, created 2026-10-02 15:00\n');
+  const run = checkFolder(dir);
+  assert.equal(run.status, 1);
+  assert.ok(run.stdout.includes(`${join(dir, 'tickets.md')}:\n  line 2: There is no story 2026-10-02-gone.md in stories/.\n`), run.stdout);
+});

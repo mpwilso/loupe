@@ -1,10 +1,12 @@
-// Checks a whole team folder: context files and learned.md with check-context, and team templates and stories with check.
+// Checks a whole team folder: context files and learned.md with check-context, team templates and stories with check,
+// and tickets.md, the tickets Loupe created, against the stories they came from.
 // Usage: node src/check-folder.ts path/to/loupe
 // Set LOUPE_TODAY=YYYY-MM-DD to check staleness against a fixed date.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { builtInFolder, check, loadTemplates } from './check.ts';
 import { checkContext, contextSpec } from './check-context.ts';
+import { checkTickets, ticketsSpec } from './check-tickets.ts';
 import { runCli } from './spec.ts';
 
 const usage = 'Usage: node src/check-folder.ts path/to/loupe\nA team folder holds context/, learned.md, templates/ and stories/.';
@@ -27,9 +29,12 @@ export function main(args: string[]): void {
   const others = contextPaths.filter((p) => !isLearned(p)).map((p) => readFileSync(p, 'utf8'));
   const teamTemplates = join(dir, 'templates');
   const templates = [...loadTemplates(builtInFolder), ...(existsSync(teamTemplates) ? loadTemplates(teamTemplates) : [])];
-  const paths = [...contextPaths, ...markdown(teamTemplates), ...markdown(join(dir, 'stories'))];
+  const storyPaths = markdown(join(dir, 'stories'));
+  const tickets = join(dir, ticketsSpec.fileName);
+  const paths = [...contextPaths, ...markdown(teamTemplates), ...storyPaths, ...(existsSync(tickets) ? [tickets] : [])];
   runCli(
     (text, path) => {
+      if (path === tickets) return checkTickets(text, new Map(storyPaths.map((p) => [basename(p), readFileSync(p, 'utf8')])));
       if (isLearned(path)) return checkContext(text, today, { learned: true, others });
       if (contextPaths.includes(path)) return checkContext(text, today);
       return check(text, templates);

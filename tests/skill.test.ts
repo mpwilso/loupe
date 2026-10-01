@@ -36,11 +36,13 @@ const sources: Record<string, string> = {
   'learning.md': 'skill/learning.md',
   'files-mode.md': 'skill/files-mode.md',
   'tracker.md': 'skill/tracker.md',
+  'tracker-write.md': 'skill/tracker-write.md',
   'src/run.js': 'src/run.js',
   'src/node-version.js': 'src/node-version.js',
   'src/check.ts': 'src/check.ts',
   'src/check-context.ts': 'src/check-context.ts',
   'src/check-folder.ts': 'src/check-folder.ts',
+  'src/check-tickets.ts': 'src/check-tickets.ts',
   'src/spec.ts': 'src/spec.ts',
   ...Object.fromEntries(readdirSync(join(root, 'spec')).map((f) => [`spec/${f}`, `spec/${f}`])),
   ...Object.fromEntries(md('templates').map((f) => [`templates/${f}`, `templates/${f}`])),
@@ -151,7 +153,7 @@ test('the skill asks about what happens around the change, and never answers it 
 
 test('the packaged checkers need no packages and no network', () => {
   const allowed = new Set(['node:fs', 'node:path', 'node:url', 'node:util']);
-  for (const name of ['src/run.js', 'src/node-version.js', 'src/check.ts', 'src/check-context.ts', 'src/check-folder.ts', 'src/spec.ts']) {
+  for (const name of ['src/run.js', 'src/node-version.js', 'src/check.ts', 'src/check-context.ts', 'src/check-folder.ts', 'src/check-tickets.ts', 'src/spec.ts']) {
     for (const [, from] of file(name).matchAll(/^import .* from '([^']+)';$/gm)) {
       assert.ok(from.startsWith('./') || allowed.has(from), `${name} imports ${from}`);
     }
@@ -507,10 +509,58 @@ test('the tracker steps: search first, read at most 5, cite with a live source, 
 
 test('the tracker steps never write to the tracker, keep customer data out, and keep live facts live', () => {
   const text = tracker();
-  assert.match(text, /Never create, change, comment on, close or move an issue, and never ask to/);
+  assert.match(text, /While writing a story, use only tools that read\. Never change, comment on, close or move an issue, and never ask to\. Create an issue only when the user asks for a ticket from a finished story, by following `SKILL\/tracker-write\.md`\./);
   // Trial 8 step D refused, then ran on past one line.
   assert.ok(text.includes("If asked to change the tracker, reply with exactly one line: Loupe can't change the tracker yet. Then stop, unless the user asked for something else in the same message."));
   assert.match(text, /customers' names, emails, phone numbers and addresses/);
   assert.match(text, /Never copy a fact read from the tracker into the context files or learned\.md/);
   assert.match(file('learning.md'), /Never learn a fact read from a tracker/);
+});
+
+// M4c: a ticket from a finished story, with two locks: Loupe asks first, and Claude Code asks before the tool runs.
+const trackerWrite = () => file('tracker-write.md');
+
+test('SKILL.md points to the ticket steps, and the tracker steps send every create there', () => {
+  const pointer = file('SKILL.md').split('## Create a ticket\n')[1]?.split('\n## ')[0] ?? '';
+  assert.match(pointer, /When the user asks for a tracker ticket from a story, read `SKILL\/tracker-write\.md` and follow it exactly\./);
+  assert.match(pointer, /creates it only after a clear yes, and never changes an existing issue/);
+  assert.match(tracker(), /by following `SKILL\/tracker-write\.md`/);
+  assert.match(filesMode(), /loupe\/tickets\.md {4}the tickets Loupe created, one line each/);
+});
+
+test('the ticket steps: only for a checked, finished story, never twice, and not without the create tool', () => {
+  const text = trackerWrite();
+  assert.match(text, /with `Call: Story written`, and it must have passed the checker\. Otherwise, say in one line why not/);
+  assert.ok(text.includes('"Ticket creation isn\'t set up; see https://github.com/mpwilso/loupe/blob/master/docs/live-context.md."'));
+  assert.match(text, /read `loupe\/tickets\.md` if it exists, and search the tracker for the story's title\. If you find one, say so in one line with its live source/);
+  assert.match(text, /and don't offer to create another/);
+  assert.match(text, /It also runs the customer-data detector\. If it fails, say so in one line and stop\./);
+});
+
+test('the ticket steps show the exact ticket, map each template to a type, and ask in the set words', () => {
+  const text = trackerWrite();
+  for (const line of ['- Project: the tracker\'s project key, such as SUBS.', '- Type: Story for a user story or a job story, Bug for a bug, Task for a change request or a spike.', '- Title: the story\'s title, without the `#`.', '- Labels: loupe.', '- Description: the whole story file, unchanged, in a fenced block.']) {
+    assert.ok(text.includes(line), line);
+  }
+  assert.ok(text.includes('"Create this in SUBS?"'));
+});
+
+test('the ticket steps create once, on a clear yes only, byte for byte, and record it in tickets.md', () => {
+  const text = trackerWrite();
+  assert.match(text, /Anything else, such as "not yet", "maybe" or a question, is not\. Then create nothing, and say so in one line: "I didn't create a ticket\."/);
+  assert.match(text, /Call the create tool once, with exactly the fields you showed\. The description is the story file's full text, byte for byte, ending with the same final line break/);
+  assert.ok(text.includes('"SUBS-156, 2026-10-02-skip-next-box.md, created 2026-10-02 14:05"'), 'the tickets.md line, in the checker\'s format');
+  assert.match(text, /Run `node SKILL\/src\/run\.js check-folder loupe`/);
+  assert.ok(text.includes('"Created SUBS-156. (Jira SUBS-156, read 2026-10-02 14:05)"'));
+  // The example line is exactly what the tickets checker accepts.
+  const line = text.match(/like "(SUBS-156, [^"]+)"/)![1];
+  assert.match(line, new RegExp(JSON.parse(readFileSync(join(root, 'spec/tickets.json'), 'utf8')).line.pattern.replace('{key}', '[A-Z][A-Z0-9]+-\\d+')));
+});
+
+test('the ticket steps never change an existing issue, never ask twice, and keep customer data out', () => {
+  const text = trackerWrite();
+  assert.match(text, /Never create a ticket without a clear yes to the exact ticket you showed\. If anything must change after the yes, show it again and ask again\./);
+  assert.match(text, /Never create a second ticket for a story\./);
+  assert.match(text, /Never update, comment on, move, assign, close or delete an issue, even one Loupe created\. If asked to change an issue, reply with exactly one line: Loupe can't change the tracker yet\./);
+  assert.match(text, /Never put customer data in a ticket\./);
 });

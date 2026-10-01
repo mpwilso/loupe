@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { after, before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { createInterface } from 'node:readline';
@@ -125,4 +125,101 @@ test('the live-context guide allows exactly the three read tools, and denies a r
   for (const rule of jira.permissions.allow) assert.ok(!soundsLikeWrite(rule.replace('mcp__atlassian__', '')), `${rule} reads`);
   assert.match(guide, /support\.atlassian\.com\/atlassian-rovo-mcp-server\/docs\/supported-tools/);
   assert.match(guide, /not tested/i);
+});
+
+// M4c: create mode. The default stays read-only; --allow-create adds create_issue and nothing else, and created
+// issues go to a state file, never to the repo's issues file.
+async function startServer(args: string[], env: Record<string, string> = {}) {
+  const child = spawn(process.execPath, ['mock/tracker/server.ts', 'examples/pellwick/tracker/issues.json', ...args], {
+    cwd: root,
+    env: { ...process.env, LOUPE_NOW: '2026-10-02T14:05:00', ...env },
+  });
+  const pending = new Map<number, (message: Record<string, any>) => void>();
+  createInterface({ input: child.stdout }).on('line', (line) => pending.get(JSON.parse(line).id)?.(JSON.parse(line)));
+  let id = 1;
+  const ask = (method: string, params: unknown = {}) =>
+    new Promise<Record<string, any>>((done) => {
+      const n = id++;
+      pending.set(n, done);
+      child.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', id: n, method, params })}\n`);
+    });
+  await ask('initialize', { protocolVersion: '2025-11-25', capabilities: {} });
+  const use = async (name: string, args: unknown) => (await ask('tools/call', { name, arguments: args })).result;
+  return { ask, use, stop: () => child.kill() };
+}
+
+test('create mode lists the three reads plus create_issue, and nothing else that writes', async () => {
+  const { mkdtempSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const state = `${mkdtempSync(`${tmpdir()}/loupe-tracker-`)}/state.json`;
+  const server = await startServer(['--allow-create', '--state', state]);
+  const { tools } = (await server.ask('tools/list')).result;
+  server.stop();
+  assert.deepEqual(tools.map((t: { name: string }) => t.name), ['search_issues', 'get_issue', 'recent_issues', 'create_issue']);
+  assert.deepEqual(tools.filter((t: { name: string; description: string }) => soundsLikeWrite(`${t.name} ${t.description}`)).map((t: { name: string }) => t.name), ['create_issue']);
+  const create = tools.find((t: { name: string }) => t.name === 'create_issue');
+  assert.deepEqual(create.inputSchema.required, ['project', 'type', 'title', 'description', 'labels']);
+  assert.equal(create.annotations.readOnlyHint, false);
+  // The default is unchanged: no create_issue, and a call to it is an unknown tool.
+  const { result } = await request('tools/list');
+  assert.ok(!result.tools.some((t: { name: string }) => t.name === 'create_issue'));
+  assert.equal((await request('tools/call', { name: 'create_issue', arguments: {} })).error.code, -32602);
+});
+
+test('created issues get the next key, are readable and searchable, live in the state file, and never touch issues.json', async () => {
+  const { createHash } = await import('node:crypto');
+  const { mkdtempSync, readFileSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const seed = `${root}examples/pellwick/tracker/issues.json`;
+  const hash = () => createHash('sha256').update(readFileSync(seed)).digest('hex');
+  const before = hash();
+  const state = `${mkdtempSync(`${tmpdir()}/loupe-tracker-`)}/state.json`;
+  const story = 'Call: Story written\nConfidence: High, it is clear.\nFirst question: None.\n\n# Let subscribers skip their next box\n';
+  const server = await startServer(['--allow-create'], { LOUPE_TRACKER_STATE: state });
+  const made = body(await server.use('create_issue', { project: 'SUBS', type: 'Story', title: 'Let subscribers skip their next box', description: story, labels: ['loupe'] }));
+  assert.deepEqual(made, { key: 'SUBS-156', created: '2026-10-02 14:05' }, 'the highest key is SUBS-155');
+  const read = body(await server.use('get_issue', { key: 'SUBS-156' })).issue;
+  assert.equal(read.description, story, 'the description is kept byte for byte');
+  assert.deepEqual([read.type, read.status, read.labels], ['Story', 'Open', ['loupe']]);
+  assert.equal(body(await server.use('search_issues', { query: 'skip their next box' })).issues[0].key, 'SUBS-156');
+  assert.equal((await server.use('create_issue', { project: 'SUBS', type: 'Epic', title: 'x', description: 'x', labels: [] })).isError, true);
+  server.stop();
+  assert.deepEqual(JSON.parse(readFileSync(state, 'utf8')).issues.map((i: { key: string }) => i.key), ['SUBS-156']);
+  // A new server reads the state file, and its next key follows on.
+  const again = await startServer(['--allow-create', '--state', state]);
+  assert.equal(body(await again.use('get_issue', { key: 'SUBS-156' })).issue.title, 'Let subscribers skip their next box');
+  assert.equal(body(await again.use('create_issue', { project: 'SUBS', type: 'Bug', title: 'b', description: 'b', labels: ['loupe'] })).key, 'SUBS-157');
+  again.stop();
+  assert.equal(hash(), before, 'issues.json is unchanged');
+});
+
+test('create mode refuses to start without a state file, or with the issues file as its state', () => {
+  const run = (args: string[]) => spawnSync(process.execPath, ['mock/tracker/server.ts', 'examples/pellwick/tracker/issues.json', ...args], { cwd: root, encoding: 'utf8', input: '', env: { ...process.env, LOUPE_TRACKER_STATE: '' } });
+  assert.equal(run(['--allow-create']).status, 2);
+  assert.match(run(['--allow-create']).stderr, /needs a state file/);
+  assert.equal(run(['--allow-create', '--state', 'examples/pellwick/tracker/issues.json']).status, 2);
+});
+
+// M4c: the second lock. No doc ever allows a create tool, so Claude Code asks before it runs.
+test('no guide allows a create tool; the create blocks put it under ask, and real Jira keeps every other write denied', async () => {
+  const { readdirSync, readFileSync } = await import('node:fs');
+  const docs = [...readdirSync(`${root}docs`).filter((f) => f.endsWith('.md')).map((f) => `docs/${f}`), 'README.md'];
+  for (const doc of docs) {
+    for (const [, block] of readFileSync(`${root}${doc}`, 'utf8').matchAll(/```json\n([\s\S]+?)\n```/g)) {
+      for (const rule of JSON.parse(block).permissions?.allow ?? []) {
+        assert.ok(!/create/i.test(rule), `${doc} allows ${rule}`);
+        assert.ok(!(rule.startsWith('mcp__') && rule.includes('*')), `${doc} allows a whole server: ${rule}`);
+      }
+    }
+  }
+  const guide = readFileSync(`${root}docs/live-context.md`, 'utf8');
+  const creating = guide.split('## Creating tickets\n')[1] ?? '';
+  const blocks = [...creating.matchAll(/```json\n([\s\S]+?)\n```/g)].map((m) => JSON.parse(m[1]).permissions);
+  assert.deepEqual(blocks.map((b) => b.ask), [['mcp__pellwick-tracker__create_issue'], ['mcp__atlassian__createJiraIssue']]);
+  const readOnly = [...guide.split('## Creating tickets\n')[0].matchAll(/```json\n([\s\S]+?)\n```/g)].map((m) => JSON.parse(m[1]).permissions).find((b) => b.deny);
+  assert.deepEqual(blocks[1].deny, readOnly.deny.filter((r: string) => r !== 'mcp__atlassian__createJiraIssue'), 'the same writes stay denied');
+  assert.match(creating, /"--allow-create", "--state", "\/tmp\/pellwick-tracker-state\.json"/);
+  assert.match(creating, /Never add the create tool to an allow list\./);
+  assert.match(creating, /This is not tested with Loupe\./);
+  assert.match(creating, /checks deny rules first, then ask, then allow/);
 });

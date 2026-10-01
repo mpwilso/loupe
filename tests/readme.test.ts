@@ -174,7 +174,7 @@ test('what the trials changed: seven bullets in a fixed order, each linking the 
 });
 
 test('the limits say exactly who ran and scored the trials', () => {
-  assert.ok(section('Limits').includes('- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e were measured by the Claude Code session that ran them. A separate reviewer scored trials 2 and 3 blind.'));
+  assert.ok(section('Limits').includes('- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trial 9 were measured by the Claude Code session that ran them. A separate reviewer scored trials 2 and 3 blind.'));
   assert.ok(section('Limits').includes("- Learning needs you to swap the updated learned.md into the project's files by hand, and it has been tested on the invented team and no other."));
   assert.doesNotMatch(readme, /doesn't learn from corrections yet/);
 });
@@ -224,7 +224,8 @@ test('setup covers Claude Code: the install commands, the guide, and what is tes
   assert.ok(section("What's different").includes('- **In Claude Code, it keeps to its folder.** It reads your team\'s context from a `loupe/` folder in your repository and writes nowhere else.'));
   const next = section("What's next");
   assert.doesNotMatch(next, /A VS Code version/);
-  assert.match(next, /^1\. Checks against your lower environments that read and never change anything, and creating Jira tickets with your approval\.$/m);
+  assert.match(next, /^1\. Checks against your lower environments that read and never change anything\.$/m);
+  assert.doesNotMatch(next, /creating Jira tickets/, 'ticket creation shipped in M4c');
 });
 
 // M4b: the tracker, in plain words, with its limits as measured in trial 8e.
@@ -233,6 +234,9 @@ test('the README says what reading a tracker does, and its limits as measured', 
   const limits = section('Limits');
   assert.ok(limits.includes('- The customer-data detector catches emails and secrets, but not names, phone numbers or street addresses.'));
   assert.ok(limits.includes('- The tracker work was tested on an invented mock tracker, never a real one.'));
+  // M4c, trial 9.
+  assert.ok(section("What's different").includes('- **It can create a ticket from a finished story.** It shows exactly what it will create and asks before it does, and it never changes an existing ticket.'));
+  assert.ok(limits.includes("- Ticket creation was tested on that mock too, with Claude Code's own permission prompt stood in for in the trial."));
   assert.ok(limits.includes('- Where Loupe cites tracker facts still varies from run to run: in trial 8e, 2 of 3 stories listed a fact from a ticket under Known, and the third left it as a question.'));
   assert.match(readFileSync(join(root, 'docs/trials/2026-09-30-trial-8.md'), 'utf8'), /\| 8e \| 2 of 3 \|/, 'the rate the README quotes is the one recorded');
 });
