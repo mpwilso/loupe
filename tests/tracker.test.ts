@@ -199,3 +199,27 @@ test('create mode refuses to start without a state file, or with the issues file
   assert.match(run(['--allow-create']).stderr, /needs a state file/);
   assert.equal(run(['--allow-create', '--state', 'examples/pellwick/tracker/issues.json']).status, 2);
 });
+
+// M4c: the second lock. No doc ever allows a create tool, so Claude Code asks before it runs.
+test('no guide allows a create tool; the create blocks put it under ask, and real Jira keeps every other write denied', async () => {
+  const { readdirSync, readFileSync } = await import('node:fs');
+  const docs = [...readdirSync(`${root}docs`).filter((f) => f.endsWith('.md')).map((f) => `docs/${f}`), 'README.md'];
+  for (const doc of docs) {
+    for (const [, block] of readFileSync(`${root}${doc}`, 'utf8').matchAll(/```json\n([\s\S]+?)\n```/g)) {
+      for (const rule of JSON.parse(block).permissions?.allow ?? []) {
+        assert.ok(!/create/i.test(rule), `${doc} allows ${rule}`);
+        assert.ok(!(rule.startsWith('mcp__') && rule.includes('*')), `${doc} allows a whole server: ${rule}`);
+      }
+    }
+  }
+  const guide = readFileSync(`${root}docs/live-context.md`, 'utf8');
+  const creating = guide.split('## Creating tickets\n')[1] ?? '';
+  const blocks = [...creating.matchAll(/```json\n([\s\S]+?)\n```/g)].map((m) => JSON.parse(m[1]).permissions);
+  assert.deepEqual(blocks.map((b) => b.ask), [['mcp__pellwick-tracker__create_issue'], ['mcp__atlassian__createJiraIssue']]);
+  const readOnly = [...guide.split('## Creating tickets\n')[0].matchAll(/```json\n([\s\S]+?)\n```/g)].map((m) => JSON.parse(m[1]).permissions).find((b) => b.deny);
+  assert.deepEqual(blocks[1].deny, readOnly.deny.filter((r: string) => r !== 'mcp__atlassian__createJiraIssue'), 'the same writes stay denied');
+  assert.match(creating, /"--allow-create", "--state", "\/tmp\/pellwick-tracker-state\.json"/);
+  assert.match(creating, /Never add the create tool to an allow list\./);
+  assert.match(creating, /This is not tested with Loupe\./);
+  assert.match(creating, /checks deny rules first, then ask, then allow/);
+});
