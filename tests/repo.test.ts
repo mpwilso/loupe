@@ -474,3 +474,13 @@ test('the trial 10 plan sets its bar first, runs each input twice, and keeps exp
   assert.match(plan, /\| `export-notes\.md` \| too thin \| Not ready yet \|/);
   assert.match(plan, /by reading the input or context file it names/);
 });
+
+// Trial 10b: its bar was added to the plan before the rerun.
+test('the trial 10 plan holds the 10b bar, set before the rerun', () => {
+  const rerun = read('docs/trials/trial-10-plan.md').split('## Trial 10b: the rerun\n')[1] ?? '';
+  assert.ok(rerun.includes("- address-change 4 times: no detail in the Example, Background or requirements that the input doesn't state (check by reading, and quote any you find)\n"));
+  assert.ok(rerun.includes('- skip-a-box once and helpline-ticket-48213 once: still pass, with an Example kept from the input, not "None given."\n'));
+  assert.ok(rerun.includes('- export-notes once: still "Not ready yet"\n'));
+  assert.ok(rerun.includes("- every other line of trial 10's bar still holds\n"));
+  assert.match(rerun, /the bug shape has no Example, so for it the Example part doesn't apply/);
+});

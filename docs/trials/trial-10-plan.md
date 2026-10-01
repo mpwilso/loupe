@@ -48,3 +48,23 @@ Send "Write a story from notes/<input>." for each input below, twice:
 | 5, 6 | holiday cutoff | | | | | |
 | 7, 8 | address change | | | | | |
 | 9, 10 | export notes | | | | | |
+
+## Trial 10b: the rerun
+
+After trial 10, an Example uses only details the input states, every requirement comes from the input or the context files or ends with "To confirm", and the truth step rereads the Example, Background and requirements against the input. Set up each run as above, in its own fresh copy.
+
+### The bar, set before the rerun
+
+- address-change 4 times: no detail in the Example, Background or requirements that the input doesn't state (check by reading, and quote any you find)
+- skip-a-box once and helpline-ticket-48213 once: still pass, with an Example kept from the input, not "None given."
+- export-notes once: still "Not ready yet"
+- every other line of trial 10's bar still holds
+
+The helpline ticket is a bug, and the bug shape has no Example, so for it the Example part doesn't apply.
+
+| Input | Runs |
+|---|---|
+| `slack-thread-address-change.md` | 4 |
+| `skip-a-box-meeting.md` | 1 |
+| `helpline-ticket-48213.md` | 1 |
+| `export-notes.md` | 1 |
