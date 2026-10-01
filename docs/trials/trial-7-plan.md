@@ -4,12 +4,21 @@ This is a plan, not a record. It tests files mode: Loupe installed per project i
 
 ## Before you start
 
-Make a fresh repository outside this one, so Claude Code doesn't pick up this repository's own files, with the Pellwick team folder, the inputs in `notes/`, and a README to tempt step E:
+Make a fresh repository outside this one, so Claude Code doesn't pick up this repository's own files, with the Pellwick team folder, the inputs in `notes/`, and a README to tempt step E. The team folder's learned.md already holds what step C teaches, so empty it first, as in trial 6:
 
 ```
 node scripts/build-team-folder.ts "$TRIAL"
 mkdir "$TRIAL/notes" && cp examples/pellwick/inputs/*.md "$TRIAL/notes/"
 printf '# Pellwick subscriptions\n\nThe customer web app for Pellwick subscribers.\n' > "$TRIAL/README.md"
+cat > "$TRIAL/loupe/learned.md" <<'END'
+---
+title: Learned
+updated: 2026-10-01
+sources:
+  - Corrections and answers the team approves, each named on its entry
+---
+Loupe proposes each entry below after a correction or an answer, and a person approves it before it is saved.
+END
 node scripts/install-claude-code.ts --project "$TRIAL"
 cd "$TRIAL" && git init -q && git add -A && git commit -qm "Trial 7 start"
 ```

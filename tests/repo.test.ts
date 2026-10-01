@@ -357,5 +357,10 @@ test('the trial 7 plan has every step, pass lines, the after-check and a scoring
   }
   assert.match(plan, /node scripts\/install-claude-code\.ts --project "\$TRIAL"/);
   assert.match(plan, /git status --short/);
+  // Step C has something to learn only if learned.md starts empty, and the empty one passes check-context.
+  const empty = plan.match(/cat > "\$TRIAL\/loupe\/learned\.md" <<'END'\n([\s\S]*?)\nEND\n/)?.[1] ?? '';
+  const others = list('examples/pellwick/context').filter((p) => !p.endsWith('/learned.md')).map(read);
+  assert.deepEqual(checkContext(`${empty}\n`, new Date('2026-10-01T00:00:00Z'), { learned: true, others }), { errors: [], warnings: [] });
+  assert.doesNotMatch(empty, /^- /m, 'no entries');
   for (const [, input] of plan.matchAll(/notes\/([\w.-]+\.md)/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
 });
