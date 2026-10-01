@@ -50,17 +50,36 @@ Correct a story, answer one of its questions, or ask Loupe to remember something
 
 Commit `loupe/context/`, `loupe/learned.md` and `loupe/templates/`, so everyone gets the same context and changes go through review. Whether to commit `loupe/stories/` is your team's choice.
 
-## Keep Loupe inside its folder
+## Recommended permissions
 
-Loupe writes only inside `loupe/` and never changes any other file in your repository. Claude Code can back that up: with this rule in `.claude/settings.json`, it lets Loupe edit inside `loupe/` without asking, and still asks you before any other edit.
+The skill's own rule keeps Loupe inside `loupe/`: it writes only there, and runs only its checker and `git diff` or `git status`. These permissions make Claude Code enforce it. Put them in `.claude/settings.json` in your repository:
 
+```json
+{
+  "permissions": {
+    "allow": [
+      "Edit(/loupe/**)",
+      "Bash(node */src/run.js *)",
+      "Bash(git diff *)",
+      "Bash(git status *)"
+    ]
+  }
+}
 ```
-{ "permissions": { "allow": ["Edit(/loupe/**)"] } }
+
+Loupe can then edit inside `loupe/` and run its checker without asking, and Claude Code asks you before anything else. Allow nothing broader. Claude Code checks file writes against `Edit` rules; a `Write` rule is accepted but never used.
+
+## If you also use Loupe in claude.ai
+
+Claude Code also loads the skills on your claude.ai account, so your claude.ai copy of Loupe loads alongside this one, as `anthropic-skills:loupe`. To use only the one you installed here, turn the other off in your settings:
+
+```json
+{ "skillOverrides": { "anthropic-skills:loupe": "off" } }
 ```
 
-Claude Code checks file writes against `Edit` rules; a `Write` rule is accepted but never used.
+If Loupe is installed both for you and for a project, a personal install beats a project install, so run the installer the same way everywhere.
 
 ## Good to know
 
-- In VS Code, the extension shows a subset of Claude Code's skills. Type `/` or `/skills` in the chat panel to check Loupe is there.
+- The terminal CLI is tested. The VS Code extension runs its own copy of the same CLI, but hasn't been tested with Loupe yet. Type `/` or `/skills` in its chat panel to check Loupe is there.
 - SKILL.md is a common format that other agents, such as Codex, can read, but only Claude Code has been tested.

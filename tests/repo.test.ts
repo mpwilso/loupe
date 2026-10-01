@@ -340,7 +340,16 @@ test('the Claude Code guide installs, sets up the folder, writes a story, learns
   assert.match(guide, /^## What to commit$/m);
   assert.match(guide, /Commit `loupe\/context\/`, `loupe\/learned\.md` and `loupe\/templates\/`/);
   assert.match(guide, /Whether to commit `loupe\/stories\/` is your team's choice/);
-  assert.match(guide, /Edit\(\/loupe\/\*\*\)/, 'the docs say Write rules are never consulted, so the tip uses Edit');
+  // Trial 7: the recommended permissions, exactly, and nothing broader.
+  const block = guide.split('## Recommended permissions\n')[1]?.split('\n## ')[0] ?? '';
+  const settings = JSON.parse(block.match(/```json\n([\s\S]+?)\n```/)?.[1] ?? '{}');
+  assert.deepEqual(settings, { permissions: { allow: ['Edit(/loupe/**)', 'Bash(node */src/run.js *)', 'Bash(git diff *)', 'Bash(git status *)'] } });
+  assert.match(block, /The skill's own rule keeps Loupe inside `loupe\/`/);
+  assert.match(block, /these permissions make Claude Code enforce it/i);
+  assert.match(guide, /"skillOverrides": \{ "anthropic-skills:loupe": "off" \}/, 'how to turn off the synced copy');
+  assert.match(guide, /anthropic-skills:loupe/);
+  assert.match(guide, /a personal install beats a project install/i);
+  assert.match(guide, /The terminal CLI is tested\. The VS Code extension runs its own copy of the same CLI, but hasn't been tested with Loupe yet\./);
   assert.match(guide, /Codex/);
   assert.match(guide, /only Claude Code has been tested/);
   assert.ok(read('docs/team-folder.md').includes('node ~/.claude/skills/loupe/src/run.js check-folder loupe'));
