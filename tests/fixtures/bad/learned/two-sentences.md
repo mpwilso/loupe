@@ -1,6 +1,6 @@
 ---
 title: Learned
-updated: 2026-10-02
+updated: 2026-09-29
 sources:
   - Corrections and answers the team approved, each named on its entry
 ---

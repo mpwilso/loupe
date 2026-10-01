@@ -119,7 +119,7 @@ test('what is different includes the learning loop, and what is next no longer l
   assert.ok(section("What's different").includes('- **It learns from corrections and answers.** Every learned fact names its source, and nothing is saved without your yes.'));
   const next = section("What's next");
   assert.doesNotMatch(next, /learning loop/i);
-  assert.match(next, /^1\. A VS Code version/m);
+  assert.match(next, /^1\. Live context in Claude Code/m);
 });
 
 test('the story section shows real lines from the example, then the whole story, collapsed', () => {
@@ -209,4 +209,18 @@ test('the diagram is shown for both themes', () => {
   const body = section('How it works');
   assert.ok(body.includes('<source media="(prefers-color-scheme: dark)" srcset="docs/img/how-it-works-dark.svg">'));
   assert.ok(body.includes('src="docs/img/how-it-works-light.svg"'));
+});
+
+// After trial 7b: Claude Code support, with what was and wasn't tested.
+test('setup covers Claude Code: the install commands, the guide, and what is tested', () => {
+  const setup = section('Setup');
+  const part = setup.split('### Use it in Claude Code\n')[1] ?? '';
+  assert.ok(part, 'a "Use it in Claude Code" part');
+  assert.ok(part.includes('```\ngit clone https://github.com/mpwilso/loupe.git\ncd loupe\nnode scripts/install-claude-code.ts\n```'));
+  assert.ok(part.includes('[docs/claude-code.md](docs/claude-code.md)'));
+  assert.match(part, /The terminal is tested; the VS Code extension isn't yet\./);
+  assert.ok(section("What's different").includes('- **In Claude Code, it keeps to its folder.** It reads your team\'s context from a `loupe/` folder in your repository and writes nowhere else.'));
+  const next = section("What's next");
+  assert.doesNotMatch(next, /A VS Code version/);
+  assert.match(next, /^1\. Live context in Claude Code: checks against your lower environments that read but never change anything, and Jira, which never writes to the tracker without your approval\.$/m);
 });

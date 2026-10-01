@@ -126,3 +126,12 @@ test('learned.md has its own word limit of 600, and a nudge to fold entries in p
   assert.deepEqual(checkContext(fixture('good-learned-long.md'), today, learnedOptions()), { errors: [], warnings: [] });
   assert.equal(checkContext(fixture('good-learned-long.md'), today).errors.some((e) => /limit is 300/.test(e.text)), true, 'as an ordinary context file it is too long');
 });
+
+// Trial 7's plan dated its empty learned.md after the trial, and Loupe moved the date back to today.
+test('an updated date after today warns but does not fail; today itself is fine', () => {
+  const { errors, warnings } = checkContext(fixture('warn/future.md'), today);
+  assert.deepEqual(errors, []);
+  assert.deepEqual(warnings.map(format), ['line 3: "updated" is 2026-10-15, after today, 2026-09-30. Set it to the date the facts were last checked.']);
+  const todayText = fixture('warn/future.md').replace('2026-10-15', '2026-09-30');
+  assert.deepEqual(checkContext(todayText, today), { errors: [], warnings: [] });
+});

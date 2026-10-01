@@ -107,6 +107,7 @@ Before release: Tell support that subscribers can skip online and how skips show
 - **A checker enforces the shape.** Loupe keeps fixing the story until it passes.
 - **It learns your team from your own documents.** It turns them into short context files, every fact with its source.
 - **It learns from corrections and answers.** Every learned fact names its source, and nothing is saved without your yes.
+- **In Claude Code, it keeps to its folder.** It reads your team's context from a `loupe/` folder in your repository and writes nowhere else.
 
 ## Proof
 
@@ -155,6 +156,16 @@ You need a Claude account with Skills and code execution turned on.
 
 The full steps, with sharing, are in [docs/claude-project.md](docs/claude-project.md).
 
+### Use it in Claude Code
+
+```
+git clone https://github.com/mpwilso/loupe.git
+cd loupe
+node scripts/install-claude-code.ts
+```
+
+Then keep your team's context in a `loupe/` folder in your repository. The full steps are in [docs/claude-code.md](docs/claude-code.md). The terminal is tested; the VS Code extension isn't yet.
+
 ## Under the hood
 
 The model writes the story, and code checks it, so a story's shape doesn't depend on the model behaving: the checker rejects any story that doesn't fit, and a draft it couldn't check says so.
@@ -185,5 +196,5 @@ Designed and directed by Matt Wilson, who set the quality bar, designed five tri
 
 ## What's next
 
-1. A VS Code version with Jira, which never writes to the tracker without your approval.
+1. Live context in Claude Code: checks against your lower environments that read but never change anything, and Jira, which never writes to the tracker without your approval.
 2. Estimates calibrated on your team's history.

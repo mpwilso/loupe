@@ -231,8 +231,8 @@ test('the trials README lists and links every trial record, in order, and define
   const files = readdirSync(join(root, 'docs/trials'));
   // A rerun keeps its trial's number, with a letter: trial 6b reran trial 6.
   const records = files.filter((f) => /^\d{4}-\d{2}-\d{2}-trial-\d+[a-z]?\.md$/.test(f)).sort();
-  assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-6-plan.md'], 'records, the index and plans only');
-  assert.deepEqual(records, ['1', '2', '3', '4', '5', '6', '6b'].map((n) => `2026-09-30-trial-${n}.md`), 'every record is named by its trial number');
+  assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-6-plan.md', 'trial-7-plan.md'], 'records, the index and plans only');
+  assert.deepEqual(records, ['1', '2', '3', '4', '5', '6', '6b', '7'].map((n) => `2026-09-30-trial-${n}.md`), 'every record is named by its trial number');
   const index = read('docs/trials/README.md');
   const lines = index.split('\n').filter((line) => line.startsWith('- '));
   assert.deepEqual(lines.map((line) => line.match(/^- \[Trial (\d+[a-z]?)\]\(([^)]+)\)/)?.slice(1).join(' ')), records.map((f) => `${f.match(/trial-(\w+)\.md$/)![1]} ${f}`));
@@ -311,7 +311,11 @@ test('the docs describe the learning loop as it works, including the manual swap
   assert.match(learns, /nothing without (a|the user's) yes/);
   assert.match(learns, /replaces learned\.md in the project's files/);
   assert.match(direction, /planned \(M5\)/);
-  assert.match(direction, /A VS Code version is planned/);
+  // M4a built Claude Code support; live context is what's still planned.
+  assert.doesNotMatch(direction, /A VS Code version is planned|In VS Code \(later\)/);
+  assert.match(direction, /^M4a Claude Code/m);
+  assert.match(direction, /^M4b Live context: read-only checks against lower environments, and Jira, with approval\.$/m);
+  assert.match(direction, /the VS Code extension is untested/);
   const guide = read('docs/claude-project.md');
   const section = guide.split('## Keeping Loupe up to date\n')[1]?.split('\n## ')[0] ?? '';
   assert.ok(section, 'the setup guide has the section');
@@ -328,4 +332,59 @@ test('the project instructions send corrections, answers and "remember" requests
   const section = guide.split('## Keeping Loupe up to date\n')[1]?.split('\n## ')[0] ?? '';
   assert.match(section, /Claude's project memory is separate/);
   assert.match(section, /doesn't cite sources/);
+});
+
+// M4a: the Claude Code guide gives the real install command and the real checker path, and claims no more than was tested.
+test('the Claude Code guide installs, sets up the folder, writes a story, learns, and says what to commit', () => {
+  const guide = read('docs/claude-code.md');
+  assert.ok(guide.includes('node scripts/install-claude-code.ts\n'), 'per user');
+  assert.ok(guide.includes('node scripts/install-claude-code.ts --project '), 'per project');
+  assert.ok(guide.includes('node ~/.claude/skills/loupe/src/run.js check-folder loupe'), 'the checker at its installed path');
+  assert.ok(guide.includes('[team-folder.md](team-folder.md)'));
+  assert.match(guide, /^## What to commit$/m);
+  assert.match(guide, /Commit `loupe\/context\/`, `loupe\/learned\.md` and `loupe\/templates\/`/);
+  assert.match(guide, /Whether to commit `loupe\/stories\/` is your team's choice/);
+  // Trial 7: the recommended permissions, exactly, and nothing broader.
+  const block = guide.split('## Recommended permissions\n')[1]?.split('\n## ')[0] ?? '';
+  const settings = JSON.parse(block.match(/```json\n([\s\S]+?)\n```/)?.[1] ?? '{}');
+  // Trial 7b: Edit(loupe/**) is the form that worked; both forms anchor at the working directory in project settings.
+  // The narrow node rules matched in a headless probe: the relative path a project install uses, and a full path.
+  assert.deepEqual(settings, {
+    permissions: { allow: ['Edit(loupe/**)', 'Bash(node .claude/skills/loupe/src/run.js *)', 'Bash(node */.claude/skills/loupe/src/run.js *)', 'Bash(git diff *)', 'Bash(git status *)'] },
+  });
+  assert.match(block, /`Bash\(node \*\/src\/run\.js \*\)` works too, but it also lets Claude run any Node script whose arguments include `\/src\/run\.js`/);
+  assert.match(block, /ignores allow rules in a repository's `\.claude\/settings\.json` until you trust that folder/);
+  assert.match(block, /The skill's own rule keeps Loupe inside `loupe\/`/);
+  assert.match(block, /these permissions make Claude Code enforce it/i);
+  assert.match(guide, /"skillOverrides": \{ "anthropic-skills:loupe": "off" \}/, 'how to turn off the synced copy');
+  assert.match(guide, /anthropic-skills:loupe/);
+  assert.match(guide, /a personal install beats a project install/i);
+  assert.match(guide, /The terminal CLI is tested\. The VS Code extension runs its own copy of the same CLI, but hasn't been tested with Loupe yet\./);
+  assert.match(guide, /Codex/);
+  assert.match(guide, /only Claude Code has been tested/);
+  assert.ok(read('docs/team-folder.md').includes('node ~/.claude/skills/loupe/src/run.js check-folder loupe'));
+});
+
+// Trial 7 is planned: files mode in Claude Code, in a fresh repository outside this one.
+test('the trial 7 plan has every step, pass lines, the after-check and a scoring sheet', () => {
+  const plan = read('docs/trials/trial-7-plan.md');
+  assert.match(plan, /This is a plan, not a record/);
+  for (const step of ['A', 'B', 'C', 'D', 'E']) {
+    const body = plan.split(`## Step ${step}:`)[1]?.split('\n## ')[0] ?? '';
+    assert.match(body, /\*\*Pass:\*\*/, `step ${step}`);
+    assert.match(plan, new RegExp(`^\\| ${step} \\| .+ \\| +\\| +\\|$`, 'm'), `step ${step} is on the scoring sheet`);
+  }
+  assert.match(plan, /node scripts\/install-claude-code\.ts --project "\$TRIAL"/);
+  assert.match(plan, /git status --short/);
+  // Step C has something to learn only if learned.md starts empty, and the empty one passes check-context.
+  const empty = plan.match(/cat > "\$TRIAL\/loupe\/learned\.md" <<'END'\n([\s\S]*?)\nEND\n/)?.[1] ?? '';
+  const others = list('examples/pellwick/context').filter((p) => !p.endsWith('/learned.md')).map(read);
+  // Dated before the trial: a date after the day it runs warns.
+  assert.deepEqual(checkContext(`${empty}\n`, new Date('2026-09-30T00:00:00Z'), { learned: true, others }), { errors: [], warnings: [] });
+  assert.doesNotMatch(empty, /^- /m, 'no entries');
+  for (const [, input] of plan.matchAll(/notes\/([\w.-]+\.md)/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
+});
+
+test('the trial 7 record says the Read-tool line came after 7b and is not confirmed by a run', () => {
+  assert.match(read('docs/trials/2026-09-30-trial-7.md'), /added after 7b, and no run has confirmed it yet/);
 });

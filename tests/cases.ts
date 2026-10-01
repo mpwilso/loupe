@@ -50,6 +50,7 @@ export const badCases: { name: string; problems: () => Problem[] }[] = [
   ...files('bad/context/').map((name) => ({ name, problems: () => context(fixture(name)) })),
   ...files('bad/learned/').map((name) => ({ name, problems: () => learned(fixture(name)) })),
   { name: 'warn/stale.md', problems: () => context(fixture('warn/stale.md'), new Date('2027-01-01T00:00:00Z')) },
+  { name: 'warn/future.md', problems: () => context(fixture('warn/future.md')) },
   { name: 'a story with an em dash', problems: () => story(emDash()) },
   ...secrets.map(([what, value]) => ({ name: `${what} (${value.slice(0, 4)}...)`, problems: () => context(withLine(secretLine(value))) })),
 ];

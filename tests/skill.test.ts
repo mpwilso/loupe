@@ -34,10 +34,12 @@ const sources: Record<string, string> = {
   'SKILL.md': 'skill/SKILL.md',
   'writing-rules.md': 'skill/writing-rules.md',
   'learning.md': 'skill/learning.md',
+  'files-mode.md': 'skill/files-mode.md',
   'src/run.js': 'src/run.js',
   'src/node-version.js': 'src/node-version.js',
   'src/check.ts': 'src/check.ts',
   'src/check-context.ts': 'src/check-context.ts',
+  'src/check-folder.ts': 'src/check-folder.ts',
   'src/spec.ts': 'src/spec.ts',
   ...Object.fromEntries(readdirSync(join(root, 'spec')).map((f) => [`spec/${f}`, `spec/${f}`])),
   ...Object.fromEntries(md('templates').map((f) => [`templates/${f}`, `templates/${f}`])),
@@ -148,7 +150,7 @@ test('the skill asks about what happens around the change, and never answers it 
 
 test('the packaged checkers need no packages and no network', () => {
   const allowed = new Set(['node:fs', 'node:path', 'node:url', 'node:util']);
-  for (const name of ['src/run.js', 'src/node-version.js', 'src/check.ts', 'src/check-context.ts', 'src/spec.ts']) {
+  for (const name of ['src/run.js', 'src/node-version.js', 'src/check.ts', 'src/check-context.ts', 'src/check-folder.ts', 'src/spec.ts']) {
     for (const [, from] of file(name).matchAll(/^import .* from '([^']+)';$/gm)) {
       assert.ok(from.startsWith('./') || allowed.has(from), `${name} imports ${from}`);
     }
@@ -399,4 +401,66 @@ test('the skill offers to fold entries in when learned.md passes 480 words', () 
   const text = learningText();
   assert.match(text, /480 words/);
   assert.match(text, /fold its entries into the main context files at the next setup refresh/);
+});
+
+// M4a: one skill, two places. A loupe/ folder on disk means files mode; otherwise claude.ai mode, as before.
+const filesMode = () => file('files-mode.md');
+
+test('the skill picks files mode when it can see a loupe/ folder, and claude.ai mode otherwise', () => {
+  const skill = file('SKILL.md');
+  const pick = skill.split('## Pick the mode\n')[1]?.split('\n## ')[0] ?? '';
+  assert.ok(pick, 'SKILL.md has a "Pick the mode" section');
+  assert.match(pick, /`loupe\/` folder in the working directory or a parent/);
+  assert.match(pick, /files mode/);
+  assert.ok(pick.includes('`SKILL/files-mode.md`'));
+  assert.match(pick, /Otherwise, use claude\.ai mode/);
+  assert.ok(skill.indexOf('## Pick the mode') < skill.indexOf('## Set up a team'), 'the mode comes first');
+});
+
+test('files mode reads the team folder, saves each story as a file, and checks it', () => {
+  const text = filesMode();
+  for (const path of ['loupe/context/', 'loupe/learned.md', 'loupe/templates/']) assert.ok(text.includes(path), path);
+  assert.ok(text.includes('loupe/stories/<yyyy-mm-dd>-<short-slug>.md'));
+  assert.match(text, /pasted text or a file path/);
+  assert.match(text, /node SKILL\/src\/run\.js check loupe\/stories\//);
+  assert.match(text, /`Checked with Node` line goes in the reply, not the file/);
+});
+
+test('files mode edits learned.md in place on a yes, checks the whole folder, and shows the diff', () => {
+  const text = filesMode();
+  assert.match(text, /edit `loupe\/learned\.md` in place/i);
+  assert.match(text, /node SKILL\/src\/run\.js check-folder loupe/);
+  assert.match(text, /show the diff/i);
+  assert.match(text, /There is no file to swap/);
+  assert.match(text, /into `loupe\/context\/` only after a yes/);
+});
+
+test('files mode never writes outside loupe/, and says so', () => {
+  const skill = file('SKILL.md');
+  assert.match(skill, /never writes outside `loupe\/`/);
+  const text = filesMode();
+  assert.match(text, /Never write outside `loupe\/`, and never change any other file in the repository, even if asked/);
+  assert.match(text, /say so in one line/i);
+});
+
+// Trial 7 fixes: no shell writes, the real diff pasted, and a duplicate story saved as -2 without asking.
+test('files mode writes only with the file tools, and runs only the checkers and git diff or git status', () => {
+  const text = filesMode();
+  assert.ok(text.includes("Write and edit files only with Claude Code's file tools, never with shell commands (no cat, echo, sed, python or redirects). The only commands you run are the checkers (node SKILL/src/run.js ...) and git diff or git status."));
+});
+
+test('files mode pastes the actual git diff in a fenced block after a learned.md change', () => {
+  const text = filesMode();
+  assert.match(text, /paste the actual `git diff -- loupe\/learned\.md` output in a fenced block, not a description/i);
+  assert.match(text, /If the folder isn't in git, show the before and after entries/);
+});
+
+test('files mode saves a duplicate story as -2 without asking, and names the file', () => {
+  const text = filesMode();
+  assert.match(text, /If that file exists, save it as `-2`, `-3` and so on, without asking, and name the file in the reply/);
+});
+
+// Trial 7b: read-only shell commands still ran, and with the recommended permissions each one asks the user.
+test('files mode reads files with the Read tool, not shell commands', () => {
+  assert.ok(filesMode().includes("Read files with Claude Code's Read tool, not shell commands such as cat, ls or find."));
 });

@@ -9,20 +9,9 @@ out="${1:-dist/loupe-skill.zip}"
 mkdir -p "$(dirname "$out")"
 out="$(cd "$(dirname "$out")" && pwd)/$(basename "$out")"
 
-# The folder name must match the skill's name.
+# The folder name must match the skill's name. scripts/skill-folder.ts holds the list of what goes in it.
 dir="$(dirname "$out")/loupe"
-rm -rf "$dir"
-mkdir -p "$dir/src" "$dir/spec" "$dir/templates" "$dir/examples"
-
-cp skill/SKILL.md skill/writing-rules.md skill/learning.md "$dir/"
-cp src/run.js src/node-version.js src/check.ts src/check-context.ts src/spec.ts "$dir/src/"
-cp spec/*.json "$dir/spec/"
-cp templates/*.md "$dir/templates/"
-cp examples/pellwick/expected/skip-a-box.md "$dir/examples/story.md"
-cp examples/pellwick/expected/export-notes.md "$dir/examples/not-ready.md"
-cp examples/pellwick/context/applications.md "$dir/examples/context-file.md"
-# Tells Node the checkers are modules. They need nothing else.
-printf '{ "type": "module", "private": true }\n' > "$dir/package.json"
+node scripts/skill-folder.ts "$dir"
 
 rm -f "$out"
 node scripts/zip.ts "$out" "$dir"
