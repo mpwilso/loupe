@@ -108,6 +108,7 @@ Before release: Tell support that subscribers can skip online and how skips show
 - **It learns your team from your own documents.** It turns them into short context files, every fact with its source.
 - **It learns from corrections and answers.** Every learned fact names its source, and nothing is saved without your yes.
 - **In Claude Code, it keeps to its folder.** It reads your team's context from a `loupe/` folder in your repository and writes nowhere else.
+- **In Claude Code, it can read your tracker.** It searches the team's tracker before writing, cites any ticket it uses with when it was read, flags likely duplicates, and never changes the tracker.
 
 ## Proof
 
@@ -126,6 +127,7 @@ From trials on one small invented team, a handful of inputs each; see [docs/tria
 - **Rules it missed.** Trial 3 broke four rules, the team's and its own, such as using the user story template for a bug. After fixes, trial 4 got all four right. ([trial 3](docs/trials/2026-09-30-trial-3.md), [trial 4](docs/trials/2026-09-30-trial-4.md))
 - **One source per fact.** In trial 4, some facts cited a document that didn't hold them, because each context file listed its sources as a group. Each fact now carries its own source, and in trial 5 every citation checked out. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
 - **Learning that asks before saving.** Trial 6 found a learned fact with no person in its source, approved entries changed after the yes, and "remember this" saved to Claude's own memory with no source. After the fixes, trial 6b passed every step it reran. ([trial 6](docs/trials/2026-09-30-trial-6.md), [trial 6b](docs/trials/2026-09-30-trial-6b.md))
+- **Tracker facts, sourced.** Trial 8 named tracker tickets in questions with sources the checker never looked at, so the checker now needs a live source for a ticket anywhere in a story. A story marked "Not checked" without trying led to "always run the checker". Repeat runs found that the setup guide's edit rule broke after a `cd`; the guide's new rule fixes it, for v0.3.0 users too. ([trial 8](docs/trials/2026-09-30-trial-8.md))
 
 ## How it works
 
@@ -142,6 +144,9 @@ Loupe learns your team once, from your own documents. Each input then gets a rea
 - About one to three minutes per story.
 - Skills on claude.ai belong to one person, so each teammate uploads it once.
 - Learning needs you to swap the updated learned.md into the project's files by hand, and it has been tested on the invented team and no other.
+- The customer-data detector catches emails and secrets, but not names, phone numbers or street addresses.
+- The tracker work was tested on an invented mock tracker, never a real one.
+- Where Loupe cites tracker facts still varies from run to run: in trial 8e, 2 of 3 stories listed a fact from a ticket under Known, and the third left it as a question.
 - The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6 and 6b. A separate reviewer scored trials 2 and 3 blind.
 
 ## Setup
@@ -196,5 +201,5 @@ Designed and directed by Matt Wilson, who set the quality bar, designed five tri
 
 ## What's next
 
-1. Live context in Claude Code: checks against your lower environments that read but never change anything, and Jira, which never writes to the tracker without your approval.
+1. Checks against your lower environments that read and never change anything, and creating Jira tickets with your approval.
 2. Estimates calibrated on your team's history.
