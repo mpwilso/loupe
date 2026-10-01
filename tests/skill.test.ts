@@ -41,6 +41,7 @@ const sources: Record<string, string> = {
   'src/check.ts': 'src/check.ts',
   'src/check-context.ts': 'src/check-context.ts',
   'src/check-folder.ts': 'src/check-folder.ts',
+  'src/check-tickets.ts': 'src/check-tickets.ts',
   'src/spec.ts': 'src/spec.ts',
   ...Object.fromEntries(readdirSync(join(root, 'spec')).map((f) => [`spec/${f}`, `spec/${f}`])),
   ...Object.fromEntries(md('templates').map((f) => [`templates/${f}`, `templates/${f}`])),
@@ -151,7 +152,7 @@ test('the skill asks about what happens around the change, and never answers it 
 
 test('the packaged checkers need no packages and no network', () => {
   const allowed = new Set(['node:fs', 'node:path', 'node:url', 'node:util']);
-  for (const name of ['src/run.js', 'src/node-version.js', 'src/check.ts', 'src/check-context.ts', 'src/check-folder.ts', 'src/spec.ts']) {
+  for (const name of ['src/run.js', 'src/node-version.js', 'src/check.ts', 'src/check-context.ts', 'src/check-folder.ts', 'src/check-tickets.ts', 'src/spec.ts']) {
     for (const [, from] of file(name).matchAll(/^import .* from '([^']+)';$/gm)) {
       assert.ok(from.startsWith('./') || allowed.has(from), `${name} imports ${from}`);
     }

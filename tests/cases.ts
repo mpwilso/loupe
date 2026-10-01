@@ -2,6 +2,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { check } from '../src/check.ts';
 import { checkContext } from '../src/check-context.ts';
+import { checkTickets } from '../src/check-tickets.ts';
 import type { Problem } from '../src/spec.ts';
 
 const dir = new URL('fixtures/', import.meta.url);
@@ -45,10 +46,20 @@ export const learned = (text: string) => {
   return [...errors, ...warnings];
 };
 
+// tickets.md is checked against the stories in the folder: two finished stories and one "Not ready yet".
+export const ticketStories = () =>
+  new Map([
+    ['2026-10-02-skip-next-box.md', fixture('good-story.md')],
+    ['2026-10-02-orders-date.md', fixture('good-live-story.md')],
+    ['2026-10-02-export-notes.md', fixture('good-not-ready.md')],
+  ]);
+export const tickets = (text: string) => checkTickets(text, ticketStories()).errors;
+
 export const badCases: { name: string; problems: () => Problem[] }[] = [
   ...files('bad/').map((name) => ({ name, problems: () => story(fixture(name)) })),
   ...files('bad/context/').map((name) => ({ name, problems: () => context(fixture(name)) })),
   ...files('bad/learned/').map((name) => ({ name, problems: () => learned(fixture(name)) })),
+  ...files('bad/tickets/').map((name) => ({ name, problems: () => tickets(fixture(name)) })),
   { name: 'warn/stale.md', problems: () => context(fixture('warn/stale.md'), new Date('2027-01-01T00:00:00Z')) },
   { name: 'warn/future.md', problems: () => context(fixture('warn/future.md')) },
   { name: 'a story with an em dash', problems: () => story(emDash()) },

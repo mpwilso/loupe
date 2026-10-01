@@ -1,0 +1,12 @@
+{
+  "fileName": "tickets.md",
+  "line": {
+    "pattern": "^({key}), (\\S+\\.md), created (\\d{4}-\\d{2}-\\d{2}) ([01]\\d|2[0-3]):[0-5]\\d$",
+    "message": "Each line in tickets.md must read \"<key>, <story file>, created <YYYY-MM-DD HH:MM>\", like \"SUBS-156, 2026-10-02-skip-next-box.md, created 2026-10-02 14:05\"."
+  },
+  "badTimeMessage": "The created time must be a real date and time, like \"created 2026-10-02 14:05\".",
+  "noStoryMessage": "There is no story {file} in stories/.",
+  "notWrittenMessage": "{file} isn't a finished story: its first line isn't \"Call: Story written\", so it can't have a ticket.",
+  "duplicateKeyMessage": "{key} is listed more than once.",
+  "duplicateStoryMessage": "{file} already has a ticket, {key}. A story gets one ticket."
+}

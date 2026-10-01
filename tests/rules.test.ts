@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { setSpecs, specs } from '../src/check.ts';
 import { contextSpec, setContextSpec } from '../src/check-context.ts';
+import { setTicketsSpec, ticketsSpec } from '../src/check-tickets.ts';
 import { badCases } from './cases.ts';
 
 type Node = Record<string, unknown> | unknown[];
@@ -41,6 +42,7 @@ const files = [
   { file: 'readiness.json', spec: specs.readiness, use: (s: typeof specs.readiness) => setSpecs({ ...specs, readiness: s }) },
   { file: 'plain-language.json', spec: specs.plain, use: (s: typeof specs.plain) => setSpecs({ ...specs, plain: s }) },
   { file: 'context-file.json', spec: contextSpec, use: setContextSpec },
+  { file: 'tickets.json', spec: ticketsSpec, use: setTicketsSpec },
 ] as const;
 
 const failing = () => badCases.filter((c) => c.problems().length > 0).map((c) => c.name);
