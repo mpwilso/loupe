@@ -28,7 +28,7 @@
     ]
   },
   "acronyms": {
-    "match": "\\b([A-Z]{2,})s?\\b",
+    "match": "\\b([A-Z]{2,})s?\\b(?!-\\d)",
     "spelledOut": ["\\b{acronym}s? \\(", "\\({acronym}s?\\)"],
     "allow": ["API", "UI", "URL", "ID", "PDF", "CSV"],
     "message": "Spell out \"{acronym}\" the first time it appears, like this: \"the full name ({acronym})\"."

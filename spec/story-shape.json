@@ -26,6 +26,9 @@
     "questions": { "story": "## Questions before building", "notReady": "## Questions" },
     "questionMessage": "\"First question:\" must repeat the first item under {heading}, word for word."
   },
+  "secrets": {
+    "message": "This looks like {what}. Remove it. A story must never hold secrets, credentials or customer data."
+  },
   "chatOnly": {
     "pattern": "^Checked with Node",
     "message": "\"Checked with Node\" belongs in the chat, after the story, not in the story file."
@@ -64,7 +67,13 @@
       "name": "Known",
       "kind": "list",
       "itemPattern": "^(- |\\d+\\. ).+ \\([^()]+\\)$",
-      "itemMessage": "This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown."
+      "itemMessage": "This Known item doesn't say where it came from. Add the source in parentheses at the end, or move it to Assumed or Unknown.",
+      "liveSource": {
+        "detect": "^[A-Z][A-Za-z]* [A-Z][A-Z0-9]+-\\d+\\b",
+        "pattern": "^[A-Z][A-Za-z]* [A-Z][A-Z0-9]+-\\d+, read (\\d{4}-\\d{2}-\\d{2}) ([01]\\d|2[0-3]):[0-5]\\d$",
+        "noReadMessage": "This source names a tracker record but not when it was read. Write it as \"(Jira SUBS-142, read 2026-10-02 14:05)\".",
+        "badReadMessage": "The read time in this source must be a real date and time, like \"read 2026-10-02 14:05\"."
+      }
     },
     { "heading": "## Unknown", "name": "Unknown", "kind": "list", "allowNone": true },
     { "heading": "## Assumed", "name": "Assumed", "kind": "list" },

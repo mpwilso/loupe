@@ -28,6 +28,7 @@ type Section = {
   itemMessage?: string;
   lines?: LineRule[];
   questionMarks?: { count: number; message: string };
+  liveSource?: { detect: string; pattern: string; noReadMessage?: string; badReadMessage?: string };
   overflow?: { line: string; message: string; confidence: string; notLevel: string; confidenceMessage: string; unknown: string; unknownMessage?: string };
 };
 type Closing = { pattern: string; message?: string; separator: string; max: number; maxMessage?: string };
@@ -39,6 +40,7 @@ type StoryShape = Shape & {
   unchecked: { pattern: string; message?: string };
   failed: { pattern: string; message?: string };
   chatOnly: { pattern: string; message?: string };
+  secrets: { message?: string };
   summary: {
     lines: LineRule[];
     calls: { story: string; notReady: string; unchecked: string; failed: string };
@@ -171,7 +173,7 @@ export function check(text: string, templates = builtIn): { errors: Problem[]; w
   if (hasSummary) checkLines(summary, story.summary.lines, 'The summary', 1, add);
   if (hasSummary) checkSummary(summary, rest, notReady, mark, add);
   const inBody = [...marks.map(({ line, text }) => ({ line, text })), ...checkShape(rest, shape, templates, offset > 0).map((e) => (e.line ? { ...e, line: e.line + skip } : e))];
-  const errors = [...found, ...chat.filter((e) => e.text), ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines)];
+  const errors = [...found, ...chat.filter((e) => e.text), ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines), ...checkSecrets(lines).filter((e) => e.text)];
   return { errors: errors.map((e) => (e.line ? { ...e, line: e.line + offset } : e)), warnings: [] };
 }
 
@@ -294,6 +296,8 @@ function checkSection(section: Section, headingLine: number, body: Entry[], temp
         if (!listItem.test(entry.text)) add(entry.line, fill(M.notAListItem, { name }));
         else if (section.itemPattern && !new RegExp(section.itemPattern).test(entry.text)) {
           add(entry.line, section.itemMessage);
+        } else if (section.liveSource) {
+          for (const message of liveSourceProblems(entry.text, section.liveSource)) add(entry.line, message);
         } else if (section.questionMarks) {
           const marks = entry.text.split('?').length - 1;
           if (marks !== section.questionMarks.count) add(entry.line, fill(section.questionMarks.message, { name, count: marks }));
@@ -352,6 +356,29 @@ function checkLines(body: Entry[], rules: LineRule[], name: string, anchor: numb
     }
   });
   if (body.length > next) add(body[next].line, fill(M.extraLine, { name, count: rules.length }));
+}
+
+// A source that names a tracker record, like "Jira SUBS-142", must say when it was read: tracker data changes.
+function liveSourceProblems(text: string, rule: NonNullable<Section['liveSource']>): (string | undefined)[] {
+  const sources = text.match(/\(([^()]+)\)$/)?.[1].split('; ') ?? [];
+  return sources
+    .filter((source) => new RegExp(rule.detect).test(source))
+    .map((source) => {
+      if (!/, read /.test(source)) return rule.noReadMessage;
+      const read = new RegExp(rule.pattern).exec(source);
+      const time = read && Date.parse(`${read[1]}T00:00:00Z`);
+      const real = read && !Number.isNaN(time) && new Date(time!).toISOString().startsWith(read[1]);
+      return real ? undefined : rule.badReadMessage;
+    })
+    .filter((message) => message !== undefined);
+}
+
+// Secrets and customer data, with the same detector as the context files.
+const secretPatterns = loadSpec<{ secrets: { what: string; pattern: string; flags?: string }[] }>('context-file.json').secrets;
+function checkSecrets(lines: string[]): Problem[] {
+  return lines.flatMap((text, i) =>
+    secretPatterns.filter((s) => new RegExp(s.pattern, s.flags).test(text)).map((s) => ({ line: i + 1, text: fill(story.secrets.message, { what: s.what }) })),
+  );
 }
 
 function checkPlainLanguage(lines: string[]): Problem[] {

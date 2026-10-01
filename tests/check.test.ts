@@ -78,6 +78,9 @@ const bad: Record<string, string> = {
   'missing-before-release':
     'End the story with one line: "Before release:" and the actions specific to this story, separated by semicolons, or "None."',
   'too-many-before-release': 'line 37: "Before release:" lists 4 items; the limit is 3.',
+  'live-no-read': 'line 18: This source names a tracker record but not when it was read. Write it as "(Jira SUBS-142, read 2026-10-02 14:05)".',
+  'live-bad-read': 'line 18: The read time in this source must be a real date and time, like "read 2026-10-02 14:05".',
+  'customer-email': 'line 28: This looks like an email address. Remove it. A story must never hold secrets, credentials or customer data.',
   'not-checked': 'line 5: This draft was never checked. Run the checker on it, fix what it reports, then remove the "Not checked:" line.',
   'failed-checker':
     'line 5: This draft failed the checker. Fix what it reports and run the checker again, then remove the "Failed the checker after five runs:" line.',
@@ -265,4 +268,18 @@ test('one run reports every problem, not just the first', () => {
   ]);
   const twice = text.replace('- I see the date on the orders page.\n', '- I see the date on the orders page.\n- I see it on the home page too.\n');
   assert.equal(problems(twice).length, 4, 'the same rule broken twice gives two messages');
+});
+
+// M4b: a fact read from a tracker names the record and when it was read, since tracker data changes.
+test('a live source names the record and a real read time; other sources are unchanged', () => {
+  assert.deepEqual(problems(fixture('good-live-story.md')), []);
+  const known = (source: string) => fixture('good-story.md').replace('(Sam, meeting 2026-09-01)', source);
+  assert.deepEqual(problems(known('(Jira SUBS-134, read 2026-02-30 14:05)')), ['line 17: The read time in this source must be a real date and time, like "read 2026-10-02 14:05".']);
+  assert.deepEqual(problems(known('(Jira SUBS-134, read 2026-10-02 25:00)')), ['line 17: The read time in this source must be a real date and time, like "read 2026-10-02 14:05".']);
+  assert.deepEqual(problems(known('(Dana, meeting 2026-09-22; Jira SUBS-101)')), ['line 17: This source names a tracker record but not when it was read. Write it as "(Jira SUBS-142, read 2026-10-02 14:05)".']);
+  assert.deepEqual(problems(known('(Maya, Helpline ticket 48213)')), [], 'a ticket number with no tracker key is not a live source');
+  // A tracker key is a name, not an acronym to spell out; the same letters alone still are.
+  const story = fixture('good-story.md');
+  assert.deepEqual(problems(story.replace('Nothing needed.', 'Nothing needed, see SUBS-134.')), []);
+  assert.deepEqual(problems(story.replace('Nothing needed.', 'Nothing needed, see SUBS.')), ['line 28: Spell out "SUBS" the first time it appears, like this: "the full name (SUBS)".']);
 });
