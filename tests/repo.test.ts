@@ -230,9 +230,10 @@ test('the setup guide gets the skill from the latest release, and nowhere else',
 test('the trials README lists and links every trial record, in order, and defines the advisor', () => {
   const files = readdirSync(join(root, 'docs/trials'));
   // A rerun keeps its trial's number, with a letter: trial 6b reran trial 6.
-  const records = files.filter((f) => /^\d{4}-\d{2}-\d{2}-trial-\d+[a-z]?\.md$/.test(f)).sort();
+  // Sorted by trial number, so trial 10 follows trial 9.
+  const records = files.filter((f) => /^\d{4}-\d{2}-\d{2}-trial-\d+[a-z]?\.md$/.test(f)).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
   assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-10-plan.md', 'trial-6-plan.md', 'trial-7-plan.md', 'trial-8-plan.md', 'trial-9-plan.md'].sort(), 'records, the index and plans only');
-  assert.deepEqual(records, [...['1', '2', '3', '4', '5', '6', '6b', '7', '8'].map((n) => `2026-09-30-trial-${n}.md`), '2026-10-01-trial-9.md'], 'every record is named by its date and trial number');
+  assert.deepEqual(records, [...['1', '2', '3', '4', '5', '6', '6b', '7', '8'].map((n) => `2026-09-30-trial-${n}.md`), '2026-10-01-trial-9.md', '2026-10-01-trial-10.md'], 'every record is named by its date and trial number');
   const index = read('docs/trials/README.md');
   const lines = index.split('\n').filter((line) => line.startsWith('- '));
   assert.deepEqual(lines.map((line) => line.match(/^- \[Trial (\d+[a-z]?)\]\(([^)]+)\)/)?.slice(1).join(' ')), records.map((f) => `${f.match(/trial-(\w+)\.md$/)![1]} ${f}`));
