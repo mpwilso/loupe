@@ -311,7 +311,11 @@ test('the docs describe the learning loop as it works, including the manual swap
   assert.match(learns, /nothing without (a|the user's) yes/);
   assert.match(learns, /replaces learned\.md in the project's files/);
   assert.match(direction, /planned \(M5\)/);
-  assert.match(direction, /A VS Code version is planned/);
+  // M4a built Claude Code support; live context is what's still planned.
+  assert.doesNotMatch(direction, /A VS Code version is planned|In VS Code \(later\)/);
+  assert.match(direction, /^M4a Claude Code/m);
+  assert.match(direction, /^M4b Live context: read-only checks against lower environments, and Jira, with approval\.$/m);
+  assert.match(direction, /the VS Code extension is untested/);
   const guide = read('docs/claude-project.md');
   const section = guide.split('## Keeping Loupe up to date\n')[1]?.split('\n## ')[0] ?? '';
   assert.ok(section, 'the setup guide has the section');
