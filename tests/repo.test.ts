@@ -484,3 +484,11 @@ test('the trial 10 plan holds the 10b bar, set before the rerun', () => {
   assert.ok(rerun.includes("- every other line of trial 10's bar still holds\n"));
   assert.match(rerun, /the bug shape has no Example, so for it the Example part doesn't apply/);
 });
+
+// Trial 10c: its bar and decision rule were added to the plan before the rerun.
+test('the trial 10 plan holds the 10c bar and its decision rule, set before the rerun', () => {
+  const rerun = read('docs/trials/trial-10-plan.md').split('## Trial 10c: unsettled behaviors, rerun\n')[1] ?? '';
+  assert.ok(rerun.includes('- every requirement\'s behavior is settled by the input or a context file, or the whole requirement is a "To confirm: whether ..." line\n'));
+  assert.ok(rerun.includes("- Example, Background and every other line of trial 10b's bar still hold\n"));
+  assert.match(rerun, /4 of 4 means it ships as v0\.6\.0\. Anything less goes back to Matt before another round\./);
+});

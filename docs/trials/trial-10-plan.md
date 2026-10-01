@@ -68,3 +68,16 @@ The helpline ticket is a bug, and the bug shape has no Example, so for it the Ex
 | `skip-a-box-meeting.md` | 1 |
 | `helpline-ticket-48213.md` | 1 |
 | `export-notes.md` | 1 |
+
+## Trial 10c: unsettled behaviors, rerun
+
+After trial 10b, a behavior the input and context files don't settle is written as a whole requirement to confirm, like "5. To confirm: whether the page checks the address before saving.", and the truth step asks whether the input settles each behavior itself. Address change runs 4 times, each in its own fresh copy, set up as above.
+
+### The bar, set before the rerun
+
+- every requirement's behavior is settled by the input or a context file, or the whole requirement is a "To confirm: whether ..." line
+- Example, Background and every other line of trial 10b's bar still hold
+
+### The decision rule
+
+4 of 4 means it ships as v0.6.0. Anything less goes back to Matt before another round.
