@@ -231,7 +231,7 @@ test('the trials README lists and links every trial record, in order, and define
   const files = readdirSync(join(root, 'docs/trials'));
   // A rerun keeps its trial's number, with a letter: trial 6b reran trial 6.
   const records = files.filter((f) => /^\d{4}-\d{2}-\d{2}-trial-\d+[a-z]?\.md$/.test(f)).sort();
-  assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-6-plan.md', 'trial-7-plan.md', 'trial-8-plan.md', 'trial-9-plan.md'], 'records, the index and plans only');
+  assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-10-plan.md', 'trial-6-plan.md', 'trial-7-plan.md', 'trial-8-plan.md', 'trial-9-plan.md'].sort(), 'records, the index and plans only');
   assert.deepEqual(records, [...['1', '2', '3', '4', '5', '6', '6b', '7', '8'].map((n) => `2026-09-30-trial-${n}.md`), '2026-10-01-trial-9.md'], 'every record is named by its date and trial number');
   const index = read('docs/trials/README.md');
   const lines = index.split('\n').filter((line) => line.startsWith('- '));
@@ -451,4 +451,25 @@ test('direction.md has the v2 shape, and both setup guides say v2 is the default
     assert.match(note, /New user stories, job stories and bugs use story format v2/, guide);
     assert.match(note, /Stories saved in v1, with acceptance criteria, still pass the checker\./, guide);
   }
+});
+
+// Story format v2: the trial 10 bar was set before the trial ran.
+test('the trial 10 plan sets its bar first, runs each input twice, and keeps export notes "Not ready yet"', () => {
+  const plan = read('docs/trials/trial-10-plan.md');
+  assert.match(plan, /This is a plan, not a record/);
+  const bar = plan.split('## The bar, set before the trial\n')[1]?.split('\n## ')[0] ?? '';
+  for (const line of [
+    'Every story passes the checker in the v2 shape.',
+    "0 Known or Background facts that their cited source doesn't say.",
+    '0 invented examples.',
+    'Every scenario has an unhappy path (the checker enforces this).',
+    'Compare against v1: count "To confirm" items and Unknowns per story, v1 against v2. Report it, don\'t gate on it.',
+  ]) assert.ok(bar.includes(`- ${line}\n`), line);
+  assert.match(bar, /The holiday cutoff email is a change request, and Pellwick's story style sends change requests to its own team template/);
+  for (const input of ['skip-a-box-meeting.md', 'helpline-ticket-48213.md', 'holiday-cutoff-email.md', 'slack-thread-address-change.md', 'export-notes.md']) {
+    assert.ok(plan.includes(`| \`${input}\` |`), input);
+    assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
+  }
+  assert.match(plan, /\| `export-notes\.md` \| too thin \| Not ready yet \|/);
+  assert.match(plan, /by reading the input or context file it names/);
 });
