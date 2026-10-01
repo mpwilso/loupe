@@ -220,6 +220,8 @@ test('no guide allows a create tool; the create blocks put it under ask, and rea
   assert.deepEqual(blocks[1].deny, readOnly.deny.filter((r: string) => r !== 'mcp__atlassian__createJiraIssue'), 'the same writes stay denied');
   assert.match(creating, /"--allow-create", "--state", "\/tmp\/pellwick-tracker-state\.json"/);
   assert.match(creating, /Never add the create tool to an allow list\./);
+  // Trial 9: A-3 sent create_issue with no fields, which the mock rejected.
+  assert.match(creating, /If Claude Code's prompt shows a create call with empty or missing fields, deny it\. In \[trial 9\]\(trials\/2026-10-01-trial-9\.md\), one run sent a create call with no fields, and the mock rejected it\./);
   assert.match(creating, /This is not tested with Loupe\./);
   assert.match(creating, /checks deny rules first, then ask, then allow/);
 });

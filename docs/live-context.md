@@ -125,6 +125,8 @@ Keep the three read tools allowed, and put the create tool under `ask`, never `a
 
 Why `ask`: Claude Code checks deny rules first, then ask, then allow. An ask rule makes it prompt you every time, even if a broader allow rule somewhere else would match the tool. That prompt is the second lock. Never add the create tool to an allow list.
 
+If Claude Code's prompt shows a create call with empty or missing fields, deny it. In [trial 9](trials/2026-10-01-trial-9.md), one run sent a create call with no fields, and the mock rejected it.
+
 ### A real Jira server
 
 This is not tested with Loupe. Try it only on a Jira site you own, never on an employer's systems.
