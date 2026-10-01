@@ -8,6 +8,7 @@
 <p align="center"><b>Story tools help you write faster. Loupe won't hand you a story it can't back up.</b></p>
 
 Loupe is a Claude skill for product managers. It turns meeting notes, tickets and emails into stories a developer can build without a second meeting. Product owners and product managers write with it. Developers, testers and anyone else who reads a story get one that says what's known, unknown and assumed.
+It runs in Claude, or in Claude Code, where it reads the team's context from your repository, can search your tracker before writing, and can create a ticket from a finished story with your approval.
 
 Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials changed](#what-the-trials-changed), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).
 
@@ -117,6 +118,8 @@ Before release: Tell support that subscribers can skip online and how skips show
 - Guessed screen details and behavior: 9 slipped through unmarked in trial 2. After a fix, 0 in trial 3, with every guess marked "To confirm". ([trial 3](docs/trials/2026-09-30-trial-3.md), blind review)
 - Against plain Claude with the same team documents: a usable estimate on 4 of 4 stories, against 1 of 4, and the same format every time. ([trial 2](docs/trials/2026-09-30-trial-2.md), blind review)
 - In trial 4, all 6 responses passed the checker before they were shown, including the one that refused thin input. A story takes about one to three minutes. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
+- Every tracker call in trials 8 to 8e was a read, 77 in all, and customer data surfaced 0 times. ([trial 8](docs/trials/2026-09-30-trial-8.md))
+- Every ticket created in trial 9 matched its story byte for byte, compared by script, and nothing was created without a yes. ([trial 9](docs/trials/2026-10-01-trial-9.md))
 
 From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).
 
@@ -128,6 +131,7 @@ From trials on one small invented team, a handful of inputs each; see [docs/tria
 - **Rules it missed.** Trial 3 broke four rules, the team's and its own, such as using the user story template for a bug. After fixes, trial 4 got all four right. ([trial 3](docs/trials/2026-09-30-trial-3.md), [trial 4](docs/trials/2026-09-30-trial-4.md))
 - **One source per fact.** In trial 4, some facts cited a document that didn't hold them, because each context file listed its sources as a group. Each fact now carries its own source, and in trial 5 every citation checked out. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
 - **Learning that asks before saving.** Trial 6 found a learned fact with no person in its source, approved entries changed after the yes, and "remember this" saved to Claude's own memory with no source. After the fixes, trial 6b passed every step it reran. ([trial 6](docs/trials/2026-09-30-trial-6.md), [trial 6b](docs/trials/2026-09-30-trial-6b.md))
+- **File tools, not shell commands.** In trial 7, Loupe tried shell commands outside its rules, including a python edit, and permissions blocked them. Files mode now writes with Claude Code's file tools, never with shell commands, and the guide's rules make Claude Code keep it inside `loupe/`. The rerun passed every step. ([trial 7](docs/trials/2026-09-30-trial-7.md))
 - **Tracker facts, sourced.** Trial 8 named tracker tickets in questions with sources the checker never looked at, so the checker now needs a live source for a ticket anywhere in a story. A story marked "Not checked" without trying led to "always run the checker". Repeat runs found that the setup guide's edit rule broke after a `cd`; the guide's new rule fixes it, for v0.3.0 users too. ([trial 8](docs/trials/2026-09-30-trial-8.md))
 
 ## How it works
@@ -141,13 +145,11 @@ Loupe learns your team once, from your own documents. Each input then gets a rea
 
 ## Limits
 
-- Tested on one invented company.
-- About one to three minutes per story.
+- Tested on one invented company, at about one to three minutes per story.
 - Skills on claude.ai belong to one person, so each teammate uploads it once.
-- Learning needs you to swap the updated learned.md into the project's files by hand, and it has been tested on the invented team and no other.
+- In claude.ai, you swap the updated learned.md into the project's files by hand; in Claude Code, Loupe edits it in place. Learning has been tested on the invented team and no other.
 - The customer-data detector catches emails and secrets, but not names, phone numbers or street addresses.
-- The tracker work was tested on an invented mock tracker, never a real one.
-- Ticket creation was tested on that mock too, with Claude Code's own permission prompt stood in for in the trial.
+- Reading a tracker and creating tickets were tested on an invented mock tracker, never a real one, with Claude Code's own permission prompt stood in for in trial 9.
 - Where Loupe cites tracker facts still varies from run to run: in trial 8e, 2 of 3 stories listed a fact from a ticket under Known, and the third left it as a question.
 - The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trial 9 were measured by the Claude Code session that ran them. A separate reviewer scored trials 2 and 3 blind.
 
@@ -159,9 +161,7 @@ You need a Claude account with Skills and code execution turned on.
 2. **Turn on code execution.** In Claude's settings, turn on "Code execution and file creation". The checker needs it.
 3. **Upload the skill.** In Claude, open Customize, then Skills, and upload the zip. Each teammate does this once.
 4. **Create the project.** Make a Claude Project and paste the project instructions from [docs/claude-project.md](docs/claude-project.md).
-5. **Set up the team.** In the project, type "set up the team", then add the context files it gives you to the project's knowledge.
-
-The full steps, with sharing, are in [docs/claude-project.md](docs/claude-project.md).
+5. **Set up the team.** In the project, type "set up the team", then add the context files it gives you to the project's knowledge. The full steps, with sharing, are in [docs/claude-project.md](docs/claude-project.md).
 
 ### Use it in Claude Code
 
@@ -172,6 +172,7 @@ node scripts/install-claude-code.ts
 ```
 
 Then keep your team's context in a `loupe/` folder in your repository. The full steps are in [docs/claude-code.md](docs/claude-code.md). The terminal is tested; the VS Code extension isn't yet.
+To search your tracker before writing, and to create tickets from finished stories, see [docs/live-context.md](docs/live-context.md).
 
 ## Under the hood
 
@@ -181,7 +182,9 @@ The model writes the story, and code checks it, so a story's shape doesn't depen
 - `spec/`: the story shape, the readiness bar, the plain-language rules and the context-file format, as data.
 - `src/`: the checkers.
 - `examples/pellwick/`: an invented team used for trials, from its raw documents to the expected stories.
+- `docs/`: the guides, such as [claude-code.md](docs/claude-code.md) for Claude Code and [live-context.md](docs/live-context.md) for the tracker.
 - `docs/trials/`: what each trial found.
+- `mock/`: an invented tracker for trying the tracker features.
 - `brand/`: the mark, lockups and palette. `node scripts/brand.ts` draws them, and the diagram; see [brand/](brand/README.md).
 - `scripts/`: the test runner, the skill builder and the brand drawing.
 
@@ -193,13 +196,11 @@ Run the tests with `scripts/test.sh`. Check a story file yourself with:
 node src/run.js check examples/pellwick/expected/skip-a-box.md
 ```
 
-It prints `Checked with Node` and the version when the story passes, or one line per problem when it doesn't. Use `check-context` in place of `check` for context files.
-
-MIT license: [LICENSE](LICENSE).
+It prints `Checked with Node` and the version when the story passes, or one line per problem when it doesn't. Use `check-context` in place of `check` for context files. MIT license: [LICENSE](LICENSE).
 
 ## How it was built
 
-Designed and directed by Matt Wilson, who set the quality bar, designed five trials and fixed what each trial exposed. Two of the trials were scored in blind review, one of them against plain Claude. Claude Code wrote most of the code. Every milestone was reviewed and tested live in claude.ai. The trials are in [docs/trials](docs/trials/).
+Designed and directed by Matt Wilson, who set the quality bar, designed nine trials, with reruns, and fixed what each exposed. Trials 1 to 6b were run in claude.ai, and trials 7 to 9 in Claude Code. Two of the trials were scored in blind review, one of them against plain Claude. Claude Code wrote most of the code. The trials are in [docs/trials](docs/trials/).
 
 ## What's next
 
