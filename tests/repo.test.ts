@@ -439,3 +439,16 @@ test('the trial 9 plan sets the safety bar first, has every step with a pass lin
   assert.match(plan, /compare each created ticket with its story file by script, not by eye/);
   for (const [, input] of plan.matchAll(/notes\/([\w.-]+\.md)/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
 });
+
+// Story format v2: the direction and both setup guides say v2 is the default and saved v1 stories still pass.
+test('direction.md has the v2 shape, and both setup guides say v2 is the default and v1 still passes', () => {
+  const shape = read('docs/direction.md').split('## The story, always in this shape\n')[1].split('\n## ')[0];
+  for (const section of ['Background:', 'Example:', 'Requirements:', 'Notes:', 'Test scenarios:']) assert.ok(shape.includes(`\n${section}`), section);
+  assert.match(shape, /This is version 2, the default for user stories, job stories and bugs\./);
+  assert.match(shape, /Stories saved in version 1, with Given \/ When \/ Then acceptance criteria .+ still pass/);
+  for (const guide of ['docs/claude-code.md', 'docs/claude-project.md']) {
+    const note = read(guide).split('## Story format\n')[1]?.split('\n## ')[0] ?? '';
+    assert.match(note, /New user stories, job stories and bugs use story format v2/, guide);
+    assert.match(note, /Stories saved in v1, with acceptance criteria, still pass the checker\./, guide);
+  }
+});
