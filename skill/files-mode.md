@@ -15,13 +15,15 @@ Read the context files, `loupe/learned.md` and the team templates from the folde
 
 ## Never write outside loupe/
 
-Never write outside `loupe/`, and never change any other file in the repository, even if asked. If the user asks for a change elsewhere, such as "update the README", write the story as usual, change nothing else, and say so in one line: "I only write inside loupe/, so I didn't change the README." Run no commands but the checkers, and `git diff` or `git status` to show a change.
+Never write outside `loupe/`, and never change any other file in the repository, even if asked. If the user asks for a change elsewhere, such as "update the README", write the story as usual, change nothing else, and say so in one line: "I only write inside loupe/, so I didn't change the README."
+
+Write and edit files only with Claude Code's file tools, never with shell commands (no cat, echo, sed, python or redirects). The only commands you run are the checkers (node SKILL/src/run.js ...) and git diff or git status.
 
 ## Write a story
 
 1. The input is pasted text or a file path, such as "write a story from notes/meeting.md". Read the file if it's a path.
 2. Follow "Write a story" in SKILL.md, steps 2 to 6, with the folder's context files, learned.md and templates.
-3. Save the story to `loupe/stories/<yyyy-mm-dd>-<short-slug>.md`: today's date, then three to six words of the title, lower case, joined by hyphens, such as `loupe/stories/2026-10-02-skip-next-box.md`. If that file exists, add `-2`, `-3` and so on. Never overwrite a story.
+3. Save the story to `loupe/stories/<yyyy-mm-dd>-<short-slug>.md`: today's date, then three to six words of the title, lower case, joined by hyphens, such as `loupe/stories/2026-10-02-skip-next-box.md`. If that file exists, save it as `-2`, `-3` and so on, without asking, and name the file in the reply. Never overwrite a story.
 4. Check it with `node SKILL/src/run.js check loupe/stories/<file>`, and fix and rerun up to five times, as in SKILL.md. The checker finds the team's templates in `loupe/templates/` on its own.
 5. Reply with the story, in the same shape as in claude.ai mode, then one line naming the file, then the checker's last line. The `Checked with Node` line goes in the reply, not the file.
 
@@ -30,7 +32,7 @@ Never write outside `loupe/`, and never change any other file in the repository,
 Follow `SKILL/learning.md` until the user says yes. Then, instead of handing back a file:
 1. Edit `loupe/learned.md` in place, adding exactly the entries the user approved. If it doesn't exist, create it with the header from `SKILL/learning.md`.
 2. Run `node SKILL/src/run.js check-folder loupe`, and fix and rerun until it passes, as for stories. If a fix would change an approved entry, show the change and ask again.
-3. Show the diff: run `git diff -- loupe/learned.md`, or show the old and new entries if the folder isn't in a git repository. There is no file to swap: the next story reads the new learned.md.
+3. Show the diff: paste the actual `git diff -- loupe/learned.md` output in a fenced block, not a description. If the folder isn't in git, show the before and after entries. There is no file to swap: the next story reads the new learned.md.
 
 ## Set up the team
 

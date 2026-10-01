@@ -442,3 +442,20 @@ test('files mode never writes outside loupe/, and says so', () => {
   assert.match(text, /Never write outside `loupe\/`, and never change any other file in the repository, even if asked/);
   assert.match(text, /say so in one line/i);
 });
+
+// Trial 7 fixes: no shell writes, the real diff pasted, and a duplicate story saved as -2 without asking.
+test('files mode writes only with the file tools, and runs only the checkers and git diff or git status', () => {
+  const text = filesMode();
+  assert.ok(text.includes("Write and edit files only with Claude Code's file tools, never with shell commands (no cat, echo, sed, python or redirects). The only commands you run are the checkers (node SKILL/src/run.js ...) and git diff or git status."));
+});
+
+test('files mode pastes the actual git diff in a fenced block after a learned.md change', () => {
+  const text = filesMode();
+  assert.match(text, /paste the actual `git diff -- loupe\/learned\.md` output in a fenced block, not a description/i);
+  assert.match(text, /If the folder isn't in git, show the before and after entries/);
+});
+
+test('files mode saves a duplicate story as -2 without asking, and names the file', () => {
+  const text = filesMode();
+  assert.match(text, /If that file exists, save it as `-2`, `-3` and so on, without asking, and name the file in the reply/);
+});
