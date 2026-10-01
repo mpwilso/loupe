@@ -471,9 +471,11 @@ const tracker = () => file('tracker.md');
 
 test('SKILL.md points to the tracker steps when tracker tools are there, and says nothing of a tracker otherwise', () => {
   const skill = file('SKILL.md');
-  assert.ok(skill.includes('`SKILL/tracker.md`'));
-  assert.match(skill, /If tracker tools are available/);
-  assert.match(skill, /If not, skip it and don't mention a tracker/);
+  // Trial 8's first run skipped a separate pointer, so the tracker search is part of step 1 of every story.
+  const step1 = storyMode().split('\n').find((line) => line.startsWith('1. ')) ?? '';
+  assert.ok(step1.includes('`SKILL/tracker.md`'), step1);
+  assert.match(step1, /If you have tools from an issue tracker, such as `mcp__pellwick-tracker__search_issues` or a Jira search, read `SKILL\/tracker\.md` and search the tracker now, before step 2/);
+  assert.match(step1, /If you don't, skip it and don't mention a tracker/);
   assert.ok(skill.split('\n').length <= 80);
 });
 

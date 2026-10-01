@@ -13,8 +13,6 @@ Loupe writes stories a developer can build without a second meeting. It has thre
 
 If there is a `loupe/` folder in the working directory or a parent, as in Claude Code, use files mode: read `SKILL/files-mode.md` and follow it with the steps below. The team's context comes from that folder, stories are saved there, and learned.md is edited in place. Loupe never writes outside `loupe/`. Otherwise, use claude.ai mode: the team's context is in the project's knowledge, exactly as the steps below say.
 
-If tracker tools are available, read `SKILL/tracker.md` before writing a story and follow it: Loupe reads the tracker and never writes to it. If not, skip it and don't mention a tracker.
-
 ## Set up a team
 
 1. Interview the product manager. Ask at most five questions per turn. Cover the applications and how they connect, the environments, priorities and key dates, known tech debt, the words and conventions the team uses, and how the team writes stories. Ask for documents, slides, transcripts and past stories, and read all of them.
@@ -29,7 +27,7 @@ If tracker tools are available, read `SKILL/tracker.md` before writing a story a
 
 Write the response once, then run the checker until it passes, up to five runs. Every response is checked. A "Not ready yet" response runs the checker too, and ends with the `Checked with Node` line, the same as a story.
 
-1. Read the input and the team's context files where they are, in the project's knowledge, learned.md included. Don't copy them anywhere. Where learned.md and another file disagree, the entry that replaces the other wins.
+1. Read the input and the team's context files where they are, in the project's knowledge, learned.md included. Don't copy them anywhere. Where learned.md and another file disagree, the entry that replaces the other wins. If you have tools from an issue tracker, such as `mcp__pellwick-tracker__search_issues` or a Jira search, read `SKILL/tracker.md` and search the tracker now, before step 2: Loupe reads the tracker and never writes to it. If you don't, skip it and don't mention a tracker.
 2. Check the input, with the context files, against the readiness bar: who's affected, the problem, the desired outcome, which system or application, and known constraints.
 3. Below the bar, write only a "Not ready yet" response, shaped like `SKILL/examples/not-ready.md`, and save it as `response.md`. Ask the few questions that would get the user over the bar. Go to step 5.
 4. At or above the bar, pick the template by the kind of work. When the team's `story-style.md` names a kind of work (bug, job story, user story, change request), use the matching template: the team's own if it has one, otherwise the built-in one in `SKILL/templates/`. A bug always uses `SKILL/templates/bug.md` unless the team has its own bug template. Read that one template and `SKILL/writing-rules.md`. Write the story once, in the shape of `SKILL/examples/story.md`, and save it as `response.md`.
