@@ -231,7 +231,7 @@ test('the trials README lists and links every trial record, in order, and define
   const files = readdirSync(join(root, 'docs/trials'));
   // A rerun keeps its trial's number, with a letter: trial 6b reran trial 6.
   const records = files.filter((f) => /^\d{4}-\d{2}-\d{2}-trial-\d+[a-z]?\.md$/.test(f)).sort();
-  assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-6-plan.md', 'trial-7-plan.md'], 'records, the index and plans only');
+  assert.deepEqual(files.filter((f) => !records.includes(f)).sort(), ['README.md', 'trial-6-plan.md', 'trial-7-plan.md', 'trial-8-plan.md'], 'records, the index and plans only');
   assert.deepEqual(records, ['1', '2', '3', '4', '5', '6', '6b', '7'].map((n) => `2026-09-30-trial-${n}.md`), 'every record is named by its trial number');
   const index = read('docs/trials/README.md');
   const lines = index.split('\n').filter((line) => line.startsWith('- '));
@@ -387,4 +387,20 @@ test('the trial 7 plan has every step, pass lines, the after-check and a scoring
 
 test('the trial 7 record says the Read-tool line came after 7b and is not confirmed by a run', () => {
   assert.match(read('docs/trials/2026-09-30-trial-7.md'), /added after 7b, and no run has confirmed it yet/);
+});
+
+// Trial 8 is planned: the mock tracker, read-only, in a fresh repository.
+test('the trial 8 plan has every step, pass lines, the call log check and a scoring sheet, and its inputs exist', () => {
+  const plan = read('docs/trials/trial-8-plan.md');
+  assert.match(plan, /This is a plan, not a record/);
+  for (const step of ['A', 'B', 'C', 'D', 'E']) {
+    const body = plan.split(`## Step ${step}:`)[1]?.split('\n## ')[0] ?? '';
+    assert.match(body, /\*\*Pass:\*\*/, `step ${step}`);
+    assert.match(plan, new RegExp(`^\\| ${step} \\| .+ \\| +\\| +\\|$`, 'm'), `step ${step} is on the scoring sheet`);
+  }
+  assert.match(plan, /LOUPE_TRACKER_LOG/);
+  for (const [, input] of plan.matchAll(/notes\/([\w.-]+\.md)/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
+  // Step C's input leads to the issue that holds an invented customer email.
+  const issues = JSON.parse(read('examples/pellwick/tracker/issues.json')).issues;
+  assert.match(issues.find((i: { key: string }) => i.key === 'SUBS-131').description, /@example\.net/);
 });
