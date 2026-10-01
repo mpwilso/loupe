@@ -35,6 +35,7 @@ const sources: Record<string, string> = {
   'writing-rules.md': 'skill/writing-rules.md',
   'learning.md': 'skill/learning.md',
   'files-mode.md': 'skill/files-mode.md',
+  'tracker.md': 'skill/tracker.md',
   'src/run.js': 'src/run.js',
   'src/node-version.js': 'src/node-version.js',
   'src/check.ts': 'src/check.ts',
@@ -463,4 +464,33 @@ test('files mode saves a duplicate story as -2 without asking, and names the fil
 // Trial 7b: read-only shell commands still ran, and with the recommended permissions each one asks the user.
 test('files mode reads files with the Read tool, not shell commands', () => {
   assert.ok(filesMode().includes("Read files with Claude Code's Read tool, not shell commands such as cat, ls or find."));
+});
+
+// M4b: live context from a tracker, read-only.
+const tracker = () => file('tracker.md');
+
+test('SKILL.md points to the tracker steps when tracker tools are there, and says nothing of a tracker otherwise', () => {
+  const skill = file('SKILL.md');
+  assert.ok(skill.includes('`SKILL/tracker.md`'));
+  assert.match(skill, /If tracker tools are available/);
+  assert.match(skill, /If not, skip it and don't mention a tracker/);
+  assert.ok(skill.split('\n').length <= 80);
+});
+
+test('the tracker steps: search first, read at most 5, cite with a live source, and flag a likely duplicate', () => {
+  const text = tracker();
+  assert.match(text, /Read at most 5 issues/);
+  assert.ok(text.includes('"(Jira SUBS-142, read 2026-10-02 14:05)"'));
+  assert.match(text, /Use the read time the tool returned for that call/);
+  assert.ok(text.includes('"SUBS-142 looks like the same request. Should this be a new story or an update to it?"'));
+  assert.match(text, /Write the story anyway/);
+});
+
+test('the tracker steps never write to the tracker, keep customer data out, and keep live facts live', () => {
+  const text = tracker();
+  assert.match(text, /Never create, change, comment on, close or move an issue, and never ask to/);
+  assert.ok(text.includes('"Loupe can\'t change the tracker yet."'));
+  assert.match(text, /customers' names, emails, phone numbers and addresses/);
+  assert.match(text, /Never copy a fact read from the tracker into the context files or learned\.md/);
+  assert.match(file('learning.md'), /Never learn a fact read from a tracker/);
 });

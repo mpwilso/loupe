@@ -57,4 +57,4 @@ On a clear yes:
 
 ## Never
 
-Never learn an invented fact, a secret, a credential or customer data, even if asked. Customer data includes names, emails, phone numbers and addresses of real customers. Say why in one line, and offer to save the rest without it.
+Never learn a fact read from a tracker: it goes stale. Never learn an invented fact, a secret, a credential or customer data, even if asked. Customer data includes names, emails, phone numbers and addresses of real customers. Say why in one line, and offer to save the rest without it.

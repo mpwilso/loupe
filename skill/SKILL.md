@@ -13,6 +13,8 @@ Loupe writes stories a developer can build without a second meeting. It has thre
 
 If there is a `loupe/` folder in the working directory or a parent, as in Claude Code, use files mode: read `SKILL/files-mode.md` and follow it with the steps below. The team's context comes from that folder, stories are saved there, and learned.md is edited in place. Loupe never writes outside `loupe/`. Otherwise, use claude.ai mode: the team's context is in the project's knowledge, exactly as the steps below say.
 
+If tracker tools are available, read `SKILL/tracker.md` before writing a story and follow it: Loupe reads the tracker and never writes to it. If not, skip it and don't mention a tracker.
+
 ## Set up a team
 
 1. Interview the product manager. Ask at most five questions per turn. Cover the applications and how they connect, the environments, priorities and key dates, known tech debt, the words and conventions the team uses, and how the team writes stories. Ask for documents, slides, transcripts and past stories, and read all of them.
