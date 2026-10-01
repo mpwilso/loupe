@@ -459,3 +459,8 @@ test('files mode saves a duplicate story as -2 without asking, and names the fil
   const text = filesMode();
   assert.match(text, /If that file exists, save it as `-2`, `-3` and so on, without asking, and name the file in the reply/);
 });
+
+// Trial 7b: read-only shell commands still ran, and with the recommended permissions each one asks the user.
+test('files mode reads files with the Read tool, not shell commands', () => {
+  assert.ok(filesMode().includes("Read files with Claude Code's Read tool, not shell commands such as cat, ls or find."));
+});

@@ -380,3 +380,7 @@ test('the trial 7 plan has every step, pass lines, the after-check and a scoring
   assert.doesNotMatch(empty, /^- /m, 'no entries');
   for (const [, input] of plan.matchAll(/notes\/([\w.-]+\.md)/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
 });
+
+test('the trial 7 record says the Read-tool line came after 7b and is not confirmed by a run', () => {
+  assert.match(read('docs/trials/2026-09-30-trial-7.md'), /added after 7b, and no run has confirmed it yet/);
+});
