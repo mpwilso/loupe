@@ -28,8 +28,10 @@ Apply these to every sentence as you write it:
 User stories, job stories and bugs use these sections, as their templates show. Spikes and team templates keep their own, with acceptance criteria.
 - The story: one sentence. A bug keeps its own fields instead.
 - Background: why this came up, the problem and who it affects. One plain sentence per line, each ending with its source, like a Known line.
-- Example: one concrete case of the problem as it happens today, taken from the input, with its source. If the input gives none, write "None given." Never invent one.
-- Requirements: a numbered list of what must be true when it's done.
+- Example: one case of the problem as it happens today, with its source. An Example uses only details the input states. It may describe a general situation the input gives, such as who is affected and what they have to do today. Never add circumstances the input doesn't state. If the input gives no situation at all, write None given.
+  - Bad: `A subscriber who moves house emails support, and an agent updates the address in Stockroom.` The thread never says anyone moved house.
+  - Good: `Subscribers can't change their address in the web app, so they email support and an agent updates it in Stockroom.`
+- Requirements: a numbered list of what must be true when it's done. Every requirement comes from the input or the context files. Anything else, such as a behavior carried over from another story, ends with To confirm or goes to Questions before building.
 - Notes: technical notes from the input or the context files, or "None."
 - Test scenarios: five is the usual, and more than ten means split the story or suggest a spike. Cover every requirement with at least one scenario.
 - Use happy and unhappy paths to cover failure cases on purpose. Each scenario has one happy path and at least one unhappy path, such as a refused action or a passed deadline.

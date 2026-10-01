@@ -572,9 +572,19 @@ test('the writing rules cover the v2 sections: one-sentence story, sourced Backg
   const rules = file('writing-rules.md');
   assert.match(rules, /User stories, job stories and bugs use these sections, as their templates show\. Spikes and team templates keep their own, with acceptance criteria\./);
   assert.match(rules, /Background: why this came up, the problem and who it affects\. One plain sentence per line, each ending with its source, like a Known line\./);
-  assert.match(rules, /Example: one concrete case of the problem as it happens today, taken from the input, with its source\. If the input gives none, write "None given\." Never invent one\./);
+  assert.match(rules, /Example: one case of the problem as it happens today, with its source\. An Example uses only details the input states\./);
   assert.match(rules, /Cover every requirement with at least one scenario\./);
   assert.match(rules, /Use happy and unhappy paths to cover failure cases on purpose\. Each scenario has one happy path and at least one unhappy path/);
   assert.match(rules, /five is the usual, and more than ten means split the story or suggest a spike/);
   assert.match(storyMode(), /User stories, job stories and bugs use the shape their template shows: Background, Example, numbered Requirements, Notes and Test scenarios, with no acceptance criteria\. Spikes and team templates keep their own sections\./);
+});
+
+// Trial 10: both address-change stories invented "moves house" in their Example, and one carried over a Stockroom note.
+test('Examples and requirements keep to what the input states, and the truth step rereads them', () => {
+  const rules = file('writing-rules.md');
+  assert.ok(rules.includes("An Example uses only details the input states. It may describe a general situation the input gives, such as who is affected and what they have to do today. Never add circumstances the input doesn't state. If the input gives no situation at all, write None given."));
+  assert.match(rules, /- Bad: `A subscriber who moves house emails support, and an agent updates the address in Stockroom\.`/);
+  assert.match(rules, /- Good: `Subscribers can't change their address in the web app, so they email support and an agent updates it in Stockroom\.`/);
+  assert.ok(rules.includes('Every requirement comes from the input or the context files. Anything else, such as a behavior carried over from another story, ends with To confirm or goes to Questions before building.'));
+  assert.match(storyMode(), /Reread every Known line against the source it cites, and the Example, every Background line and every requirement against the input, the same way\./);
 });
