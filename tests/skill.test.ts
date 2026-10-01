@@ -34,6 +34,7 @@ const sources: Record<string, string> = {
   'SKILL.md': 'skill/SKILL.md',
   'writing-rules.md': 'skill/writing-rules.md',
   'learning.md': 'skill/learning.md',
+  'files-mode.md': 'skill/files-mode.md',
   'src/run.js': 'src/run.js',
   'src/node-version.js': 'src/node-version.js',
   'src/check.ts': 'src/check.ts',
@@ -400,4 +401,44 @@ test('the skill offers to fold entries in when learned.md passes 480 words', () 
   const text = learningText();
   assert.match(text, /480 words/);
   assert.match(text, /fold its entries into the main context files at the next setup refresh/);
+});
+
+// M4a: one skill, two places. A loupe/ folder on disk means files mode; otherwise claude.ai mode, as before.
+const filesMode = () => file('files-mode.md');
+
+test('the skill picks files mode when it can see a loupe/ folder, and claude.ai mode otherwise', () => {
+  const skill = file('SKILL.md');
+  const pick = skill.split('## Pick the mode\n')[1]?.split('\n## ')[0] ?? '';
+  assert.ok(pick, 'SKILL.md has a "Pick the mode" section');
+  assert.match(pick, /`loupe\/` folder in the working directory or a parent/);
+  assert.match(pick, /files mode/);
+  assert.ok(pick.includes('`SKILL/files-mode.md`'));
+  assert.match(pick, /Otherwise, use claude\.ai mode/);
+  assert.ok(skill.indexOf('## Pick the mode') < skill.indexOf('## Set up a team'), 'the mode comes first');
+});
+
+test('files mode reads the team folder, saves each story as a file, and checks it', () => {
+  const text = filesMode();
+  for (const path of ['loupe/context/', 'loupe/learned.md', 'loupe/templates/']) assert.ok(text.includes(path), path);
+  assert.ok(text.includes('loupe/stories/<yyyy-mm-dd>-<short-slug>.md'));
+  assert.match(text, /pasted text or a file path/);
+  assert.match(text, /node SKILL\/src\/run\.js check loupe\/stories\//);
+  assert.match(text, /`Checked with Node` line goes in the reply, not the file/);
+});
+
+test('files mode edits learned.md in place on a yes, checks the whole folder, and shows the diff', () => {
+  const text = filesMode();
+  assert.match(text, /edit `loupe\/learned\.md` in place/i);
+  assert.match(text, /node SKILL\/src\/run\.js check-folder loupe/);
+  assert.match(text, /show the diff/i);
+  assert.match(text, /There is no file to swap/);
+  assert.match(text, /into `loupe\/context\/` only after a yes/);
+});
+
+test('files mode never writes outside loupe/, and says so', () => {
+  const skill = file('SKILL.md');
+  assert.match(skill, /never writes outside `loupe\/`/);
+  const text = filesMode();
+  assert.match(text, /Never write outside `loupe\/`, and never change any other file in the repository, even if asked/);
+  assert.match(text, /say so in one line/i);
 });
