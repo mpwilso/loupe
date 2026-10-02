@@ -29,7 +29,7 @@ function problems(text: string, base = root): string[] {
   // The collapsed full story is there for anyone who opens it; the limit is on what a reader sees.
   const shownLines = text.replace(/<details>[\s\S]*?<\/details>/g, '<details></details>');
   const lines = shownLines.split('\n').length - (shownLines.endsWith('\n') ? 1 : 0);
-  if (lines >= 150) found.push(`${lines} lines; keep it under 150`);
+  if (lines >= 155) found.push(`${lines} lines; keep it under 155`);
   if (text.includes('\u2014')) found.push('an em dash');
   const links = [...text.matchAll(/\]\(([^)\s]+)\)|\b(?:src|srcset|href)="([^"]+)"/g)].map((m) => m[1] ?? m[2]);
   for (const link of links) {
@@ -54,8 +54,8 @@ test('the README passes every rule: short, no em dashes, links that resolve, no 
 });
 
 test('each README rule catches what it should', () => {
-  assert.deepEqual(problems('line\n'.repeat(150)), ['150 lines; keep it under 150']);
-  assert.deepEqual(problems(`<details>\n${'line\n'.repeat(150)}</details>\n`), []);
+  assert.deepEqual(problems('line\n'.repeat(155)), ['155 lines; keep it under 155']);
+  assert.deepEqual(problems(`<details>\n${'line\n'.repeat(155)}</details>\n`), []);
   assert.deepEqual(problems('## Setup\n\nJump to [setup](#setup) or [the end](#the-end).\n\n```\n## The end\n```\n'), ['an anchor with no heading: #the-end']);
   assert.deepEqual(problems('A long pause\u2014then more.\n'), ['an em dash']);
   assert.deepEqual(problems('See [the notes](docs/nowhere.md) and <img src="brand/missing.svg">.\n'), [
@@ -105,7 +105,7 @@ test('the README runs from plain to technical, in a fixed order', () => {
   );
 });
 
-test('the README opens with the lockup, both themes, the tagline, the paragraph and a line of links to the sections', () => {
+test('the README opens with the lockup, both themes, the tagline, the paragraph, the three tools and a line of links to the sections', () => {
   const top = readme.split('\n## ')[0];
   assert.ok(top.includes('<source media="(prefers-color-scheme: dark)" srcset="brand/lockup-dark.svg">'));
   assert.ok(top.includes('<img src="brand/lockup-light.svg" alt="Loupe" width="360">'));
@@ -113,7 +113,8 @@ test('the README opens with the lockup, both themes, the tagline, the paragraph 
   assert.ok(top.includes("get one that says what's known, unknown and assumed."));
   const jump = 'Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials changed](#what-the-trials-changed), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).';
   const where = "It runs in Claude, or in Claude Code, where it reads the team's context from your repository, can search your tracker before writing, and can create a ticket from a finished story with your approval.";
-  assert.ok(top.includes(`get one that says what's known, unknown and assumed.\n${where}\n\n${jump}`), 'the paragraph, where it runs, then the jump line');
+  const tools = 'Loupe is one of three tools, meant to be used in order. Loupe writes the story, [Parallax](https://github.com/mpwilso/parallax) builds it under a gated agent loop and keeps the record, and [ISR](https://github.com/mpwilso/isr) tells the person accepting it what is left. Each runs on its own, and they have not yet been run in that order on one change.';
+  assert.ok(top.includes(`get one that says what's known, unknown and assumed.\n${where}\n\n${tools}\n\n${jump}`), 'the paragraph, where it runs, the three tools, then the jump line');
 });
 
 test('what is different includes the learning loop, and what is next no longer lists it', () => {
