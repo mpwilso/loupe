@@ -7,6 +7,8 @@
 
 <p align="center"><b>Story tools help you write faster. Loupe won't hand you a story it can't back up.</b></p>
 
+Status: A portfolio project, built to show how I design, test and judge an AI tool. Tried on one invented team across ten trials, with reruns. Every trial is in docs/trials, including the misses.
+
 Loupe is a Claude skill for product managers. It turns meeting notes, tickets and emails into stories a developer can build without a second meeting. Product owners and product managers write with it. Developers, testers and anyone else who reads a story get one that says what's known, unknown and assumed.
 It runs in Claude, or in Claude Code, where it reads the team's context from your repository, can search your tracker before writing, and can create a ticket from a finished story with your approval.
 
@@ -194,7 +196,7 @@ Loupe learns your team once, from your own documents. Each input then gets a rea
 - The customer-data detector catches emails and secrets, but not names, phone numbers or street addresses.
 - Reading a tracker and creating tickets were tested on an invented mock tracker, never a real one, with Claude Code's own permission prompt stood in for in trial 9.
 - Where Loupe cites tracker facts still varies from run to run: in trial 8e, 2 of 3 stories listed a fact from a ticket under Known, and the third left it as a question.
-- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trials 9 and 10 were measured by the Claude Code session that ran them, with Matt Wilson reviewing two readings in 10c. A separate reviewer scored trials 2 and 3 blind.
+- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with me checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trials 9 and 10 were measured by the Claude Code session that ran them, with me reviewing two readings in 10c. A separate reviewer scored trials 2 and 3 blind.
 
 ## Setup
 
@@ -243,9 +245,9 @@ It prints `Checked with Node` and the version when the story passes, or one line
 
 ## How it was built
 
-Designed and directed by Matt Wilson, who set the quality bar, designed ten trials, with reruns, and fixed what each exposed. Trials 1 to 6b were run in claude.ai, and trials 7 to 10 in Claude Code. Two of the trials were scored in blind review, one of them against plain Claude. Claude Code wrote most of the code. The trials are in [docs/trials](docs/trials/).
+I designed and directed Loupe: I set the quality bar, designed ten trials, with reruns, and fixed what each exposed. Trials 1 to 6b were run in claude.ai, and trials 7 to 10 in Claude Code. Two of the trials were scored in blind review, one of them against plain Claude. Claude Code wrote most of the code. The trials are in [docs/trials](docs/trials/).
 
 ## What's next
 
-1. Checks against your lower environments that read and never change anything.
+1. Checks against your lower environments that read and never change anything, so a story can cite how the system behaves today.
 2. Estimates calibrated on your team's history.
