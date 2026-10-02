@@ -110,6 +110,7 @@ test('the README opens with the lockup, both themes, the tagline, the paragraph,
   assert.ok(top.includes('<source media="(prefers-color-scheme: dark)" srcset="brand/lockup-dark.svg">'));
   assert.ok(top.includes('<img src="brand/lockup-light.svg" alt="Loupe" width="360">'));
   assert.ok(top.includes("Story tools help you write faster. Loupe won't hand you a story it can't back up."));
+  assert.ok(top.includes('</b></p>\n\nStatus: A portfolio project, built to show how I design, test and judge an AI tool. Tried on one invented team across ten trials, with reruns. Every trial is in docs/trials, including the misses.\n\nLoupe is a Claude skill'), 'the status line, between the tagline and the paragraph');
   assert.ok(top.includes("get one that says what's known, unknown and assumed."));
   const jump = 'Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials changed](#what-the-trials-changed), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).';
   const where = "It runs in Claude, or in Claude Code, where it reads the team's context from your repository, can search your tracker before writing, and can create a ticket from a finished story with your approval.";
@@ -184,7 +185,7 @@ test('what the trials changed: nine bullets in a fixed order, each linking the t
 });
 
 test('the limits say exactly who ran and scored the trials', () => {
-  assert.ok(section('Limits').includes('- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with Matt Wilson checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trials 9 and 10 were measured by the Claude Code session that ran them, with Matt Wilson reviewing two readings in 10c. A separate reviewer scored trials 2 and 3 blind.'));
+  assert.ok(section('Limits').includes('- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with me checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trials 9 and 10 were measured by the Claude Code session that ran them, with me reviewing two readings in 10c. A separate reviewer scored trials 2 and 3 blind.'));
   assert.ok(section('Limits').includes("- In claude.ai, you swap the updated learned.md into the project's files by hand; in Claude Code, Loupe edits it in place. Learning has been tested on the invented team and no other."));
   assert.doesNotMatch(readme, /doesn't learn from corrections yet/);
 });
@@ -213,7 +214,7 @@ test('under the hood: the repo map is real, and the documented checker command p
 
 test('how it was built says who directed it and links the trials', () => {
   const built = section('How it was built');
-  assert.ok(built.includes('Designed and directed by Matt Wilson'));
+  assert.ok(built.includes('I designed and directed Loupe: I set the quality bar,'));
   assert.ok(built.includes('Claude Code wrote most of the code.'));
   assert.ok(built.includes('designed ten trials, with reruns, and fixed what each exposed. Trials 1 to 6b were run in claude.ai, and trials 7 to 10 in Claude Code.'));
   assert.ok(built.includes('Two of the trials were scored in blind review, one of them against plain Claude.'));
@@ -239,7 +240,7 @@ test('setup covers Claude Code: the install commands, the guide, and what is tes
   assert.ok(section("What's different").includes('- **In Claude Code, it keeps to its folder.** It reads your team\'s context from a `loupe/` folder in your repository and writes nowhere else.'));
   const next = section("What's next");
   assert.doesNotMatch(next, /A VS Code version/);
-  assert.match(next, /^1\. Checks against your lower environments that read and never change anything\.$/m);
+  assert.match(next, /^1\. Checks against your lower environments that read and never change anything, so a story can cite how the system behaves today\.$/m);
   assert.doesNotMatch(next, /creating Jira tickets/, 'ticket creation shipped in M4c');
 });
 
