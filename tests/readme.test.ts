@@ -114,7 +114,7 @@ test('the README opens with the lockup, both themes, the tagline, the paragraph,
   assert.ok(top.includes("get one that says what's known, unknown and assumed."));
   const jump = 'Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials changed](#what-the-trials-changed), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).';
   const where = "It runs in Claude, or in Claude Code, where it reads the team's context from your repository, can search your tracker before writing, and can create a ticket from a finished story with your approval.";
-  const tools = 'Loupe is one of three tools, meant to be used in order. Loupe writes the story, [Parallax](https://github.com/mpwilso/parallax) builds it under a gated agent loop and keeps the record, and [ISR](https://github.com/mpwilso/isr) tells the person accepting it what is left. Each runs on its own, and they have not yet been run in that order on one change.';
+  const tools = "Loupe is one of three tools. Loupe writes the story, [Parallax](https://github.com/mpwilso/parallax) builds it under a gated agent loop and keeps the record, and [ISR](https://github.com/mpwilso/isr) tells the person accepting it what is left. Each runs on its own, and they have been run in that order once, on one change: [ISR's run log](https://github.com/mpwilso/isr/blob/master/docs/run-log.md).";
   assert.ok(top.includes(`get one that says what's known, unknown and assumed.\n${where}\n\n${tools}\n\n${jump}`), 'the paragraph, where it runs, the three tools, then the jump line');
 });
 
