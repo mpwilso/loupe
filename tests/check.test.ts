@@ -332,6 +332,7 @@ test('a live source names the record and a real read time; other sources are unc
   assert.deepEqual(problems(known('(Jira SUBS-134, read 2026-10-02 25:00)')), ['line 17: The read time in this source must be a real date and time, like "read 2026-10-02 14:05".']);
   assert.deepEqual(problems(known('(Dana, meeting 2026-09-22; Jira SUBS-101)')), ['line 17: This source names a tracker record but not when it was read. Write it as "(Jira SUBS-142, read 2026-10-02 14:05)".']);
   assert.deepEqual(problems(known('(Maya, Helpline ticket 48213)')), [], 'a ticket number with no tracker key is not a live source');
+  assert.deepEqual(problems(known('(Jira SUBS-134, read 2026-10-02 14:05) ')), [], 'a trailing space hides no source; the shape check ignores it too');
   // A tracker key is a name, not an acronym to spell out; the same letters alone still are.
   const story = fixture('good-story.md');
   assert.deepEqual(problems(story.replace('Nothing needed.', 'Nothing needed, see SUBS-134. (Jira SUBS-134, read 2026-10-02 14:05)')), []);

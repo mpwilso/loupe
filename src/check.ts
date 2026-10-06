@@ -460,7 +460,7 @@ function checkLiveSources(lines: string[]): Problem[] {
   const pattern = new RegExp(fill(rule.pattern, { key: rule.key }));
   return lines.flatMap((text, i) => {
     const line = i + 1;
-    const sources = (text.match(/\(([^()]+)\)$/)?.[1].split('; ') ?? []).flatMap((source) => {
+    const sources = (text.trimEnd().match(/\(([^()]+)\)$/)?.[1].split('; ') ?? []).flatMap((source) => {
       const key = detect.exec(source)?.[1];
       return key ? [{ source, key }] : [];
     });
