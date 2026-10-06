@@ -15,13 +15,13 @@ As a [kind of user], I want [something], so that [the reason it matters].
 [One real case of the problem today, taken from the input, one sentence per line, or "None given." if the input has none.] ([Where it came from])
 
 ## Requirements
-1. [What must be true when it's done. Anything the input doesn't settle ends with "To confirm: ..."]
+1. [What must be true when it's done. At most 5 requirements. Anything the input doesn't settle ends with "To confirm: ..."]
 
 ## Not included
-- [Something this story deliberately leaves out, and who decided. Write "None." if nothing.]
+- [Something this story deliberately leaves out, and who decided. At most 5 items. Write "None." if nothing.]
 
 ## Notes
-- [A technical note for the developer. Write "None." if there are none.]
+- [A technical note for the developer. At most 5 items. Write "None." if there are none.]
 
 ## Test scenarios
 TEST SCENARIO: [What is being tested]
@@ -34,13 +34,13 @@ WHEN [someone does something that should fail or be refused]
 THEN [what they see or get instead. To confirm: any screen detail the input doesn't settle.]
 
 ## Known
-- [A fact you can point to.] ([Where it came from, for example: Dana, meeting 2026-09-22])
+- [A fact you can point to. At most 5 items.] ([Where it came from, for example: Dana, meeting 2026-09-22])
 
 ## Unknown
-- [Something nobody knows yet. Write "None." if there is nothing.]
+- [Something nobody knows yet. At most 5 items. Write "None." if there is nothing.]
 
 ## Assumed
-- [Something taken as true but not confirmed.]
+- [Something taken as true but not confirmed. At most 5 items.]
 
 ## Confidence
 [High, Medium or Low]
@@ -52,6 +52,6 @@ How to raise it: [What would make it higher.]
 Basis: [What the range is based on, for a developer who knows the system.]
 
 ## Questions before building
-- [What would a developer ask later? Write "None." if there are none.]
+- [What would a developer ask later? At most 5 questions. Write "None." if there are none.]
 
 Before release: [Actions specific to this story, such as telling support about a named change, separated by semicolons, or None.]

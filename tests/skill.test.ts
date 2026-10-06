@@ -332,6 +332,38 @@ test('writing-rules.md starts with a short plain-language checklist, stated once
   assert.doesNotMatch(rules, /at most 30 words per sentence/);
 });
 
+// Drafts kept failing on limits the writer was never shown. The checklist names each one, and the numbers and lists come from spec/.
+test("the checklist names the checker's hard limits, and they match spec/", () => {
+  const first = file('writing-rules.md').split('\n## ')[1] ?? '';
+  const shape = JSON.parse(file('spec/story-shape.json'));
+  const plain = JSON.parse(file('spec/plain-language.json'));
+  const line = (start: string) => first.split('\n').find((l) => l.startsWith(`- ${start}`)) ?? '';
+  assert.equal(first.match(/^- At most (\d+) words per sentence\./m)?.[1], String(plain.sentences.maxWords));
+  assert.match(first, /source in parentheses counts as part of the sentence before it/);
+  assert.equal(first.match(/^- At most (\d+) items in any list/m)?.[1], String(shape.maxListItems));
+  const quoted = [...line('Never use').matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(quoted.sort(), [...plain.bannedPhrases.list].sort(), 'every banned phrase, and no others');
+  // The scenario keywords, like WHEN, are allowed so scenarios pass; the writer needs only the real acronyms.
+  const keywords = new Set(JSON.stringify(shape.sections.find((s: { kind: string }) => s.kind === 'scenarios').scenarios).match(/[A-Z]{2,}/g));
+  const named = line('Spell out').split('need no spelling out:')[1]?.match(/[A-Z]{2,}/g) ?? [];
+  assert.deepEqual(named.sort(), plain.acronyms.allow.filter((a: string) => !keywords.has(a)).sort());
+});
+
+test('every list in a built-in template starts with its limit, from spec/', () => {
+  const max = JSON.parse(file('spec/story-shape.json')).maxListItems;
+  for (const name of md('templates').filter((n) => n !== 'definition-of-ready.md')) {
+    const lines = file(`templates/${name}`).split('\n');
+    const starts = lines.filter((l, i) => /^(- |\d+\. )/.test(l) && !/^(- |\d+\. )/.test(lines[i - 1] ?? '') && !/^\s/.test(l));
+    assert.ok(starts.length >= 6, `${name}: found only ${starts.length} lists`);
+    for (const l of starts) assert.equal(l.match(/\bAt most (\d+) /)?.[1], String(max), `${name}: ${l}`);
+  }
+});
+
+test('the "Not ready yet" path reads the writing rules too', () => {
+  const step = storyMode().split('\n3. ')[1]?.split('\n4. ')[0] ?? '';
+  assert.match(step, /`SKILL\/writing-rules\.md`/);
+});
+
 test('story mode reruns the checker up to five times, and keeps "Not checked" for a checker that can\'t run', () => {
   const skill = file('SKILL.md');
   const story = storyMode();

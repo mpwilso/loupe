@@ -11,7 +11,7 @@ patterns:
 
 ## The story
 Steps:
-1. [First step]
+1. [First step. At most 5 steps.]
 2. [Next step]
 Expected: [What should happen.]
 Actual: [What happens instead.]
@@ -28,16 +28,16 @@ WHEN [someone does something that should still fail or be refused]
 THEN [what they see or get instead. To confirm: any screen detail the input doesn't settle.]
 
 ## Not included
-- [Something this story deliberately leaves out, and who decided. Write "None." if nothing.]
+- [Something this story deliberately leaves out, and who decided. At most 5 items. Write "None." if nothing.]
 
 ## Known
-- [A fact you can point to.] ([Where it came from, for example: Dana, meeting 2026-09-22])
+- [A fact you can point to. At most 5 items.] ([Where it came from, for example: Dana, meeting 2026-09-22])
 
 ## Unknown
-- [Something nobody knows yet. Write "None." if there is nothing.]
+- [Something nobody knows yet. At most 5 items. Write "None." if there is nothing.]
 
 ## Assumed
-- [Something taken as true but not confirmed.]
+- [Something taken as true but not confirmed. At most 5 items.]
 
 ## Confidence
 [High, Medium or Low]
@@ -49,6 +49,6 @@ How to raise it: [What would make it higher.]
 Basis: [What the range is based on, for a developer who knows the system.]
 
 ## Questions before building
-- [What would a developer ask later? Write "None." if there are none.]
+- [What would a developer ask later? At most 5 questions. Write "None." if there are none.]
 
 Before release: [Actions specific to this story, such as telling support about a named change, separated by semicolons, or None.]
