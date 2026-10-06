@@ -4,6 +4,7 @@ import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { builtInFolder, check, findTeamTemplates, loadTemplates } from '../src/check.ts';
 import { format } from '../src/spec.ts';
 import { minimum, tooOld } from '../src/node-version.js';
@@ -203,10 +204,18 @@ test('the built-in templates come from the files in templates/', () => {
 
 test('a story finds its team templates next to the context folder, with no flag', () => {
   const story = 'examples/pellwick/expected/holiday-cutoff.md';
-  assert.equal(findTeamTemplates(story), join('examples', 'pellwick', 'templates'));
+  assert.equal(findTeamTemplates(story), join(fileURLToPath(root), 'examples', 'pellwick', 'templates'));
   const pass = cli(story);
   assert.equal(pass.status, 0);
   assert.equal(pass.stdout, checked);
+});
+
+// A relative path stopped at the working folder, so a story checked from inside its team folder lost its templates.
+test('a story named from inside its team folder still finds the team templates above it', () => {
+  const expected = new URL('../examples/pellwick/expected/', import.meta.url);
+  const pass = spawnSync(process.execPath, [fileURLToPath(new URL('../src/check.ts', import.meta.url)), 'holiday-cutoff.md'], { cwd: expected, encoding: 'utf8' });
+  assert.equal(pass.stdout, checked);
+  assert.equal(pass.status, 0);
 });
 
 test('--templates overrides the team folder it would have found', () => {
