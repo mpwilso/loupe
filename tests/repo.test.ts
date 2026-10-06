@@ -358,7 +358,14 @@ test('the Claude Code guide installs, sets up the folder, writes a story, learns
   assert.match(block, /ignores allow rules in a repository's `\.claude\/settings\.json` until you trust that folder/);
   assert.match(block, /Keep the leading slash in `Edit\(\/loupe\/\*\*\)`/);
   assert.match(block, /after a `cd` into `loupe\/`, it points at `loupe\/loupe\/`/);
-  assert.match(block, /put the same block in `\.claude\/settings\.local\.json` instead: it needs no trust prompt as long as git doesn't track it/);
+  // Claude Code holds an untracked settings.local.json until the folder is trusted, except in a headless run.
+  assert.match(block, /put the same block in `\.claude\/settings\.local\.json` instead\. In an interactive session, it waits for the same trust prompt\./);
+  assert.match(block, /A headless run \(`claude -p`\) never shows the prompt and ignores the rules in `\.claude\/settings\.json`, but uses the ones in `\.claude\/settings\.local\.json` as long as git doesn't track it/);
+  // A personal install sits outside the repository, and files mode reads it with the Read tool only.
+  assert.match(block, /Add `Read\(~\/\.claude\/skills\/loupe\/\*\*\)`/);
+  assert.match(block, /start with two slashes, like `Read\(\/\/opt\/skills\/loupe\/\*\*\)`: one slash means the repository's root/);
+  // claude.ai mode, with no loupe/ folder, saves its files in the starting folder.
+  assert.match(block, /add `Edit\(\/response\.md\)` and `Edit\(\/team-templates\/\*\*\)`/);
   assert.match(block, /The skill's own rule keeps Loupe inside `loupe\/`/);
   assert.match(block, /these permissions make Claude Code enforce it/i);
   assert.match(guide, /"skillOverrides": \{ "anthropic-skills:loupe": "off" \}/, 'how to turn off the synced copy');

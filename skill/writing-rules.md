@@ -3,10 +3,12 @@
 Follow every rule when writing a story. The checker catches some of them, not all.
 
 ## While you write
-Apply these to every sentence as you write it:
-- At most 30 words per sentence.
+Apply these as you write. The checker enforces all but the last:
+- At most 30 words per sentence. A source in parentheses counts as part of the sentence before it, unless that sentence ends with its own period or question mark.
+- At most 5 items in any list, in every section: requirements, bug steps, Known, Unknown, Assumed, Notes, Not included and questions.
 - No em dashes.
-- Spell out each acronym the first time.
+- Spell out each acronym the first time. Write it as "the full name (ABC)". These need no spelling out: API, UI, URL, ID, PDF, CSV.
+- Never use these phrases: "leverage", "seamless", "robust", "utilize", "in order to", "synergy", "best-in-class", "world-class", "cutting-edge", "going forward", "at the end of the day", "circle back", "low-hanging fruit", "paradigm", "holistic", "deep dive", "empower", "value-add".
 - Plain words an intern and an executive both understand.
 
 ## Sources and gaps
@@ -42,7 +44,7 @@ User stories, job stories and bugs use these sections, as their templates show. 
 
 ## Questions, estimate and confidence
 - End the story with one line, `Before release:`, then only the actions specific to this story, such as telling support about a named change, at most three, separated by semicolons. Leave out items that apply to every story, like testing in staging. If nothing specific applies, write `None.`
-- At most five items in any list. Each question is one item with one question mark. Questions that would stop the build come first. If more than five would, end the list with exactly `More open questions than fit here. Consider a spike first.`, put each build-blocking question that didn't fit under Unknown, one line each, and don't rate confidence High. Never use that line as a default.
+- Each question is one item with one question mark. Questions that would stop the build come first. If there are more of those than fit, end the list with exactly `More open questions than fit here. Consider a spike first.`, put each build-blocking question that didn't fit under Unknown, one line each, and don't rate confidence High. Never use that line as a default.
 - The estimate's basis cites only the input or the context files. If there is none, say so, widen the range and don't rate confidence High.
 - The Basis line always says whether each team estimating rule is included, in one short phrase, such as "Stockroom 50% not included, since Stockroom is assumed unchanged."
 - If the input doesn't say what should happen in a case, the requirement or THEN line says so and asks the user to confirm. Never invent expected behavior.

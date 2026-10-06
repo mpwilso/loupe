@@ -3,7 +3,7 @@
 // A team's own templates live in a templates folder next to its context folder, found from the story's path.
 // Usage: node src/check.ts [--templates <folder>] path/to/story.md ...
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { escapeRegExp, fill, format, frontMatter, loadSpec, runCli, type Problem } from './spec.ts';
@@ -140,8 +140,9 @@ export function loadTemplates(folder: string): Template[] {
 }
 
 // Walks up from the story to the nearest folder holding a context folder, and returns its templates folder if there is one.
+// The path is made absolute first, so a story named from inside its team folder still finds the folders above it.
 export function findTeamTemplates(storyPath: string): string | undefined {
-  for (let dir = dirname(storyPath); ; dir = dirname(dir)) {
+  for (let dir = dirname(resolve(storyPath)); ; dir = dirname(dir)) {
     if (existsSync(join(dir, 'context'))) {
       const folder = join(dir, 'templates');
       return existsSync(folder) ? folder : undefined;
@@ -459,7 +460,7 @@ function checkLiveSources(lines: string[]): Problem[] {
   const pattern = new RegExp(fill(rule.pattern, { key: rule.key }));
   return lines.flatMap((text, i) => {
     const line = i + 1;
-    const sources = (text.match(/\(([^()]+)\)$/)?.[1].split('; ') ?? []).flatMap((source) => {
+    const sources = (text.trimEnd().match(/\(([^()]+)\)$/)?.[1].split('; ') ?? []).flatMap((source) => {
       const key = detect.exec(source)?.[1];
       return key ? [{ source, key }] : [];
     });

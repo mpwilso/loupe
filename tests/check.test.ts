@@ -4,6 +4,7 @@ import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { builtInFolder, check, findTeamTemplates, loadTemplates } from '../src/check.ts';
 import { format } from '../src/spec.ts';
 import { minimum, tooOld } from '../src/node-version.js';
@@ -203,10 +204,18 @@ test('the built-in templates come from the files in templates/', () => {
 
 test('a story finds its team templates next to the context folder, with no flag', () => {
   const story = 'examples/pellwick/expected/holiday-cutoff.md';
-  assert.equal(findTeamTemplates(story), join('examples', 'pellwick', 'templates'));
+  assert.equal(findTeamTemplates(story), join(fileURLToPath(root), 'examples', 'pellwick', 'templates'));
   const pass = cli(story);
   assert.equal(pass.status, 0);
   assert.equal(pass.stdout, checked);
+});
+
+// A relative path stopped at the working folder, so a story checked from inside its team folder lost its templates.
+test('a story named from inside its team folder still finds the team templates above it', () => {
+  const expected = new URL('../examples/pellwick/expected/', import.meta.url);
+  const pass = spawnSync(process.execPath, [fileURLToPath(new URL('../src/check.ts', import.meta.url)), 'holiday-cutoff.md'], { cwd: expected, encoding: 'utf8' });
+  assert.equal(pass.stdout, checked);
+  assert.equal(pass.status, 0);
 });
 
 test('--templates overrides the team folder it would have found', () => {
@@ -323,6 +332,7 @@ test('a live source names the record and a real read time; other sources are unc
   assert.deepEqual(problems(known('(Jira SUBS-134, read 2026-10-02 25:00)')), ['line 17: The read time in this source must be a real date and time, like "read 2026-10-02 14:05".']);
   assert.deepEqual(problems(known('(Dana, meeting 2026-09-22; Jira SUBS-101)')), ['line 17: This source names a tracker record but not when it was read. Write it as "(Jira SUBS-142, read 2026-10-02 14:05)".']);
   assert.deepEqual(problems(known('(Maya, Helpline ticket 48213)')), [], 'a ticket number with no tracker key is not a live source');
+  assert.deepEqual(problems(known('(Jira SUBS-134, read 2026-10-02 14:05) ')), [], 'a trailing space hides no source; the shape check ignores it too');
   // A tracker key is a name, not an acronym to spell out; the same letters alone still are.
   const story = fixture('good-story.md');
   assert.deepEqual(problems(story.replace('Nothing needed.', 'Nothing needed, see SUBS-134. (Jira SUBS-134, read 2026-10-02 14:05)')), []);

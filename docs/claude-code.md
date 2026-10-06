@@ -76,7 +76,11 @@ Loupe can then edit inside `loupe/` and run its checker without asking, and Clau
 
 Keep the leading slash in `Edit(/loupe/**)`. In a settings file, it anchors the rule at your repository's root, so it still matches after Claude changes directory. Without it, `loupe/**` is relative to the current directory: after a `cd` into `loupe/`, it points at `loupe/loupe/`, and every save asks you first. Earlier versions of this guide had that rule.
 
-Claude Code ignores allow rules in a repository's `.claude/settings.json` until you trust that folder: start Claude Code there once and accept its trust prompt. Until then, it asks before every edit. To use these rules only for yourself, put the same block in `.claude/settings.local.json` instead: it needs no trust prompt as long as git doesn't track it.
+With a personal install, the skill's files sit outside your repository, and Loupe reads them with the Read tool, never with `cat` or `ls`. Add `Read(~/.claude/skills/loupe/**)` to the allow list so it can, without asking each time. `~/` means your home folder. For an absolute path, start with two slashes, like `Read(//opt/skills/loupe/**)`: one slash means the repository's root.
+
+Without a `loupe/` folder, Loupe works as in claude.ai: it saves `response.md`, and any team template it checks in `team-templates/`, in the folder you started Claude Code in. `Edit(/loupe/**)` doesn't cover them, so it asks first. To allow them too, add `Edit(/response.md)` and `Edit(/team-templates/**)`.
+
+Claude Code ignores allow rules in a repository's `.claude/settings.json` until you trust that folder: start Claude Code there once and accept its trust prompt. Until then, it asks before every edit. To use these rules only for yourself, put the same block in `.claude/settings.local.json` instead. In an interactive session, it waits for the same trust prompt. A headless run (`claude -p`) never shows the prompt and ignores the rules in `.claude/settings.json`, but uses the ones in `.claude/settings.local.json` as long as git doesn't track it.
 
 ## If you also use Loupe in claude.ai
 
