@@ -25,7 +25,7 @@ export type Field = { line: number; value: string; items: string[] };
 // Returns the index of the closing "---", or -1 when there is no front matter.
 export function frontMatter(lines: string[]): { end: number; fields: Map<string, Field> } {
   const fields = new Map<string, Field>();
-  const end = lines[0]?.trim() === '---' ? lines.indexOf('---', 1) : -1;
+  const end = lines[0]?.trim() === '---' ? lines.findIndex((line, i) => i > 0 && line.trim() === '---') : -1;
   let last: Field | undefined;
   for (let i = 1; i < end; i++) {
     const item = /^\s+-\s+(.*\S)/.exec(lines[i]);

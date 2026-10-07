@@ -140,15 +140,24 @@ export function loadTemplates(folder: string): Template[] {
 }
 
 // Walks up from the story to the nearest folder holding a context folder, and returns its templates folder if there is one.
-// The path is made absolute first, so a story named from inside its team folder still finds the folders above it.
+// The path is made absolute first, so a story named from inside its team folder still finds the folders above it. It
+// stops at the repository's root, the folder holding .git; outside a repository it looks only in the story's folder and
+// the one above, so an unrelated context folder higher up is never taken for the team's.
 export function findTeamTemplates(storyPath: string): string | undefined {
-  for (let dir = dirname(resolve(storyPath)); ; dir = dirname(dir)) {
+  const start = dirname(resolve(storyPath));
+  const dirs: string[] = [];
+  for (let dir = start; ; dir = dirname(dir)) {
+    dirs.push(dir);
+    if (existsSync(join(dir, '.git')) || dirname(dir) === dir) break;
+  }
+  const inRepo = existsSync(join(dirs.at(-1) as string, '.git'));
+  for (const dir of inRepo ? dirs : dirs.slice(0, 2)) {
     if (existsSync(join(dir, 'context'))) {
       const folder = join(dir, 'templates');
       return existsSync(folder) ? folder : undefined;
     }
-    if (dirname(dir) === dir) return undefined;
   }
+  return undefined;
 }
 
 export const builtInFolder = fileURLToPath(new URL(`../${specs.story.templates.folder}/`, import.meta.url));
@@ -341,6 +350,9 @@ function checkSection(section: Section, headingLine: number, body: Entry[], temp
   }
 }
 
+// A title or a short form like "Dr." or "e.g." ends in a period without ending the sentence.
+const withoutTitles = (text: string) => text.replace(/\b(Dr|Mr|Mrs|Ms|Mx|Prof|St|Jr|Sr|vs|e\.g|i\.e)\./g, '$1');
+
 // Plain sentences, one per line, each ending with its source, like Known lines. Example may say it has none instead.
 function checkSourced(section: Section, body: Entry[], add: Add): void {
   const none = body.find((entry) => entry.text === section.noneText);
@@ -350,7 +362,7 @@ function checkSourced(section: Section, body: Entry[], add: Add): void {
   }
   for (const entry of body) {
     if (!new RegExp(section.itemPattern ?? '').test(entry.text)) add(entry.line, section.itemMessage);
-    else if (/[.!?]\s+[A-Z]/.test(entry.text.replace(/\s*\([^()]+\)$/, ''))) add(entry.line, fill(M.oneSentence, { name: section.name }));
+    else if (/[.!?]\s+[A-Z]/.test(withoutTitles(entry.text.replace(/\s*\([^()]+\)$/, '')))) add(entry.line, fill(M.oneSentence, { name: section.name }));
   }
 }
 
