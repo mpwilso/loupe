@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { builtInFolder, check, findTeamTemplates, loadTemplates } from '../src/check.ts';
-import { format } from '../src/spec.ts';
+import { format, frontMatter } from '../src/spec.ts';
 import { minimum, tooOld } from '../src/node-version.js';
 import { emDash, fixture } from './cases.ts';
 
@@ -349,4 +349,44 @@ test('a tracker key anywhere in a story needs a live source for that key on its 
   assert.deepEqual(problems(story.replace('Nothing needed.', 'See SUBS-134 and SUBS-101. (Jira SUBS-134, read 2026-10-02 14:05)')), [`line 28: ${noSource('SUBS-101')}`], 'each key needs its own source');
   assert.deepEqual(problems(story.replace('based on the checks above.', 'as SUBS-142 shows.')), [`line 2: ${noSource('SUBS-142')}`], 'the summary too');
   assert.deepEqual(problems(story.replace('Nothing needed.', 'Nothing needed. (Jira SUBS-134)')), ['line 28: This source names a tracker record but not when it was read. Write it as "(Jira SUBS-142, read 2026-10-02 14:05)".'], 'one message for a key in a source with no read time');
+});
+
+test('a closing front matter line with a trailing space still closes it', () => {
+  assert.equal(frontMatter(['---', 'name: x', '--- ', '# Body']).end, 2);
+  assert.equal(frontMatter(['---', 'name: x', '---\t', '# Body']).end, 2);
+});
+
+// The search climbed every folder up to the disk's root, so an unrelated context/ folder anywhere above could be taken.
+test('the team folder search stops at the repository root, or a folder above the story outside one', () => {
+  const tmp = mkdtempSync(join(tmpdir(), 'loupe-'));
+  const team = (dir: string) => {
+    mkdirSync(join(dir, 'context'), { recursive: true });
+    mkdirSync(join(dir, 'templates'), { recursive: true });
+  };
+  const story = (...parts: string[]) => {
+    mkdirSync(join(tmp, ...parts.slice(0, -1)), { recursive: true });
+    writeFileSync(join(tmp, ...parts), '# x\n');
+    return join(tmp, ...parts);
+  };
+  try {
+    team(tmp); // unrelated, above everything below
+    mkdirSync(join(tmp, 'repo', '.git'), { recursive: true });
+    assert.equal(findTeamTemplates(story('repo', 'notes', 'x.md')), undefined);
+    team(join(tmp, 'repo', 'loupe'));
+    assert.equal(findTeamTemplates(story('repo', 'loupe', 'stories', 'x.md')), join(tmp, 'repo', 'loupe', 'templates'));
+    assert.equal(findTeamTemplates(story('loose', 'a', 'b', 'x.md')), undefined);
+    team(join(tmp, 'loose', 'a'));
+    assert.equal(findTeamTemplates(story('loose', 'a', 'b', 'y.md')), join(tmp, 'loose', 'a', 'templates'));
+  } finally {
+    rmSync(tmp, { recursive: true });
+  }
+});
+
+test('a title like Dr. or Mr. in a Background line is not a second sentence', () => {
+  const text = readFileSync(new URL('../examples/pellwick/expected/skip-a-box.md', import.meta.url), 'utf8');
+  const line = 'Customers who cancel to avoid a box are lost about half the time. (Dana, meeting 2026-09-22)';
+  const second = 'Put each sentence of Background on its own line';
+  const with_ = (replacement: string) => check(text.replace(line, replacement)).errors.map(format).join('\n');
+  assert.ok(!with_('Dr. Patel and Mr. Reyes asked for it, e.g. Monday skips. (Dana, meeting 2026-09-22)').includes(second));
+  assert.ok(with_('Skips are common. Customers ask for them. (Dana, meeting 2026-09-22)').includes(second));
 });
