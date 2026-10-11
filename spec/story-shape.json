@@ -28,6 +28,7 @@
   },
   "liveSource": {
     "key": "[A-Z][A-Z0-9]+-\\d+",
+    "notKeys": ["AES", "COVID", "CVE", "ECMA", "ES", "HTTP", "IEC", "IEEE", "IPV", "ISO", "MD", "MP3", "MPEG", "RFC", "SHA", "SSL", "TLS", "UTF"],
     "detect": "^[A-Z][A-Za-z]* ({key})\\b",
     "pattern": "^[A-Z][A-Za-z]* ({key}), read (\\d{4}-\\d{2}-\\d{2}) ([01]\\d|2[0-3]):[0-5]\\d$",
     "noSourceMessage": "{key} is a tracker record, so this line must end with its live source, like \"(Jira {key}, read 2026-10-02 14:05)\".",
