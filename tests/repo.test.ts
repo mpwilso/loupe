@@ -154,6 +154,18 @@ test('every CI action is pinned to a commit, and the trial kit stays blind', () 
   for (const [, input] of plan.matchAll(/`inputs\/([\w.-]+\.md)`/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
 });
 
+// A same-repo pull request already gets a push run, so the tests run on a pull request only from a fork.
+// The trial kit is for the hand trial, so it builds on master and on demand, not on every branch.
+test('CI runs once per change, builds the trial kit only on master or on demand, and Dependabot watches the actions', () => {
+  const workflow = read('.github/workflows/tests.yml');
+  assert.match(workflow, /^on:\n  push:\n    branches: \['\*\*'\]\n  pull_request:\n  workflow_dispatch:\n/m);
+  assert.ok(workflow.includes("concurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}\n"));
+  const [, test, kit] = workflow.split(/^  (?:test|trial-kit):\n/m);
+  assert.ok(test.includes("    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository\n"), test);
+  assert.ok(kit.includes("    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'workflow_dispatch'\n"), kit);
+  assert.match(read('.github/dependabot.yml'), /package-ecosystem: github-actions\n[\s\S]*interval: monthly\n[\s\S]*default-days: 7\n/);
+});
+
 // Trial 3: the skill did not start in 1 of 6 runs. The project instructions name it first, and the trial counts a run without it.
 const projectLine = 'For any story, bug report, ticket or change request, use the loupe skill.';
 
