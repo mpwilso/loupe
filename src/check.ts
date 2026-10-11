@@ -98,6 +98,8 @@ export function setSpecs(next: Specs): void {
   M = story.messages;
   listItem = new RegExp(story.listItem);
 }
+// The story shape in use, swapped rules included, for the other checkers that share it.
+export const storyShape = (): StoryShape => story;
 setSpecs(specs);
 
 // Reads a template file's front matter. A template is its name plus the patterns its story lines must match.

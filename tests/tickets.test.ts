@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fixture, tickets } from './cases.ts';
+import { fixture, ticketStories, tickets } from './cases.ts';
+import { setSpecs, specs } from '../src/check.ts';
+import { checkTickets } from '../src/check-tickets.ts';
 import { format } from '../src/spec.ts';
 
 // M4c: loupe/tickets.md lists each ticket Loupe created, with the story it came from and when.
@@ -22,3 +24,18 @@ const BAD: Record<string, string> = {
 for (const [name, message] of Object.entries(BAD)) {
   test(`bad/tickets/${name}.md fails with one plain message`, () => assert.deepEqual(problems(`bad/tickets/${name}.md`), [message]));
 }
+
+// The finished-story call is spec/story-shape.json's, not a second copy in the ticket checker.
+test('a finished story is one whose first line is the spec\'s "Story written" call', () => {
+  const story = specs.story;
+  const call = `Call: ${story.summary.calls.story}`;
+  const renamed = { ...story, summary: { ...story.summary, calls: { ...story.summary.calls, story: 'Story finished' } } };
+  const stories = new Map([...ticketStories()].map(([file, text]) => [file, text.replace(call, 'Call: Story finished')]));
+  setSpecs({ ...specs, story: renamed });
+  try {
+    assert.deepEqual(checkTickets(fixture('good-tickets.md'), stories).errors.map(format), []);
+    assert.equal(checkTickets(fixture('good-tickets.md'), ticketStories()).errors.length, 2, 'the old call no longer counts');
+  } finally {
+    setSpecs({ ...specs, story });
+  }
+});
