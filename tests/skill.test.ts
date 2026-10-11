@@ -49,6 +49,7 @@ const sources: Record<string, string> = {
   'examples/story.md': 'examples/pellwick/expected/skip-a-box.md',
   'examples/not-ready.md': 'examples/pellwick/expected/export-notes.md',
   'examples/context-file.md': 'examples/pellwick/context/applications.md',
+  LICENSE: 'LICENSE',
 };
 
 test('the zip has one root folder named after the skill, holding exactly the expected files', () => {
@@ -87,7 +88,10 @@ test('SKILL.md front matter follows the documented rules', () => {
   assert.ok(end > 0, 'SKILL.md must start with front matter');
   const name = fields.get('name')?.value ?? '';
   const description = fields.get('description')?.value ?? '';
-  assert.deepEqual([...fields.keys()], ['name', 'description']);
+  // license is optional in the Agent Skills spec, and Anthropic's own uploadable skills carry it. compatibility is
+  // left out: claude.ai's upload rejects fields it doesn't know, and no upload has tried that one.
+  assert.deepEqual([...fields.keys()], ['name', 'description', 'license']);
+  assert.equal(fields.get('license')?.value, JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).license, 'license: the one in package.json and LICENSE');
 
   assert.match(name, /^[a-z0-9-]{1,64}$/, 'name: at most 64 lowercase letters, numbers and hyphens');
   assert.doesNotMatch(name, /anthropic|claude/, 'name: no reserved words');

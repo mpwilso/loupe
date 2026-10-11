@@ -23,6 +23,7 @@ export function skillFiles(): Record<string, string> {
     'examples/story.md': 'examples/pellwick/expected/skip-a-box.md',
     'examples/not-ready.md': 'examples/pellwick/expected/export-notes.md',
     'examples/context-file.md': 'examples/pellwick/context/applications.md',
+    LICENSE: 'LICENSE',
   };
 }
 

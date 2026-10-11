@@ -330,10 +330,13 @@ test('the docs describe the learning loop as it works, including the manual swap
   assert.match(learns, /nothing without (a|the user's) yes/);
   assert.match(learns, /replaces learned\.md in the project's files/);
   assert.match(direction, /planned \(M5\)/);
-  // M4a built Claude Code support; live context is what's still planned.
+  // M4a built Claude Code support, M4b tracker reads (trial 8) and M4c ticket creation (trial 9); checks against
+  // lower environments are what's still planned.
   assert.doesNotMatch(direction, /A VS Code version is planned|In VS Code \(later\)/);
   assert.match(direction, /^M4a Claude Code/m);
-  assert.match(direction, /^M4b Live context: read-only checks against lower environments, and Jira, with approval\.$/m);
+  assert.match(direction, /^M4b Live context: reading the team's tracker before writing, tested on a mock tracker in trial 8\. Read-only checks against lower environments are planned\.$/m);
+  assert.match(direction, /^M4c Tickets: creating a ticket from a finished story, only after the user's yes, tested on a mock tracker in trial 9\.$/m);
+  assert.doesNotMatch(direction, /Planned for Claude Code \(M4b\)/);
   assert.match(direction, /the VS Code extension is untested/);
   const guide = read('docs/claude-project.md');
   const section = guide.split('## Keeping Loupe up to date\n')[1]?.split('\n## ')[0] ?? '';
