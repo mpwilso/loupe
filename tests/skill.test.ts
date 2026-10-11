@@ -342,11 +342,12 @@ test("the checklist names the checker's hard limits, and they match spec/", () =
   assert.match(first, /source in parentheses counts as part of the sentence before it/);
   assert.equal(first.match(/^- At most (\d+) items in any list/m)?.[1], String(shape.maxListItems));
   const quoted = [...line('Never use').matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(quoted.sort(), [...plain.bannedPhrases.list].sort(), 'every banned phrase, and no others');
+  // The same list in the same order, so a phrase added or moved in one copy shows up in the other.
+  assert.deepEqual(quoted, plain.bannedPhrases.list, 'every banned phrase, in the spec\'s order, and no others');
   // The scenario keywords, like WHEN, are allowed so scenarios pass; the writer needs only the real acronyms.
   const keywords = new Set(JSON.stringify(shape.sections.find((s: { kind: string }) => s.kind === 'scenarios').scenarios).match(/[A-Z]{2,}/g));
   const named = line('Spell out').split('need no spelling out:')[1]?.match(/[A-Z]{2,}/g) ?? [];
-  assert.deepEqual(named.sort(), plain.acronyms.allow.filter((a: string) => !keywords.has(a)).sort());
+  assert.deepEqual(named, plain.acronyms.allow.filter((a: string) => !keywords.has(a)), 'every allowed acronym, in the spec\'s order');
 });
 
 test('every list in a built-in template starts with its limit, from spec/', () => {
