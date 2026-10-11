@@ -62,6 +62,28 @@ test('text that only looks a little like a key passes', () => {
   }
 });
 
+// A rule about passwords is a fact a team needs; a password is not. The value after the colon tells them apart.
+test('a requirement about passwords or tokens passes, and a value that looks like one fails', () => {
+  for (const line of [
+    'Password: at least 12 characters, with one number.',
+    'Password: 12 characters at least.',
+    'Token: expires after 30 days.',
+    'Secret: none are kept in this file.',
+    'Passwords must have at least 12 characters.',
+  ]) {
+    assert.deepEqual(checkContext(withLine(line), today).errors, [], line);
+  }
+  for (const [what, line] of [
+    ['a password', 'The staging password: Summer2026 for now.'],
+    ['a password', "The staging password: 'letmein' for now."],
+    ['a password', 'Use pwd=letmein on staging.'],
+    ['a secret or token', 'Ask Sam for the token: abc123 if you need it.'],
+    ['a secret or token', 'The api_key: "staging" works too.'],
+  ]) {
+    assert.deepEqual(checkContext(withLine(line), today).errors.map(format), [secret(what)], line);
+  }
+});
+
 test('every bullet in a context file ends with its own source', () => {
   const text = `${fixture('good-context.md')}- Stockroom is the staff tool. (Interview with the engineering lead, 2026-09-01)\n1. Skips come first. (planning email, 2026-09-18)\n`;
   assert.deepEqual(checkContext(text, today).errors, []);
