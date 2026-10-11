@@ -141,16 +141,19 @@ test('every CI action is pinned to a commit, and the trial kit stays blind', () 
   // The kit is one folder, built by a script, so its files sit at its root: context/, inputs/ and so on.
   assert.ok(workflow.includes('- run: scripts/build-trial-kit.sh\n'), 'CI builds the kit with the script');
   assert.match(workflow, /name: pellwick-trial-kit\n\s+path: build\/pellwick-trial-kit\/\n/);
+  // The kit holds the current trial plan: the one with the highest number, so trial 10 comes after trial 9.
+  const plans = readdirSync(join(root, 'docs/trials')).filter((f) => /^trial-\d+-plan\.md$/.test(f));
+  const newestPlan = plans.sort((a, b) => Number(a.match(/\d+/)![0]) - Number(b.match(/\d+/)![0])).at(-1)!;
   const out = mkdtempSync(join(tmpdir(), 'loupe-kit-'));
   try {
     execFileSync('bash', ['scripts/build-trial-kit.sh', join(out, 'kit')], { cwd: root });
-    assert.deepEqual(readdirSync(join(out, 'kit')).sort(), ['context', 'inputs', 'raw', 'templates', 'trial-6-plan.md']);
+    assert.deepEqual(readdirSync(join(out, 'kit')).sort(), ['context', 'inputs', 'raw', 'templates', newestPlan]);
     assert.ok(!existsSync(join(out, 'kit', 'expected')), 'no expected stories');
   } finally {
     rmSync(out, { recursive: true });
   }
-  // The trial 6 plan's inputs are in the kit's inputs/ folder.
-  const plan = read('docs/trials/trial-6-plan.md');
+  // The plan's inputs are in the kit's inputs/ folder.
+  const plan = read(`docs/trials/${newestPlan}`);
   for (const [, input] of plan.matchAll(/`inputs\/([\w.-]+\.md)`/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
 });
 
