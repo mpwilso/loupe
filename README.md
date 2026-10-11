@@ -215,6 +215,8 @@ git clone https://github.com/mpwilso/loupe.git
 cd loupe
 node scripts/install-claude-code.ts
 ```
+Or, with no clone, run `/plugin marketplace add mpwilso/loupe` and then `/plugin install loupe@loupe` in Claude Code.
+It installs the latest release; no trial has used the plugin yet.
 
 Then keep your team's context in a `loupe/` folder in your repository. The full steps are in [docs/claude-code.md](docs/claude-code.md). The terminal is tested; the VS Code extension isn't yet.
 To search your tracker before writing, and to create tickets from finished stories, see [docs/live-context.md](docs/live-context.md).

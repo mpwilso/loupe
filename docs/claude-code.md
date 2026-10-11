@@ -22,6 +22,17 @@ node scripts/install-claude-code.ts --project path/to/your/repo
 
 That puts it in `.claude/skills/loupe` in that repository; commit that folder. Run the installer again to update Loupe. It refuses to overwrite a different skill that is also named loupe, and says what to do.
 
+### Or install it as a plugin, with no clone
+
+In Claude Code 2.1.224 or newer, run:
+
+```
+/plugin marketplace add mpwilso/loupe
+/plugin install loupe@loupe
+```
+
+That installs the latest release, the same files as the claude.ai zip. To update, run `claude plugin update loupe@loupe`. The checker then sits in `~/.claude/plugins/cache/loupe/loupe/` under a folder named for the version, so in the permissions below, use `Bash(node */.claude/plugins/cache/loupe/*/src/run.js *)` and `Read(~/.claude/plugins/cache/loupe/**)`. Use the plugin or the installer, not both, or Loupe loads twice. No trial has used the plugin yet.
+
 ## 2. Create the team folder
 
 Start Claude Code at the root of your repository, then either:

@@ -1,0 +1,19 @@
+{
+  "name": "loupe",
+  "owner": { "name": "Matt Wilson", "url": "https://github.com/mpwilso" },
+  "description": "Loupe, a Claude skill that writes stories a developer can build without a second meeting.",
+  "plugins": [
+    {
+      "name": "loupe",
+      "description": "Writes user stories with acceptance criteria, bug reports, Jira tickets and change requests from meeting notes or emails. Use when a product manager sets up a team or needs a story. Not for fiction.",
+      "source": {
+        "source": "archive",
+        "url": "https://github.com/mpwilso/loupe/releases/latest/download/loupe-skill.zip"
+      },
+      "homepage": "https://github.com/mpwilso/loupe",
+      "repository": "https://github.com/mpwilso/loupe",
+      "license": "MIT",
+      "keywords": ["user stories", "product management", "jira"]
+    }
+  ]
+}
