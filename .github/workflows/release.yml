@@ -19,6 +19,9 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
+      - name: The tag matches package.json
+        run: |
+          [ "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME" ] || { echo "::error::Tag $GITHUB_REF_NAME doesn't match the version in package.json."; exit 1; }
       - run: npm ci
       - run: scripts/test.sh
 

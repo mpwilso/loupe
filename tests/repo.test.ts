@@ -226,6 +226,9 @@ test('a tag starting with "v" tests, builds and releases the skill zip, with eve
   assert.match(workflow, /uses: softprops\/action-gh-release@[0-9a-f]{40} # v\d/);
   assert.match(workflow, /files: dist\/loupe-skill\.zip\n/);
   assert.match(workflow, /fail_on_unmatched_files: true\n/);
+  // A tag that doesn't match package.json's version stops before the tests, so v0.6.1 can't ship as 0.6.0.
+  const steps = tests.split('\n      - ').slice(1);
+  assert.match(steps[2] ?? '', /^name: The tag matches package\.json\n\s+run: \|\n\s+\[ "v\$\(node -p "require\('\.\/package\.json'\)\.version"\)" = "\$GITHUB_REF_NAME" \]/, steps[2]);
   for (const file of readdirSync(join(root, '.github/workflows'))) {
     for (const [, action] of read(`.github/workflows/${file}`).matchAll(/uses: (\S+)/g)) assert.match(action, /@[0-9a-f]{40}$/, `${file}: ${action}`);
   }
