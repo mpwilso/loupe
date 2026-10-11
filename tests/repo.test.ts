@@ -514,3 +514,8 @@ test('the trial 10 plan holds the 10c bar and its decision rule, set before the 
   assert.ok(rerun.includes("- Example, Background and every other line of trial 10b's bar still hold\n"));
   assert.match(rerun, /4 of 4 means it ships as v0\.6\.0\. Anything less goes back to Matt before another round\./);
 });
+
+test('package.json names the license that LICENSE holds', () => {
+  assert.match(read('LICENSE'), /^MIT License\n/);
+  assert.equal(JSON.parse(read('package.json')).license, 'MIT');
+});
