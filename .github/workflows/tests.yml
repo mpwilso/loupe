@@ -41,6 +41,37 @@ jobs:
           name: test-output-${{ matrix.node }}
           path: test-output.txt
 
+  # The Agent Skills reference validator, skills-ref, on the built skill folder. It runs from a fixed commit of
+  # agentskills/agentskills, with only the dependency versions its lockfile pins, so nothing is built or floats.
+  skills-ref:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: agentskills/agentskills
+          ref: 69ef37e9424c0a7ea9dd2293b559e43ec8176379
+          path: agentskills
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12.15'
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: '0.12.18'
+          enable-cache: false
+      - run: node scripts/skill-folder.ts dist/loupe
+      - run: uv sync --frozen --no-dev --no-install-project --project agentskills/skills-ref
+        env:
+          UV_PYTHON_DOWNLOADS: never
+      - run: PYTHONPATH=agentskills/skills-ref/src agentskills/skills-ref/.venv/bin/python -m skills_ref.cli validate dist/loupe
+
   # Files for the hand trial: the skill zip, and the Pellwick kit without the expected stories, so the trial stays blind.
   # Built on master and on demand, never for a pull request.
   trial-kit:

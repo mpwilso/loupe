@@ -157,6 +157,21 @@ test('every CI action is pinned to a commit, and the trial kit stays blind', () 
   for (const [, input] of plan.matchAll(/`inputs\/([\w.-]+\.md)`/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
 });
 
+// The Agent Skills reference validator checks the built folder, the one the zip and the plugin hold. It runs from
+// a fixed commit of agentskills/agentskills, with the dependency versions its lockfile pins, so nothing floats.
+test('CI runs the Agent Skills reference validator on the built skill folder, with every version pinned', () => {
+  const workflow = read('.github/workflows/tests.yml');
+  const job = workflow.split(/^  skills-ref:\n/m)[1]?.split(/^  \S/m)[0] ?? '';
+  assert.ok(job, 'a skills-ref job');
+  assert.ok(job.includes("    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository\n"), 'runs when the tests run');
+  assert.match(job, /repository: agentskills\/agentskills\n\s+ref: [0-9a-f]{40}\n\s+path: agentskills\n/);
+  assert.match(job, /python-version: '\d+\.\d+\.\d+'\n/);
+  assert.match(job, /version: '\d+\.\d+\.\d+'\n/);
+  assert.ok(job.includes('- run: node scripts/skill-folder.ts dist/loupe\n'), 'the folder is named after the skill, as the validator requires');
+  assert.ok(job.includes('uv sync --frozen --no-dev --no-install-project --project agentskills/skills-ref\n'), 'locked dependencies only');
+  assert.ok(job.includes('python -m skills_ref.cli validate dist/loupe\n'));
+});
+
 // A same-repo pull request already gets a push run, so the tests run on a pull request only from a fork.
 // The trial kit is for the hand trial, so it builds on master and on demand, not on every branch.
 test('CI runs once per change, builds the trial kit only on master or on demand, and Dependabot watches the actions', () => {
