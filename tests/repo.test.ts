@@ -81,7 +81,7 @@ test('the CI test step keeps pipefail when it pipes its output', () => {
   assert.ok(/^\s*shell: bash\s*$/m.test(text) || text.includes('set -o pipefail'), `The test step pipes its output but has no "shell: bash" or "set -o pipefail":\n${text}`);
 });
 
-// The README's proof strip is built from these tables, so their columns and rows must not drift.
+// The README's trial results are built from these tables, so their columns and rows must not drift.
 const tables = () => {
   const found: string[][] = [];
   let current: string[] | undefined;

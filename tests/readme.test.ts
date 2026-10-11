@@ -142,32 +142,25 @@ test('the story section shows real lines from the example, then the whole story,
   assert.ok(body.includes('<details>') && body.includes('```markdown\n' + story + '```\n'), 'the full story, word for word');
 });
 
-test('every proof line links its trial file, in plain words', () => {
-  const proof = section('Proof');
-  const items = proof.split('\n').filter((line) => line.startsWith('- '));
-  assert.ok(items.length > 0, 'proof lines');
-  for (const item of items) assert.match(item, /\]\(docs\/trials\/\d{4}-\d{2}-\d{2}-trial-\d\.md\)/, item);
-  // GitHub shows the trial 5 line as exactly this sentence, with "trial 5" as the link.
-  assert.ok(proof.includes('- In [trial 5](docs/trials/2026-09-30-trial-5.md), every cited source checked out: each known fact named the document that holds it.'));
-  assert.ok(proof.includes('- In trial 4, all 6 responses passed the checker before they were shown, including the one that refused thin input. A story takes about one to three minutes. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))'));
-  assert.ok(proof.includes('From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).'));
-  // The tracker evidence, with the totals in the trial 8 and 9 records.
-  assert.ok(proof.includes('- Every tracker call in trials 8 to 8e was a read, 77 in all, and customer data surfaced 0 times. ([trial 8](docs/trials/2026-09-30-trial-8.md))'));
-  assert.match(readFileSync(join(root, 'docs/trials/2026-09-30-trial-8.md'), 'utf8'), /\| Tracker calls \| 77, all reads \|/);
-  assert.ok(proof.includes('- Every ticket created in trial 9 matched its story byte for byte, compared by script, and nothing was created without a yes. ([trial 9](docs/trials/2026-10-01-trial-9.md))'));
-});
-
-test('what the trials changed: each bullet links the trials it came from, with the numbers they recorded', () => {
-  const items = section('What the trials changed').split('\n').filter((line) => line.startsWith('- '));
+// The proof and what each trial changed, in one list: each claim once, with the trial records it came from.
+test('what the trials found: each bullet links the trials it came from, with the numbers they recorded', () => {
+  const body = section('What the trials found');
+  const items = body.split('\n').filter((line) => line.startsWith('- '));
   assert.ok(items.length > 0, 'bullets');
   const has = (...parts: string[]) => assert.ok(items.some((item) => parts.every((part) => item.includes(part))), parts.join(' ... '));
-  has('a usable estimate on 1 of 4 stories, against Loupe\'s 4 of 4', '(docs/trials/2026-09-30-trial-2.md)');
+  has('a usable estimate on 1 of 4 stories, against Loupe\'s 4 of 4', 'the same format every time', '(docs/trials/2026-09-30-trial-2.md)');
   has('9 guessed behaviors', 'trial 3 had 0', '(docs/trials/2026-09-30-trial-3.md)');
-  has('1 of 6 runs', 'all 6 runs in trial 4', '(docs/trials/2026-09-30-trial-4.md)');
+  has('1 of 6 runs', 'all 6 runs in trial 4 used Loupe and passed the checker before they were shown, the refusal of thin input included, at about one to three minutes a story.', '[trial 5](docs/trials/2026-09-30-trial-5.md)');
+  has('in trial 5 every citation checked out: each known fact named the document that holds it.', '[trial 5](docs/trials/2026-09-30-trial-5.md)');
   has('trial 6b passed every step it reran', '(docs/trials/2026-09-30-trial-6b.md)');
   has('In trial 7, Loupe tried shell commands outside its rules, including a python edit, and permissions blocked them.', "Files mode now writes with Claude Code's file tools, never with shell commands");
   has('the checker now needs a live source for a ticket anywhere in a story', '"always run the checker"', 'for v0.3.0 users too');
+  // The tracker evidence, with the totals in the trial 8 and 9 records.
+  has('Every tracker call in trials 8 to 8e was a read, 77 in all, and customer data surfaced 0 times.', '[trial 8](docs/trials/2026-09-30-trial-8.md)');
+  assert.match(readFileSync(join(root, 'docs/trials/2026-09-30-trial-8.md'), 'utf8'), /\| Tracker calls \| 77, all reads \|/);
+  has('Every ticket created in trial 9 matched its story byte for byte, compared by script, and nothing was created without a yes.', '[trial 9](docs/trials/2026-10-01-trial-9.md)');
   has('an unsettled behavior becomes a whole "To confirm" requirement; in 10c, all four address-change stories passed');
+  assert.ok(body.includes('From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).'));
   for (const item of items) {
     const trials = [...item.matchAll(/\]\((docs\/trials\/[\w.-]+\.md)\)/g)].map((m) => m[1]);
     assert.ok(trials.length >= 1, `a trial record: ${item}`);
