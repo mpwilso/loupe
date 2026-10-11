@@ -535,6 +535,10 @@ test('the tracker steps: search first, read at most 5, cite with a live source, 
   assert.ok(text.includes("If you read an issue and it's relevant to the story, cite at least one fact from it as a Known line with its live source"));
   assert.ok(text.includes("If an issue turns out not to be relevant, don't mention it."));
   assert.match(text, /Any line that names an issue, in any section, ends with that issue's live source/);
+  // The checker skips standard names, from spec/, so the examples here must be on that list.
+  const notKeys = JSON.parse(file('spec/story-shape.json')).liveSource.notKeys;
+  const standards = text.match(/Standard names like (.+) are not issue keys\./)?.[1].match(/[A-Z0-9]+(?=-\d)/g) ?? [];
+  assert.ok(standards.length > 0 && standards.every((s) => notKeys.includes(s)), standards.join(', '));
   // Trial 8d: A-2 cited three issues correctly, but only in questions and "Before release:", never as Known.
   assert.ok(text.includes('When a relevant issue settles a fact the story relies on, put that fact on a Known line with the live source. Use questions only for what the issue leaves open.'));
   assert.match(text, /never mention a tracker, Jira or issue search in the reply or the story/);

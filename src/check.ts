@@ -53,7 +53,7 @@ type StoryShape = Shape & {
   unchecked: { pattern: string; message?: string };
   failed: { pattern: string; message?: string };
   chatOnly: { pattern: string; message?: string };
-  liveSource: { key: string; detect: string; pattern: string; noSourceMessage?: string; noReadMessage?: string; badReadMessage?: string };
+  liveSource: { key: string; notKeys?: string[]; detect: string; pattern: string; noSourceMessage?: string; noReadMessage?: string; badReadMessage?: string };
   secrets: { message?: string };
   shapes: NamedShape[];
   summary: {
@@ -465,11 +465,12 @@ function checkLines(body: Entry[], rules: LineRule[], name: string, anchor: numb
 }
 
 // A tracker record, like SUBS-142, can be named anywhere in a story, but only on a line that ends with its live
-// source: the tracker, the record and when it was read, since tracker data changes.
+// source: the tracker, the record and when it was read, since tracker data changes. Standard names like UTF-8 aren't keys.
 function checkLiveSources(lines: string[]): Problem[] {
   const rule = story.liveSource;
-  const detect = new RegExp(fill(rule.detect, { key: rule.key }));
-  const pattern = new RegExp(fill(rule.pattern, { key: rule.key }));
+  const anyKey = rule.notKeys?.length ? `(?!(?:${rule.notKeys.map(escapeRegExp).join('|')})-)${rule.key}` : rule.key;
+  const detect = new RegExp(fill(rule.detect, { key: anyKey }));
+  const pattern = new RegExp(fill(rule.pattern, { key: anyKey }));
   return lines.flatMap((text, i) => {
     const line = i + 1;
     const sources = (text.trimEnd().match(/\(([^()]+)\)$/)?.[1].split('; ') ?? []).flatMap((source) => {
@@ -484,7 +485,7 @@ function checkLiveSources(lines: string[]): Problem[] {
       return real ? undefined : rule.badReadMessage;
     });
     const cited = new Set(sources.map((s) => s.key));
-    const named = new Set([...text.matchAll(new RegExp(`\\b(${rule.key})\\b`, 'g'))].map((m) => m[1]));
+    const named = new Set([...text.matchAll(new RegExp(`\\b(${anyKey})\\b`, 'g'))].map((m) => m[1]));
     for (const key of named) if (!cited.has(key)) problems.push(fill(rule.noSourceMessage, { key }));
     return problems.flatMap((message) => (message ? [{ line, text: message }] : []));
   });

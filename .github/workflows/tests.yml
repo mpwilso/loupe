@@ -4,12 +4,20 @@ on:
   push:
     branches: ['**']
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+# A newer push to the same branch cancels the older run, except on master.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 jobs:
   test:
+    # A same-repo pull request already gets a push run, so a pull request runs only from a fork.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -34,7 +42,9 @@ jobs:
           path: test-output.txt
 
   # Files for the hand trial: the skill zip, and the Pellwick kit without the expected stories, so the trial stays blind.
+  # Built on master and on demand, never for a pull request.
   trial-kit:
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

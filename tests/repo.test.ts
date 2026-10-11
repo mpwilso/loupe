@@ -154,6 +154,18 @@ test('every CI action is pinned to a commit, and the trial kit stays blind', () 
   for (const [, input] of plan.matchAll(/`inputs\/([\w.-]+\.md)`/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
 });
 
+// A same-repo pull request already gets a push run, so the tests run on a pull request only from a fork.
+// The trial kit is for the hand trial, so it builds on master and on demand, not on every branch.
+test('CI runs once per change, builds the trial kit only on master or on demand, and Dependabot watches the actions', () => {
+  const workflow = read('.github/workflows/tests.yml');
+  assert.match(workflow, /^on:\n  push:\n    branches: \['\*\*'\]\n  pull_request:\n  workflow_dispatch:\n/m);
+  assert.ok(workflow.includes("concurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}\n"));
+  const [, test, kit] = workflow.split(/^  (?:test|trial-kit):\n/m);
+  assert.ok(test.includes("    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository\n"), test);
+  assert.ok(kit.includes("    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'workflow_dispatch'\n"), kit);
+  assert.match(read('.github/dependabot.yml'), /package-ecosystem: github-actions\n[\s\S]*interval: monthly\n[\s\S]*default-days: 7\n/);
+});
+
 // Trial 3: the skill did not start in 1 of 6 runs. The project instructions name it first, and the trial counts a run without it.
 const projectLine = 'For any story, bug report, ticket or change request, use the loupe skill.';
 
@@ -214,6 +226,9 @@ test('a tag starting with "v" tests, builds and releases the skill zip, with eve
   assert.match(workflow, /uses: softprops\/action-gh-release@[0-9a-f]{40} # v\d/);
   assert.match(workflow, /files: dist\/loupe-skill\.zip\n/);
   assert.match(workflow, /fail_on_unmatched_files: true\n/);
+  // A tag that doesn't match package.json's version stops before the tests, so v0.6.1 can't ship as 0.6.0.
+  const steps = tests.split('\n      - ').slice(1);
+  assert.match(steps[2] ?? '', /^name: The tag matches package\.json\n\s+run: \|\n\s+\[ "v\$\(node -p "require\('\.\/package\.json'\)\.version"\)" = "\$GITHUB_REF_NAME" \]/, steps[2]);
   for (const file of readdirSync(join(root, '.github/workflows'))) {
     for (const [, action] of read(`.github/workflows/${file}`).matchAll(/uses: (\S+)/g)) assert.match(action, /@[0-9a-f]{40}$/, `${file}: ${action}`);
   }
@@ -498,4 +513,9 @@ test('the trial 10 plan holds the 10c bar and its decision rule, set before the 
   assert.ok(rerun.includes('- every requirement\'s behavior is settled by the input or a context file, or the whole requirement is a "To confirm: whether ..." line\n'));
   assert.ok(rerun.includes("- Example, Background and every other line of trial 10b's bar still hold\n"));
   assert.match(rerun, /4 of 4 means it ships as v0\.6\.0\. Anything less goes back to Matt before another round\./);
+});
+
+test('package.json names the license that LICENSE holds', () => {
+  assert.match(read('LICENSE'), /^MIT License\n/);
+  assert.equal(JSON.parse(read('package.json')).license, 'MIT');
 });

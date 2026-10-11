@@ -8,7 +8,7 @@ Four inputs should give a story. One, `export-notes.md`, should not: success the
 
 ## Download the trial files
 
-Every CI run keeps two downloads for 7 days.
+Every **tests** run on master keeps two downloads for 7 days. To try another branch, start a run for it: click **tests**, then **Run workflow**, and pick the branch.
 
 1. In a browser, open the repository on GitHub and click **Actions**.
 2. Click the latest run of **tests** on the branch you are trying. Note its commit id, shown on the run page.

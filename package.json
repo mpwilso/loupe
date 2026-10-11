@@ -1,9 +1,9 @@
 {
   "name": "loupe",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": true,
   "type": "module",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "engines": {
     "node": ">=22.18.0"
   },

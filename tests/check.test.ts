@@ -351,6 +351,15 @@ test('a tracker key anywhere in a story needs a live source for that key on its 
   assert.deepEqual(problems(story.replace('Nothing needed.', 'Nothing needed. (Jira SUBS-134)')), ['line 28: This source names a tracker record but not when it was read. Write it as "(Jira SUBS-142, read 2026-10-02 14:05)".'], 'one message for a key in a source with no read time');
 });
 
+// Standard names like UTF-8 look like tracker keys, and failed the checker with no honest fix.
+test('a standard name like UTF-8 or ISO-8601 is not a tracker key', () => {
+  const story = fixture('good-story.md');
+  const noSource = (key: string) => `${key} is a tracker record, so this line must end with its live source, like "(Jira ${key}, read 2026-10-02 14:05)".`;
+  assert.deepEqual(problems(story.replace('Nothing needed.', 'Nothing needed. Files use UTF-8 and dates use ISO-8601.')), []);
+  assert.deepEqual(problems(story.replace('Nothing needed.', 'Files use UTF-8, as SUBS-142 says.')), [`line 28: ${noSource('SUBS-142')}`]);
+  assert.deepEqual(problems(story.replace('Nothing needed.', 'Nothing needed. (Spec UTF-8)')), [], 'nor in a source');
+});
+
 test('a closing front matter line with a trailing space still closes it', () => {
   assert.equal(frontMatter(['---', 'name: x', '--- ', '# Body']).end, 2);
   assert.equal(frontMatter(['---', 'name: x', '---\t', '# Body']).end, 2);
