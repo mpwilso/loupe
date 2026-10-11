@@ -1,6 +1,6 @@
 # Trial run
 
-Each trial runs three passes by hand in claude.ai, each in its own Claude Project, on five Pellwick inputs. Replace N with the trial's number. Record the results in the tables below. These numbers become the README's proof strip, so fill the tables in exactly as described, and score every output with [scoring.md](scoring.md).
+Each trial runs three passes by hand in claude.ai, each in its own Claude Project, on five Pellwick inputs. Replace N with the trial's number. Record the results in the tables below. These numbers become the README's trial results, so fill the tables in exactly as described, and score every output with [scoring.md](scoring.md).
 
 Claude only ever sees the kit's `raw/` folder and what Loupe makes from it. The kit's `templates/` and `context/` folders are there only as the reference for scoring pass B. Never upload them to any project.
 

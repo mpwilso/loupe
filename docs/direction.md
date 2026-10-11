@@ -42,7 +42,8 @@ At most five items in any list. Plain words an intern and an executive both unde
 The core: the story shape, templates, readiness bar, checker and context-file format. Built once, shared by both.
 - In Claude: a skill plus a project template. The skill interviews the user, builds the context files, then writes stories in that project. A PM builds it once and shares it with the team.
 - In Claude Code (M4a): the same core, reading the team's context from a `loupe/` folder in the repository and writing only there. It is tested in the terminal; the VS Code extension is untested.
-- Planned for Claude Code (M4b): read-only access to lower environments to check facts against real systems, and a Jira integration (others later) that writes only when the user approves.
+- Also in Claude Code: reading the team's tracker before writing (M4b), and creating a ticket from a finished story, only after the user's yes (M4c). Both use whatever tracker tools Claude Code has, and both were tested on an invented mock tracker, never a real one.
+- Planned for Claude Code: read-only access to lower environments to check facts against real systems.
 
 ## Never
 - Touch production. Lower environments only, read-only, enforced by code.
@@ -67,5 +68,6 @@ M1 Core: story shape, templates, checker, context-file format, one example team.
 M2 The Claude skill and project template, the README and brand.
 M3 The learning loop.
 M4a Claude Code: the same skill, with the team's context in a `loupe/` folder in the repository.
-M4b Live context: read-only checks against lower environments, and Jira, with approval.
+M4b Live context: reading the team's tracker before writing, tested on a mock tracker in trial 8. Read-only checks against lower environments are planned.
+M4c Tickets: creating a ticket from a finished story, only after the user's yes, tested on a mock tracker in trial 9.
 M5 Estimates calibrated against team history.

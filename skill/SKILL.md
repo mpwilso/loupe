@@ -1,6 +1,7 @@
 ---
 name: loupe
 description: Writes user stories with acceptance criteria, bug reports, Jira tickets and change requests from meeting notes or emails. Use when a product manager sets up a team or needs a story. Not for fiction.
+license: MIT
 ---
 
 # Loupe

@@ -9,12 +9,17 @@
 
 Status: A portfolio project, built to show how I design, test and judge an AI tool. Tried on one invented team across ten trials, with reruns. Every trial is in docs/trials, including the misses.
 
+- **Claude:** download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest), upload it in Customize, then Skills, and follow [setup](#setup).
+- **Claude Code plugin:** run `/plugin marketplace add mpwilso/loupe`, then `/plugin install loupe@loupe`. No trial has used it yet.
+- **Claude Code installer:** clone this repository and run `node scripts/install-claude-code.ts`.
+
 Loupe is a Claude skill for product managers. It turns meeting notes, tickets and emails into stories a developer can build without a second meeting. Product owners and product managers write with it. Developers, testers and anyone else who reads a story get one that says what's known, unknown and assumed.
 It runs in Claude, or in Claude Code, where it reads the team's context from your repository, can search your tracker before writing, and can create a ticket from a finished story with your approval.
+What sets it apart from collections of product manager skills: a checker enforces the story shape, every known fact cites its source, thin input gets questions instead of a story, and every trial is published with its misses.
 
 Loupe is one of three tools. Loupe writes the story, [Parallax](https://github.com/mpwilso/parallax) builds it under a gated agent loop and keeps the record, and [ISR](https://github.com/mpwilso/isr) tells the person accepting it what is left. Each runs on its own, and they have been run in that order once, on one change: [ISR's run log](https://github.com/mpwilso/isr/blob/master/docs/run-log.md).
 
-Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials changed](#what-the-trials-changed), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).
+Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials found](#what-the-trials-found), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).
 
 ## Why it exists
 
@@ -159,28 +164,20 @@ Before release: Tell support that subscribers can skip online and how skips show
 - **In Claude Code, it can read your tracker.** It searches the team's tracker before writing, cites any ticket it uses with when it was read, flags likely duplicates, and never changes the tracker.
 - **It can create a ticket from a finished story.** It shows exactly what it will create and asks before it does, and it never changes an existing ticket.
 
-## Proof
+## What the trials found
 
-- In [trial 5](docs/trials/2026-09-30-trial-5.md), every cited source checked out: each known fact named the document that holds it.
-- Guessed screen details and behavior: 9 slipped through unmarked in trial 2. After a fix, 0 in trial 3, with every guess marked "To confirm". ([trial 3](docs/trials/2026-09-30-trial-3.md), blind review)
-- Against plain Claude with the same team documents: a usable estimate on 4 of 4 stories, against 1 of 4, and the same format every time. ([trial 2](docs/trials/2026-09-30-trial-2.md), blind review)
-- In trial 4, all 6 responses passed the checker before they were shown, including the one that refused thin input. A story takes about one to three minutes. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
-- Every tracker call in trials 8 to 8e was a read, 77 in all, and customer data surfaced 0 times. ([trial 8](docs/trials/2026-09-30-trial-8.md))
-- Every ticket created in trial 9 matched its story byte for byte, compared by script, and nothing was created without a yes. ([trial 9](docs/trials/2026-10-01-trial-9.md))
-
-From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).
-
-## What the trials changed
-
-- **A fair baseline.** Trial 1's plain-Claude comparison was given Loupe's own context files, which taught it Loupe's format. In trial 2 it got the team's raw files and nothing else. In blind review it gave a usable estimate on 1 of 4 stories, against Loupe's 4 of 4. ([trial 1](docs/trials/2026-09-30-trial-1.md), [trial 2](docs/trials/2026-09-30-trial-2.md))
+- **A fair baseline.** Trial 1's plain-Claude comparison was given Loupe's own context files, which taught it Loupe's format. In trial 2 it got the team's raw files and nothing else. In blind review it gave a usable estimate on 1 of 4 stories, against Loupe's 4 of 4, and Loupe kept the same format every time. ([trial 1](docs/trials/2026-09-30-trial-1.md), [trial 2](docs/trials/2026-09-30-trial-2.md))
 - **Guesses marked.** In trial 3's blind review, trial 2's stories stated 9 guessed behaviors as fact. Before trial 3, the "To confirm" rule was extended from behavior to screen details, and trial 3 had 0. ([trial 2](docs/trials/2026-09-30-trial-2.md), [trial 3](docs/trials/2026-09-30-trial-3.md))
-- **Starts every time.** In trial 3 the skill didn't start in 1 of 6 runs, and a refusal skipped the checker. With project instructions added, all 6 runs in trial 4 used Loupe and passed the checker. ([trial 3](docs/trials/2026-09-30-trial-3.md), [trial 4](docs/trials/2026-09-30-trial-4.md))
+- **Starts every time.** In trial 3 the skill didn't start in 1 of 6 runs, and a refusal skipped the checker. With project instructions added, all 6 runs in trial 4 used Loupe and passed the checker before they were shown, the refusal of thin input included, at about one to three minutes a story. ([trial 3](docs/trials/2026-09-30-trial-3.md), [trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
 - **Rules it missed.** Trial 3 broke four rules, the team's and its own, such as using the user story template for a bug. After fixes, trial 4 got all four right. ([trial 3](docs/trials/2026-09-30-trial-3.md), [trial 4](docs/trials/2026-09-30-trial-4.md))
-- **One source per fact.** In trial 4, some facts cited a document that didn't hold them, because each context file listed its sources as a group. Each fact now carries its own source, and in trial 5 every citation checked out. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
+- **One source per fact.** In trial 4, some facts cited a document that didn't hold them, because each context file listed its sources as a group. Each fact now carries its own source, and in trial 5 every citation checked out: each known fact named the document that holds it. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
 - **Learning that asks before saving.** Trial 6 found a learned fact with no person in its source, approved entries changed after the yes, and "remember this" saved to Claude's own memory with no source. After the fixes, trial 6b passed every step it reran. ([trial 6](docs/trials/2026-09-30-trial-6.md), [trial 6b](docs/trials/2026-09-30-trial-6b.md))
 - **File tools, not shell commands.** In trial 7, Loupe tried shell commands outside its rules, including a python edit, and permissions blocked them. Files mode now writes with Claude Code's file tools, never with shell commands, and the guide's rules make Claude Code keep it inside `loupe/`. The rerun passed every step. ([trial 7](docs/trials/2026-09-30-trial-7.md))
-- **Tracker facts, sourced.** Trial 8 named tracker tickets in questions with sources the checker never looked at, so the checker now needs a live source for a ticket anywhere in a story. A story marked "Not checked" without trying led to "always run the checker". Repeat runs found that the setup guide's edit rule broke after a `cd`; the guide's new rule fixes it, for v0.3.0 users too. ([trial 8](docs/trials/2026-09-30-trial-8.md))
+- **Tracker facts, sourced.** Trial 8 named tracker tickets in questions with sources the checker never looked at, so the checker now needs a live source for a ticket anywhere in a story. A story marked "Not checked" without trying led to "always run the checker". Repeat runs found that the setup guide's edit rule broke after a `cd`; the guide's new rule fixes it, for v0.3.0 users too. Every tracker call in trials 8 to 8e was a read, 77 in all, and customer data surfaced 0 times. ([trial 8](docs/trials/2026-09-30-trial-8.md))
+- **Tickets after a yes.** Every ticket created in trial 9 matched its story byte for byte, compared by script, and nothing was created without a yes. ([trial 9](docs/trials/2026-10-01-trial-9.md))
 - **Examples and requirements kept to the input.** In trial 10, two stories invented a detail in their Example, and in 10b, three stated behaviors the input never mentions as requirements. Examples now keep to what the input says, and an unsettled behavior becomes a whole "To confirm" requirement; in 10c, all four address-change stories passed. ([trial 10](docs/trials/2026-10-01-trial-10.md))
+
+From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).
 
 ## How it works
 

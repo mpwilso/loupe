@@ -81,7 +81,7 @@ test('the CI test step keeps pipefail when it pipes its output', () => {
   assert.ok(/^\s*shell: bash\s*$/m.test(text) || text.includes('set -o pipefail'), `The test step pipes its output but has no "shell: bash" or "set -o pipefail":\n${text}`);
 });
 
-// The README's proof strip is built from these tables, so their columns and rows must not drift.
+// The README's trial results are built from these tables, so their columns and rows must not drift.
 const tables = () => {
   const found: string[][] = [];
   let current: string[] | undefined;
@@ -141,17 +141,35 @@ test('every CI action is pinned to a commit, and the trial kit stays blind', () 
   // The kit is one folder, built by a script, so its files sit at its root: context/, inputs/ and so on.
   assert.ok(workflow.includes('- run: scripts/build-trial-kit.sh\n'), 'CI builds the kit with the script');
   assert.match(workflow, /name: pellwick-trial-kit\n\s+path: build\/pellwick-trial-kit\/\n/);
+  // The kit holds the current trial plan: the one with the highest number, so trial 10 comes after trial 9.
+  const plans = readdirSync(join(root, 'docs/trials')).filter((f) => /^trial-\d+-plan\.md$/.test(f));
+  const newestPlan = plans.sort((a, b) => Number(a.match(/\d+/)![0]) - Number(b.match(/\d+/)![0])).at(-1)!;
   const out = mkdtempSync(join(tmpdir(), 'loupe-kit-'));
   try {
     execFileSync('bash', ['scripts/build-trial-kit.sh', join(out, 'kit')], { cwd: root });
-    assert.deepEqual(readdirSync(join(out, 'kit')).sort(), ['context', 'inputs', 'raw', 'templates', 'trial-6-plan.md']);
+    assert.deepEqual(readdirSync(join(out, 'kit')).sort(), ['context', 'inputs', 'raw', 'templates', newestPlan]);
     assert.ok(!existsSync(join(out, 'kit', 'expected')), 'no expected stories');
   } finally {
     rmSync(out, { recursive: true });
   }
-  // The trial 6 plan's inputs are in the kit's inputs/ folder.
-  const plan = read('docs/trials/trial-6-plan.md');
+  // The plan's inputs are in the kit's inputs/ folder.
+  const plan = read(`docs/trials/${newestPlan}`);
   for (const [, input] of plan.matchAll(/`inputs\/([\w.-]+\.md)`/g)) assert.ok(existsSync(join(root, 'examples/pellwick/inputs', input)), input);
+});
+
+// The Agent Skills reference validator checks the built folder, the one the zip and the plugin hold. It runs from
+// a fixed commit of agentskills/agentskills, with the dependency versions its lockfile pins, so nothing floats.
+test('CI runs the Agent Skills reference validator on the built skill folder, with every version pinned', () => {
+  const workflow = read('.github/workflows/tests.yml');
+  const job = workflow.split(/^  skills-ref:\n/m)[1]?.split(/^  \S/m)[0] ?? '';
+  assert.ok(job, 'a skills-ref job');
+  assert.ok(job.includes("    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository\n"), 'runs when the tests run');
+  assert.match(job, /repository: agentskills\/agentskills\n\s+ref: [0-9a-f]{40}\n\s+path: agentskills\n/);
+  assert.match(job, /python-version: '\d+\.\d+\.\d+'\n/);
+  assert.match(job, /version: '\d+\.\d+\.\d+'\n/);
+  assert.ok(job.includes('- run: node scripts/skill-folder.ts dist/loupe\n'), 'the folder is named after the skill, as the validator requires');
+  assert.ok(job.includes('uv sync --frozen --no-dev --no-install-project --project agentskills/skills-ref\n'), 'locked dependencies only');
+  assert.ok(job.includes('python -m skills_ref.cli validate dist/loupe\n'));
 });
 
 // A same-repo pull request already gets a push run, so the tests run on a pull request only from a fork.
@@ -327,10 +345,13 @@ test('the docs describe the learning loop as it works, including the manual swap
   assert.match(learns, /nothing without (a|the user's) yes/);
   assert.match(learns, /replaces learned\.md in the project's files/);
   assert.match(direction, /planned \(M5\)/);
-  // M4a built Claude Code support; live context is what's still planned.
+  // M4a built Claude Code support, M4b tracker reads (trial 8) and M4c ticket creation (trial 9); checks against
+  // lower environments are what's still planned.
   assert.doesNotMatch(direction, /A VS Code version is planned|In VS Code \(later\)/);
   assert.match(direction, /^M4a Claude Code/m);
-  assert.match(direction, /^M4b Live context: read-only checks against lower environments, and Jira, with approval\.$/m);
+  assert.match(direction, /^M4b Live context: reading the team's tracker before writing, tested on a mock tracker in trial 8\. Read-only checks against lower environments are planned\.$/m);
+  assert.match(direction, /^M4c Tickets: creating a ticket from a finished story, only after the user's yes, tested on a mock tracker in trial 9\.$/m);
+  assert.doesNotMatch(direction, /Planned for Claude Code \(M4b\)/);
   assert.match(direction, /the VS Code extension is untested/);
   const guide = read('docs/claude-project.md');
   const section = guide.split('## Keeping Loupe up to date\n')[1]?.split('\n## ')[0] ?? '';

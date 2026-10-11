@@ -49,6 +49,7 @@ const sources: Record<string, string> = {
   'examples/story.md': 'examples/pellwick/expected/skip-a-box.md',
   'examples/not-ready.md': 'examples/pellwick/expected/export-notes.md',
   'examples/context-file.md': 'examples/pellwick/context/applications.md',
+  LICENSE: 'LICENSE',
 };
 
 test('the zip has one root folder named after the skill, holding exactly the expected files', () => {
@@ -87,7 +88,10 @@ test('SKILL.md front matter follows the documented rules', () => {
   assert.ok(end > 0, 'SKILL.md must start with front matter');
   const name = fields.get('name')?.value ?? '';
   const description = fields.get('description')?.value ?? '';
-  assert.deepEqual([...fields.keys()], ['name', 'description']);
+  // license is optional in the Agent Skills spec, and Anthropic's own uploadable skills carry it. compatibility is
+  // left out: claude.ai's upload rejects fields it doesn't know, and no upload has tried that one.
+  assert.deepEqual([...fields.keys()], ['name', 'description', 'license']);
+  assert.equal(fields.get('license')?.value, JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).license, 'license: the one in package.json and LICENSE');
 
   assert.match(name, /^[a-z0-9-]{1,64}$/, 'name: at most 64 lowercase letters, numbers and hyphens');
   assert.doesNotMatch(name, /anthropic|claude/, 'name: no reserved words');
@@ -342,11 +346,12 @@ test("the checklist names the checker's hard limits, and they match spec/", () =
   assert.match(first, /source in parentheses counts as part of the sentence before it/);
   assert.equal(first.match(/^- At most (\d+) items in any list/m)?.[1], String(shape.maxListItems));
   const quoted = [...line('Never use').matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(quoted.sort(), [...plain.bannedPhrases.list].sort(), 'every banned phrase, and no others');
+  // The same list in the same order, so a phrase added or moved in one copy shows up in the other.
+  assert.deepEqual(quoted, plain.bannedPhrases.list, 'every banned phrase, in the spec\'s order, and no others');
   // The scenario keywords, like WHEN, are allowed so scenarios pass; the writer needs only the real acronyms.
   const keywords = new Set(JSON.stringify(shape.sections.find((s: { kind: string }) => s.kind === 'scenarios').scenarios).match(/[A-Z]{2,}/g));
   const named = line('Spell out').split('need no spelling out:')[1]?.match(/[A-Z]{2,}/g) ?? [];
-  assert.deepEqual(named.sort(), plain.acronyms.allow.filter((a: string) => !keywords.has(a)).sort());
+  assert.deepEqual(named, plain.acronyms.allow.filter((a: string) => !keywords.has(a)), 'every allowed acronym, in the spec\'s order');
 });
 
 test('every list in a built-in template starts with its limit, from spec/', () => {
