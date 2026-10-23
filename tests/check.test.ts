@@ -5,8 +5,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { builtInFolder, check, findTeamTemplates, loadTemplates } from '../src/check.ts';
-import { format, frontMatter } from '../src/spec.ts';
+import { builtInFolder, check, findTeamTemplates, loadTemplates, readTemplate } from '../src/check.ts';
+import { format, frontMatter, nestedRepeat } from '../src/spec.ts';
 import { minimum, tooOld } from '../src/node-version.js';
 import { emDash, fixture } from './cases.ts';
 
@@ -56,6 +56,9 @@ const bad: Record<string, string> = {
   'template-confidence-value': 'line 31: In a template, write "[High, Medium or Low]" here, not a value.',
   'template-estimate-value': 'line 36: In a template, write "[N to M hours]" here, not a value.',
   'template-bad-pattern': 'line 3: "^Time box: (" is not a valid pattern.',
+  'template-long-pattern': 'line 3: The pattern starting "^Time box: aaaaaaaaa" is 201 characters long; the limit is 200.',
+  'template-nested-pattern':
+    'line 3: "^Time box: (\\d+ )+hours" repeats a group that holds a repeat, like (a+)+, which can make the checker hang. Use one repeat, or a character class like [ab]+.',
   'not-ready-no-about':
     'line 7: Right under the title, add one line that starts with "About: " and names the input this responds to.',
   'not-ready-no-missing-line':
@@ -263,10 +266,35 @@ test('a template file is checked against its own patterns, with line numbers fro
   ]);
 });
 
+// A team template's patterns are compiled with new RegExp, so a hostile or careless pattern could hang the checker.
+test('the pattern guard rejects a repeat nested in a repeat and an over-long pattern, and accepts plain ones', () => {
+  for (const p of ['(a+)+', '(a*)*', '(a+)*', '^((\\d+)b)+$', '(a{2,})+', '(?:a+)+', '(a+|b)*']) assert.ok(nestedRepeat(p), p);
+  for (const p of ['^As an? .+, I want .+, so that .+', '^(As|When) .+', '(Mon|Tue)+', '[+*]+', '(a+)b(c+)', '(a{2})+', '\\(a+\\)+', '(a+)?', '^Time box: (\\d+) hours']) {
+    assert.ok(!nestedRepeat(p), p);
+  }
+  const template = (pattern: string) => readTemplate(`---\nname: t\npatterns:\n  - ${pattern}\n---\n# T\n`);
+  assert.deepEqual(template('^Change: \\S').problems, []);
+  assert.deepEqual(template('a'.repeat(200)).problems, [], 'exactly the limit is allowed');
+  assert.deepEqual(template('a'.repeat(201)).problems.map(format), ['line 3: The pattern starting "aaaaaaaaaaaaaaaaaaaa" is 201 characters long; the limit is 200.']);
+  assert.deepEqual(template('^(\\w+\\s*)+$').problems.map(format), [
+    'line 3: "^(\\w+\\s*)+$" repeats a group that holds a repeat, like (a+)+, which can make the checker hang. Use one repeat, or a character class like [ab]+.',
+  ]);
+  // Too long and nested at once reports the length, which comes first.
+  assert.equal(template(`(${'a'.repeat(200)}+)+`).problems.length, 1);
+});
+
 test('a missing templates folder is a plain error, not a crash', () => {
   const run = cli('--templates', 'no/such/folder', 'tests/fixtures/good-story.md');
   assert.equal(run.status, 2);
   assert.equal(run.stderr, 'Can\'t read the templates folder "no/such/folder".\n');
+});
+
+// A missing file used to end in a raw ENOENT stack trace from readFileSync.
+test('a file that cannot be read gets one plain line, from either checker', () => {
+  for (const name of ['check', 'check-context']) {
+    const run = spawnSync(process.execPath, ['src/run.js', name, 'no/such/file.md'], { cwd: root, encoding: 'utf8' });
+    assert.deepEqual([run.status, run.stdout, run.stderr], [2, '', 'Can\'t read "no/such/file.md".\n'], name);
+  }
 });
 
 test('a pass ends with the Node version, and too old a Node gets a plain "Not checked:" line', () => {

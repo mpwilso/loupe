@@ -15,6 +15,41 @@ export function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// A repeated group that holds another repeat, like (a+)+, (a*)* or (a+)*, can take the checker exponentially
+// long on a line that almost matches. A plain choice such as (a|b)+ is allowed: it is a normal way to write a pattern. Team templates bring their own patterns, so they get this guard.
+// Nesting is tracked across groups: ((a+)b)+ counts. Escaped brackets and character classes are skipped.
+export function nestedRepeat(pattern: string): boolean {
+  const groups: boolean[] = []; // for each open group, whether it holds a repeat
+  let found = false;
+  const repeatAt = (i: number) => /^(?:[+*]|\{\d+,\d*\})/.test(pattern.slice(i));
+  const markOuter = () => void (groups.length && (groups[groups.length - 1] = true));
+  for (let i = 0; i < pattern.length; i++) {
+    const c = pattern[i];
+    if (c === '\\') i++;
+    else if (c === '[') {
+      for (i++; i < pattern.length && pattern[i] !== ']'; i++) if (pattern[i] === '\\') i++;
+    } else if (c === '(') groups.push(false);
+    else if (c === ')') {
+      const inner = groups.pop() ?? false;
+      const repeated = repeatAt(i + 1);
+      if (inner && repeated) found = true;
+      if (inner || repeated) markOuter();
+    } else if (repeatAt(i)) markOuter();
+  }
+  return found;
+}
+
+// A real calendar day written YYYY-MM-DD: "2026-02-30" parses, but is not one.
+export function isRealDate(value: string): boolean {
+  const time = Date.parse(`${value}T00:00:00Z`);
+  return !Number.isNaN(time) && new Date(time).toISOString().startsWith(value);
+}
+
+// The day a check runs on: LOUPE_TODAY=YYYY-MM-DD fixes it, for staleness checks that must not drift.
+export function todayFromEnv(): Date {
+  return process.env.LOUPE_TODAY ? new Date(`${process.env.LOUPE_TODAY}T00:00:00Z`) : new Date();
+}
+
 export function format(problem: Problem): string {
   return problem.line ? `line ${problem.line}: ${problem.text}` : problem.text;
 }
@@ -52,7 +87,14 @@ export function runCli(
   }
   let failed = false;
   for (const path of paths) {
-    const { errors, warnings } = check(readFileSync(path, 'utf8'), path);
+    let text: string;
+    try {
+      text = readFileSync(path, 'utf8');
+    } catch {
+      console.error(`Can't read "${path}".`);
+      process.exit(2);
+    }
+    const { errors, warnings } = check(text, path);
     const lines = [...errors.map(format), ...warnings.map((w) => `warning: ${format(w)}`)];
     if (errors.length) failed = true;
     if (lines.length === 0) continue;

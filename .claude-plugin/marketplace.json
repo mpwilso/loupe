@@ -5,7 +5,7 @@
   "plugins": [
     {
       "name": "loupe",
-      "description": "Writes user stories with acceptance criteria, bug reports, Jira tickets and change requests from meeting notes or emails. Use when a product manager sets up a team or needs a story. Not for fiction.",
+      "description": "Writes user stories, bug reports, Jira tickets and change requests from meeting notes or emails. Use when a product manager sets up a team or needs a story or acceptance criteria. Not for fiction.",
       "source": {
         "source": "archive",
         "url": "https://github.com/mpwilso/loupe/releases/latest/download/loupe-skill.zip"

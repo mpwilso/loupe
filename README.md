@@ -17,7 +17,7 @@ Loupe is a Claude skill for product managers. It turns meeting notes, tickets an
 It runs in Claude, or in Claude Code, where it reads the team's context from your repository, can search your tracker before writing, and can create a ticket from a finished story with your approval.
 What sets it apart from collections of product manager skills: a checker enforces the story shape, every known fact cites its source, thin input gets questions instead of a story, and every trial is published with its misses.
 
-Loupe is one of three tools. Loupe writes the story, [Parallax](https://github.com/mpwilso/parallax) builds it under a gated agent loop and keeps the record, and [ISR](https://github.com/mpwilso/isr) tells the person accepting it what is left. Each runs on its own, and they have been run in that order once, on one change: [ISR's run log](https://github.com/mpwilso/isr/blob/master/docs/run-log.md).
+Loupe is one of six tools, and one of three that run in order. Loupe writes the story, [Parallax](https://github.com/mpwilso/parallax) builds it under a gated agent loop and keeps the record, and [ISR](https://github.com/mpwilso/isr) tells the person accepting it what is left. Each runs on its own, and they have been run in that order once, on one change: [ISR's run log](https://github.com/mpwilso/isr/blob/master/docs/run-log.md). The other three stand alone: [Polarizer](https://github.com/mpwilso/polarizer) holds an agent's risky tool calls until a person approves them, [Mordecai](https://github.com/mpwilso/mordecai) judges whether a skill helps, and [Project Max-Q](https://github.com/mpwilso/Project-Max-Q) ranks job postings and checks resume claims.
 
 Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials found](#what-the-trials-found), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).
 
@@ -179,6 +179,8 @@ Before release: Tell support that subscribers can skip online and how skips show
 
 From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).
 
+Evals: each trial is run by hand and recorded; the scripts that ran trial 9 and compared its tickets with their stories are in [scripts/trials](scripts/trials/).
+
 ## How it works
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/how-it-works-dark.svg"><img src="docs/img/how-it-works-light.svg" alt="How Loupe works: setup turns your documents into context files, every fact with its source. An input comes in and gets a readiness check. Too thin, and you get Not ready yet with the questions to ask. Ready, and Loupe writes it in your team's template, the checker sends it back until it passes, every known fact is reread against its source, and you get the story." width="660"></picture>
@@ -228,7 +230,7 @@ The model writes the story, and code checks it, so a story's shape doesn't depen
 - `docs/trials/`: what each trial found.
 - `mock/`: an invented tracker for trying the tracker features.
 - `brand/`: the mark, lockups and palette. `node scripts/brand.ts` draws them, and the diagram; see [brand/](brand/README.md).
-- `scripts/`: the test runner, the skill builder and the brand drawing.
+- `scripts/`: the test runner, the skill builder, the brand drawing and the trial 9 scripts.
 
 The story shape is data in `spec/*.json`. The checker in `src/` enforces it, and the skill loops until the story passes. Zero runtime dependencies. TypeScript, run directly by Node 22.18 or newer. CI tests on Node 22.18.0 and 24.21.0.
 
