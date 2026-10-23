@@ -161,6 +161,9 @@ test('what the trials found: each bullet links the trials it came from, with the
   has('Every ticket created in trial 9 matched its story byte for byte, compared by script, and nothing was created without a yes.', '[trial 9](docs/trials/2026-10-01-trial-9.md)');
   has('an unsettled behavior becomes a whole "To confirm" requirement; in 10c, all four address-change stories passed');
   assert.ok(body.includes('From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).'));
+  // The trials are evals run by hand; the scripts that measured trial 9 are tracked, not left in the gitignored build/.
+  assert.ok(body.includes('Evals: each trial is run by hand and recorded; the scripts that ran trial 9 and compared its tickets with their stories are in [scripts/trials](scripts/trials/).'));
+  for (const file of ['compare.py', 'run-all.sh', 'run-turn.sh', 'settings-flag.json']) assert.ok(existsSync(join(root, 'scripts/trials/trial-9', file)), file);
   for (const item of items) {
     const trials = [...item.matchAll(/\]\((docs\/trials\/[\w.-]+\.md)\)/g)].map((m) => m[1]);
     assert.ok(trials.length >= 1, `a trial record: ${item}`);
