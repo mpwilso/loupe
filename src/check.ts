@@ -6,7 +6,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { escapeRegExp, fill, format, frontMatter, loadSpec, nestedRepeat, runCli, type Problem } from './spec.ts';
+import { escapeRegExp, fill, format, frontMatter, isRealDate, loadSpec, nestedRepeat, runCli, type Problem } from './spec.ts';
 
 type LineRule = {
   pattern: string;
@@ -491,9 +491,7 @@ function checkLiveSources(lines: string[]): Problem[] {
     const problems = sources.map(({ source }) => {
       if (!/, read /.test(source)) return rule.noReadMessage;
       const read = pattern.exec(source);
-      const time = read && Date.parse(`${read[2]}T00:00:00Z`);
-      const real = read && !Number.isNaN(time) && new Date(time!).toISOString().startsWith(read[2]);
-      return real ? undefined : rule.badReadMessage;
+      return read && isRealDate(read[2]) ? undefined : rule.badReadMessage;
     });
     const cited = new Set(sources.map((s) => s.key));
     const named = new Set([...text.matchAll(new RegExp(`\\b(${anyKey})\\b`, 'g'))].map((m) => m[1]));

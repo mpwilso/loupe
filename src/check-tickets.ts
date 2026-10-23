@@ -1,6 +1,6 @@
 // Checks loupe/tickets.md, the list of tickets Loupe created: one line per ticket, naming its key, the story it
 // came from and when it was created. The story must exist and be finished, and no story or key appears twice.
-import { fill, loadSpec, type Problem } from './spec.ts';
+import { fill, isRealDate, loadSpec, type Problem } from './spec.ts';
 import { storyShape } from './check.ts';
 
 type TicketsSpec = {
@@ -32,8 +32,7 @@ export function checkTickets(text: string, stories: Map<string, string>): { erro
     const match = pattern.exec(raw.trim());
     if (!match) return add(line, rule.line.message);
     const [, key, file, date] = match;
-    const time = Date.parse(`${date}T00:00:00Z`);
-    if (Number.isNaN(time) || !new Date(time).toISOString().startsWith(date)) add(line, rule.badTimeMessage);
+    if (!isRealDate(date)) add(line, rule.badTimeMessage);
     const story = stories.get(file);
     if (story === undefined) add(line, fill(rule.noStoryMessage, { file }));
     else if (story.split(/\r?\n/)[0]?.trim() !== written) add(line, fill(rule.notWrittenMessage, { file, call: written }));

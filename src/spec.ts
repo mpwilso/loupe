@@ -39,6 +39,17 @@ export function nestedRepeat(pattern: string): boolean {
   return found;
 }
 
+// A real calendar day written YYYY-MM-DD: "2026-02-30" parses, but is not one.
+export function isRealDate(value: string): boolean {
+  const time = Date.parse(`${value}T00:00:00Z`);
+  return !Number.isNaN(time) && new Date(time).toISOString().startsWith(value);
+}
+
+// The day a check runs on: LOUPE_TODAY=YYYY-MM-DD fixes it, for staleness checks that must not drift.
+export function todayFromEnv(): Date {
+  return process.env.LOUPE_TODAY ? new Date(`${process.env.LOUPE_TODAY}T00:00:00Z`) : new Date();
+}
+
 export function format(problem: Problem): string {
   return problem.line ? `line ${problem.line}: ${problem.text}` : problem.text;
 }

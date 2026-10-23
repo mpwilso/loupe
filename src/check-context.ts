@@ -5,7 +5,7 @@
 // Set LOUPE_TODAY=YYYY-MM-DD to check staleness against a fixed date.
 import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
-import { fill, frontMatter, loadSpec, runCli, type Problem } from './spec.ts';
+import { fill, frontMatter, isRealDate, loadSpec, runCli, todayFromEnv, type Problem } from './spec.ts';
 
 type Rule = { pattern: string; message?: string };
 type LearnedSpec = {
@@ -91,7 +91,7 @@ function findProblems(text: string, today: Date, options: ContextOptions): { err
   const date = fields.get(spec.dateField);
   if (date?.value) {
     const time = Date.parse(`${date.value}T00:00:00Z`);
-    if (!isRealDate(date.value)) {
+    if (!isSpecDate(date.value)) {
       errors.push({ line: date.line, text: fill(M.badDate, { field: spec.dateField }) });
     } else {
       const days = Math.floor((Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()) - time) / DAY);
@@ -123,10 +123,8 @@ function findProblems(text: string, today: Date, options: ContextOptions): { err
   return { errors, warnings };
 }
 
-const isRealDate = (value: string) => {
-  const time = Date.parse(`${value}T00:00:00Z`);
-  return new RegExp(spec.datePattern).test(value) && !Number.isNaN(time) && new Date(time).toISOString().startsWith(value);
-};
+// A date in the spec's own form, like 2026-09-22, that is also a real day.
+const isSpecDate = (value: string) => new RegExp(spec.datePattern).test(value) && isRealDate(value);
 
 // The fact lines of another context file, without their bullet or their source: what a "replaces:" line may quote.
 const factsIn = (text: string) => {
@@ -168,7 +166,7 @@ function checkLearned(lines: string[], end: number, others: string[]): Problem[]
     const source = e.fields.get('source');
     const date = source && new RegExp(L.source.pattern).exec(source.value);
     if (!date) add(source?.line ?? e.line, L.source.message);
-    else if (!isRealDate(date[1])) add(source!.line, L.source.dateMessage);
+    else if (!isSpecDate(date[1])) add(source!.line, L.source.dateMessage);
     const applies = e.fields.get('applies');
     if (applies && !new RegExp(L.applies.pattern).test(applies.value)) add(applies.line, L.applies.message);
     const replaces = e.fields.get('replaces');
@@ -186,7 +184,7 @@ function checkLearned(lines: string[], end: number, others: string[]): Problem[]
 }
 
 export function main(args: string[]): void {
-  const today = process.env.LOUPE_TODAY ? new Date(`${process.env.LOUPE_TODAY}T00:00:00Z`) : new Date();
+  const today = todayFromEnv();
   // Each file is checked on its own; learned.md is checked against the others given with it.
   const check = (text: string, path: string) => {
     const learned = basename(path) === spec.learned.fileName;

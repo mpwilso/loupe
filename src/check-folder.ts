@@ -7,7 +7,7 @@ import { basename, join } from 'node:path';
 import { builtInFolder, check, loadTemplates } from './check.ts';
 import { checkContext, contextSpec } from './check-context.ts';
 import { checkTickets, ticketsSpec } from './check-tickets.ts';
-import { runCli } from './spec.ts';
+import { runCli, todayFromEnv } from './spec.ts';
 
 const usage = 'Usage: node src/check-folder.ts path/to/loupe\nA team folder holds context/, learned.md, templates/ and stories/.';
 const markdown = (dir: string) => (existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.md')).sort().map((f) => join(dir, f)) : []);
@@ -22,7 +22,7 @@ export function main(args: string[]): void {
     console.error(`No context folder in ${dir}. A team folder holds context/, learned.md, templates/ and stories/.`);
     process.exit(2);
   }
-  const today = process.env.LOUPE_TODAY ? new Date(`${process.env.LOUPE_TODAY}T00:00:00Z`) : new Date();
+  const today = todayFromEnv();
   // learned.md belongs at the folder's root, but it is checked as learned.md wherever it is.
   const isLearned = (path: string) => basename(path) === contextSpec.learned.fileName;
   const contextPaths = [...markdown(join(dir, 'context')), ...markdown(dir).filter(isLearned)];
