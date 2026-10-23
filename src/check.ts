@@ -6,7 +6,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { escapeRegExp, fill, format, frontMatter, loadSpec, runCli, type Problem } from './spec.ts';
+import { escapeRegExp, fill, format, frontMatter, loadSpec, nestedRepeat, runCli, type Problem } from './spec.ts';
 
 type LineRule = {
   pattern: string;
@@ -66,7 +66,7 @@ type StoryShape = Shape & {
     questions: { story: string; notReady: string };
     questionMessage?: string;
   };
-  templates: { folder: string; fields: Record<string, string> };
+  templates: { folder: string; fields: Record<string, string>; maxPatternLength: number };
   messages: Record<string, string>;
   errors: Record<string, string>;
 };
@@ -113,12 +113,21 @@ export function readTemplate(text: string): { template?: Template; end: number; 
       problems.push({ line: fields.get(field)?.line ?? 1, text: fill(M.templateMissingField, { field, help }) });
     }
   }
+  // The guard against a pattern that could hang the checker: a length cap, then no repeat nested in a repeat.
+  const line = fields.get('patterns')?.line;
+  const limit = story.templates.maxPatternLength;
   for (const pattern of patterns) {
+    if (pattern.length > limit) {
+      problems.push({ line, text: fill(M.templateLongPattern, { start: pattern.slice(0, 20), length: pattern.length, limit }) });
+      continue;
+    }
     try {
       new RegExp(pattern);
     } catch {
-      problems.push({ line: fields.get('patterns')?.line, text: fill(M.templateBadPattern, { pattern }) });
+      problems.push({ line, text: fill(M.templateBadPattern, { pattern }) });
+      continue;
     }
+    if (nestedRepeat(pattern)) problems.push({ line, text: fill(M.templateNestedPattern, { pattern }) });
   }
   return { template: problems.length || !name ? undefined : { name, patterns }, end, problems: problems.filter((p) => p.text) };
 }

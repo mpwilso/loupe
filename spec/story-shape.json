@@ -59,7 +59,8 @@
     "fields": {
       "name": "what the template is called, like \"user story\"",
       "patterns": "a list of patterns; each must match a line of \"The story\""
-    }
+    },
+    "maxPatternLength": 200
   },
   "sections": [
     { "heading": "## The story", "name": "The story", "kind": "template" },
@@ -214,6 +215,8 @@
     "noTemplate": "The story section doesn't follow any template. Tried: {names}. For a team template, put it in a templates folder next to the team's context folder, or pass --templates <folder>.",
     "templateMissingField": "The template's front matter is missing \"{field}\": {help}.",
     "templateBadPattern": "\"{pattern}\" is not a valid pattern.",
+    "templateLongPattern": "The pattern starting \"{start}\" is {length} characters long; the limit is {limit}.",
+    "templateNestedPattern": "\"{pattern}\" repeats a group that holds a repeat or a choice, like (a+)+ or (a|b)+, which can make the checker hang. Use one repeat, or a character class like [ab]+.",
     "oneSentence": "Put each sentence of {name} on its own line, ending with its own source.",
     "noneGivenMixed": "{name} says \"None given.\" but also gives an example. Use one or the other."
   },
