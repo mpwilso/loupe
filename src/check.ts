@@ -114,6 +114,7 @@ export function readTemplate(text: string): { template?: Template; end: number; 
     }
   }
   // The guard against a pattern that could hang the checker: a length cap, then no repeat nested in a repeat.
+  // A choice inside a repeated group, like (a|b)+, is allowed.
   const line = fields.get('patterns')?.line;
   const limit = story.templates.maxPatternLength;
   for (const pattern of patterns) {

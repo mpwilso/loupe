@@ -15,11 +15,11 @@ export function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// A repeated group that holds another repeat or a choice, like (a+)+, (a*)*, (a+)* or (a|a)+, can take the checker
-// exponentially long on a line that almost matches. Team templates bring their own patterns, so they get this guard.
+// A repeated group that holds another repeat, like (a+)+, (a*)* or (a+)*, can take the checker exponentially
+// long on a line that almost matches. A plain choice such as (a|b)+ is allowed: it is a normal way to write a pattern. Team templates bring their own patterns, so they get this guard.
 // Nesting is tracked across groups: ((a+)b)+ counts. Escaped brackets and character classes are skipped.
 export function nestedRepeat(pattern: string): boolean {
-  const groups: boolean[] = []; // for each open group, whether it holds a repeat or a choice
+  const groups: boolean[] = []; // for each open group, whether it holds a repeat
   let found = false;
   const repeatAt = (i: number) => /^(?:[+*]|\{\d+,\d*\})/.test(pattern.slice(i));
   const markOuter = () => void (groups.length && (groups[groups.length - 1] = true));
@@ -34,7 +34,7 @@ export function nestedRepeat(pattern: string): boolean {
       const repeated = repeatAt(i + 1);
       if (inner && repeated) found = true;
       if (inner || repeated) markOuter();
-    } else if (c === '|' || repeatAt(i)) markOuter();
+    } else if (repeatAt(i)) markOuter();
   }
   return found;
 }

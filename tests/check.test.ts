@@ -58,7 +58,7 @@ const bad: Record<string, string> = {
   'template-bad-pattern': 'line 3: "^Time box: (" is not a valid pattern.',
   'template-long-pattern': 'line 3: The pattern starting "^Time box: aaaaaaaaa" is 201 characters long; the limit is 200.',
   'template-nested-pattern':
-    'line 3: "^Time box: (\\d+ )+hours" repeats a group that holds a repeat or a choice, like (a+)+ or (a|b)+, which can make the checker hang. Use one repeat, or a character class like [ab]+.',
+    'line 3: "^Time box: (\\d+ )+hours" repeats a group that holds a repeat, like (a+)+, which can make the checker hang. Use one repeat, or a character class like [ab]+.',
   'not-ready-no-about':
     'line 7: Right under the title, add one line that starts with "About: " and names the input this responds to.',
   'not-ready-no-missing-line':
@@ -268,8 +268,8 @@ test('a template file is checked against its own patterns, with line numbers fro
 
 // A team template's patterns are compiled with new RegExp, so a hostile or careless pattern could hang the checker.
 test('the pattern guard rejects a repeat nested in a repeat and an over-long pattern, and accepts plain ones', () => {
-  for (const p of ['(a+)+', '(a*)*', '(a+)*', '(a|a)+', '^((\\d+)b)+$', '(a{2,})+', '(?:a+)+', '(a+|b)*']) assert.ok(nestedRepeat(p), p);
-  for (const p of ['^As an? .+, I want .+, so that .+', '^(As|When) .+', '[+*]+', '(a+)b(c+)', '(a{2})+', '\\(a+\\)+', '(a+)?', '^Time box: (\\d+) hours']) {
+  for (const p of ['(a+)+', '(a*)*', '(a+)*', '^((\\d+)b)+$', '(a{2,})+', '(?:a+)+', '(a+|b)*']) assert.ok(nestedRepeat(p), p);
+  for (const p of ['^As an? .+, I want .+, so that .+', '^(As|When) .+', '(Mon|Tue)+', '[+*]+', '(a+)b(c+)', '(a{2})+', '\\(a+\\)+', '(a+)?', '^Time box: (\\d+) hours']) {
     assert.ok(!nestedRepeat(p), p);
   }
   const template = (pattern: string) => readTemplate(`---\nname: t\npatterns:\n  - ${pattern}\n---\n# T\n`);
@@ -277,7 +277,7 @@ test('the pattern guard rejects a repeat nested in a repeat and an over-long pat
   assert.deepEqual(template('a'.repeat(200)).problems, [], 'exactly the limit is allowed');
   assert.deepEqual(template('a'.repeat(201)).problems.map(format), ['line 3: The pattern starting "aaaaaaaaaaaaaaaaaaaa" is 201 characters long; the limit is 200.']);
   assert.deepEqual(template('^(\\w+\\s*)+$').problems.map(format), [
-    'line 3: "^(\\w+\\s*)+$" repeats a group that holds a repeat or a choice, like (a+)+ or (a|b)+, which can make the checker hang. Use one repeat, or a character class like [ab]+.',
+    'line 3: "^(\\w+\\s*)+$" repeats a group that holds a repeat, like (a+)+, which can make the checker hang. Use one repeat, or a character class like [ab]+.',
   ]);
   // Too long and nested at once reports the length, which comes first.
   assert.equal(template(`(${'a'.repeat(200)}+)+`).problems.length, 1);
