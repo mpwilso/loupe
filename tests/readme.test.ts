@@ -98,7 +98,7 @@ test('every image the README references exists in the repo', () => {
   ]);
 });
 
-test('the README opens with the lockup, both themes, the tagline, the status line, where it runs, the three tools and a line of links to the sections', () => {
+test('the README opens with the lockup, both themes, the tagline, the status line, where it runs, the six tools and a line of links to the sections', () => {
   const top = readme.split('\n## ')[0];
   assert.ok(top.includes('<source media="(prefers-color-scheme: dark)" srcset="brand/lockup-dark.svg">'));
   assert.ok(top.includes('<img src="brand/lockup-light.svg" alt="Loupe" width="360">'));
@@ -106,7 +106,7 @@ test('the README opens with the lockup, both themes, the tagline, the status lin
   assert.ok(top.includes('Status: A portfolio project, built to show how I design, test and judge an AI tool. Tried on one invented team across ten trials, with reruns. Every trial is in docs/trials, including the misses.'));
   assert.ok(top.includes("get one that says what's known, unknown and assumed."));
   assert.ok(top.includes("It runs in Claude, or in Claude Code, where it reads the team's context from your repository, can search your tracker before writing, and can create a ticket from a finished story with your approval."));
-  assert.ok(top.includes("Loupe is one of three tools. Loupe writes the story, [Parallax](https://github.com/mpwilso/parallax) builds it under a gated agent loop and keeps the record, and [ISR](https://github.com/mpwilso/isr) tells the person accepting it what is left. Each runs on its own, and they have been run in that order once, on one change: [ISR's run log](https://github.com/mpwilso/isr/blob/master/docs/run-log.md)."));
+  assert.ok(top.includes("Loupe is one of six tools, and one of three that run in order. Loupe writes the story, [Parallax](https://github.com/mpwilso/parallax) builds it under a gated agent loop and keeps the record, and [ISR](https://github.com/mpwilso/isr) tells the person accepting it what is left. Each runs on its own, and they have been run in that order once, on one change: [ISR's run log](https://github.com/mpwilso/isr/blob/master/docs/run-log.md). The other three stand alone: [Polarizer](https://github.com/mpwilso/polarizer) holds an agent's risky tool calls until a person approves them, [Mordecai](https://github.com/mpwilso/mordecai) judges whether a skill helps, and [Project Max-Q](https://github.com/mpwilso/Project-Max-Q) ranks job postings and checks resume claims."));
   // Where each jump goes is checked by the anchor rule above.
   assert.match(top, /^Jump to \[setup\]\(#setup\), /m);
 });

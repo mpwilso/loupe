@@ -52,7 +52,14 @@ export function runCli(
   }
   let failed = false;
   for (const path of paths) {
-    const { errors, warnings } = check(readFileSync(path, 'utf8'), path);
+    let text: string;
+    try {
+      text = readFileSync(path, 'utf8');
+    } catch {
+      console.error(`Can't read "${path}".`);
+      process.exit(2);
+    }
+    const { errors, warnings } = check(text, path);
     const lines = [...errors.map(format), ...warnings.map((w) => `warning: ${format(w)}`)];
     if (errors.length) failed = true;
     if (lines.length === 0) continue;

@@ -269,6 +269,14 @@ test('a missing templates folder is a plain error, not a crash', () => {
   assert.equal(run.stderr, 'Can\'t read the templates folder "no/such/folder".\n');
 });
 
+// A missing file used to end in a raw ENOENT stack trace from readFileSync.
+test('a file that cannot be read gets one plain line, from either checker', () => {
+  for (const name of ['check', 'check-context']) {
+    const run = spawnSync(process.execPath, ['src/run.js', name, 'no/such/file.md'], { cwd: root, encoding: 'utf8' });
+    assert.deepEqual([run.status, run.stdout, run.stderr], [2, '', 'Can\'t read "no/such/file.md".\n'], name);
+  }
+});
+
 test('a pass ends with the Node version, and too old a Node gets a plain "Not checked:" line', () => {
   const run = spawnSync(process.execPath, ['src/run.js', 'check', 'tests/fixtures/good-story.md'], { cwd: root, encoding: 'utf8' });
   assert.deepEqual([run.status, run.stdout], [0, checked]);

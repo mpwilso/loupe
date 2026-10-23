@@ -6,7 +6,7 @@ Every SVG here is drawn from code by `scripts/brand.ts`, from `palette.json` and
 
 A hexagon cut into six facets. Five are filled, from deep to light, clockwise from the top. The sixth stays open, a dashed outline: the unknown. It must always show.
 
-The filled facets fade in once, one after another, and hold. Viewers who ask for reduced motion see the finished mark straight away.
+Every ten seconds the filled facets dim briefly and return, one after another, clockwise. Nothing starts hidden, so a viewer that doesn't run the animation still sees the whole mark. Viewers who ask for reduced motion see it still.
 
 | File | Use |
 |---|---|
