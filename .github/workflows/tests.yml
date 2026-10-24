@@ -36,7 +36,7 @@ jobs:
       - run: scripts/test.sh 2>&1 | tee test-output.txt
         shell: bash
       - if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-output-${{ matrix.node }}
           path: test-output.txt
@@ -87,7 +87,7 @@ jobs:
       - run: scripts/build-skill.sh
       # GitHub zips the artifact itself, so the download is the skill with loupe/ at its root.
       # A glob keeps dist/ as the root; a plain dist/loupe/ would drop the loupe/ folder.
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: loupe-skill
           path: |
@@ -97,7 +97,7 @@ jobs:
           retention-days: 7
       # One folder, so the kit's files sit at its root: context/, templates/, inputs/, raw/ and the trial plan.
       - run: scripts/build-trial-kit.sh
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: pellwick-trial-kit
           path: build/pellwick-trial-kit/
