@@ -1,6 +1,6 @@
 # Use Loupe in Claude Code
 
-Loupe works in Claude Code, in a terminal or in the VS Code extension, the same way it works in claude.ai: the same story shape, the same checker, the same learning loop. The differences: your team's context lives in a `loupe/` folder in your repository, each story is saved as a file, and learned.md is edited in place, so there is no file to swap.
+Loupe works in Claude Code in the terminal, the same way it works in claude.ai: the same story shape, the same checker, the same learning loop. The differences: your team's context lives in a `loupe/` folder in your repository, each story is saved as a file, and learned.md is edited in place, so there is no file to swap. The terminal is tested; the VS Code extension isn't yet.
 
 You need Claude Code and Node 22.18 or newer.
 
