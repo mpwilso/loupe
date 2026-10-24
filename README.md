@@ -9,7 +9,7 @@
 
 <p align="center"><b>Turns meeting notes into stories a developer can build. It won't hand you one it can't back up.</b></p>
 
-A Claude skill for product managers. It turns meeting notes, tickets and emails into user stories a developer can build, and refuses to write one it can't back up.
+A Claude skill for product managers, in Claude or Claude Code. Each fact in a story points at where it came from, and an input too thin to build from gets the questions to ask instead of a story.
 
 Status: a portfolio project, built to show how I design, test and judge an AI tool. Tried on one invented team across ten trials, with reruns. Every trial is in [docs/trials](docs/trials/README.md), including the misses.
 

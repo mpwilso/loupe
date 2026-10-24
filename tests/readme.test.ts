@@ -104,10 +104,10 @@ test('the README opens with the lockup, both themes, the CI badge, the tagline, 
   assert.ok(top.includes('<img src="brand/lockup-light.svg" alt="Loupe" width="360">'));
   assert.ok(top.includes('<a href="https://github.com/mpwilso/loupe/actions/workflows/tests.yml"><img src="https://github.com/mpwilso/loupe/actions/workflows/tests.yml/badge.svg" alt="CI"></a>'));
   assert.ok(top.includes("Turns meeting notes into stories a developer can build. It won't hand you one it can't back up."));
-  assert.ok(top.includes("A Claude skill for product managers. It turns meeting notes, tickets and emails into user stories a developer can build, and refuses to write one it can't back up."));
+  assert.ok(top.includes("A Claude skill for product managers, in Claude or Claude Code. Each fact in a story points at where it came from, and an input too thin to build from gets the questions to ask instead of a story."));
   assert.ok(top.includes('Status: a portfolio project, built to show how I design, test and judge an AI tool. Tried on one invented team across ten trials, with reruns. Every trial is in [docs/trials](docs/trials/README.md), including the misses.'));
   // The plain sentence is the first prose a visitor reads: nothing but the lockup, the badge and the tagline comes before it.
-  assert.ok(top.indexOf('A Claude skill for product managers.') < top.indexOf('Status: '));
+  assert.ok(top.indexOf('A Claude skill for product managers,') < top.indexOf('Status: '));
   assert.doesNotMatch(top, /^Jump to /m, 'no hand-rolled table of contents');
 });
 
