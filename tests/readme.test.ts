@@ -98,21 +98,30 @@ test('every image the README references exists in the repo', () => {
   ]);
 });
 
-test('the README opens with the lockup, both themes, the tagline, the status line, where it runs, the six tools and a line of links to the sections', () => {
+test('the README opens with the lockup, both themes, the CI badge, the tagline, the plain sentence and the status line', () => {
   const top = readme.split('\n## ')[0];
   assert.ok(top.includes('<source media="(prefers-color-scheme: dark)" srcset="brand/lockup-dark.svg">'));
   assert.ok(top.includes('<img src="brand/lockup-light.svg" alt="Loupe" width="360">'));
-  assert.ok(top.includes("Story tools help you write faster. Loupe won't hand you a story it can't back up."));
-  assert.ok(top.includes('Status: A portfolio project, built to show how I design, test and judge an AI tool. Tried on one invented team across ten trials, with reruns. Every trial is in docs/trials, including the misses.'));
-  assert.ok(top.includes("get one that says what's known, unknown and assumed."));
-  assert.ok(top.includes("It runs in Claude, or in Claude Code, where it reads the team's context from your repository, can search your tracker before writing, and can create a ticket from a finished story with your approval."));
-  assert.ok(top.includes("Loupe is one of six tools, and one of three that run in order. Loupe writes the story, [Parallax](https://github.com/mpwilso/parallax) builds it under a gated agent loop and keeps the record, and [ISR](https://github.com/mpwilso/isr) tells the person accepting it what is left. Each runs on its own, and they have been run in that order once, on one change: [ISR's run log](https://github.com/mpwilso/isr/blob/master/docs/run-log.md). The other three stand alone: [Polarizer](https://github.com/mpwilso/polarizer) holds an agent's risky tool calls until a person approves them, [Mordecai](https://github.com/mpwilso/mordecai) judges whether a skill helps, and [Project Max-Q](https://github.com/mpwilso/Project-Max-Q) ranks job postings and checks resume claims."));
-  // Where each jump goes is checked by the anchor rule above.
-  assert.match(top, /^Jump to \[setup\]\(#setup\), /m);
+  assert.ok(top.includes('<a href="https://github.com/mpwilso/loupe/actions/workflows/tests.yml"><img src="https://github.com/mpwilso/loupe/actions/workflows/tests.yml/badge.svg" alt="CI"></a>'));
+  assert.ok(top.includes("Turns meeting notes into stories a developer can build. It won't hand you one it can't back up."));
+  assert.ok(top.includes("A Claude skill for product managers, in Claude or Claude Code. Each fact in a story points at where it came from, and an input too thin to build from gets the questions to ask instead of a story."));
+  assert.ok(top.includes('Status: a portfolio project, built to show how I design, test and judge an AI tool. Tried on one invented team across ten trials, with reruns. Every trial is in [docs/trials](docs/trials/README.md), including the misses.'));
+  // The plain sentence is the first prose a visitor reads: nothing but the lockup, the badge and the tagline comes before it.
+  assert.ok(top.indexOf('A Claude skill for product managers,') < top.indexOf('Status: '));
+  assert.doesNotMatch(top, /^Jump to /m, 'no hand-rolled table of contents');
+});
+
+test('the other tools are named once, near the end, and Loupe is plain text there', () => {
+  const others = section('The other tools');
+  assert.ok(others.includes("This is one of six tools. Three run in order: Loupe writes the story, [Parallax](https://github.com/mpwilso/parallax) builds it in a sandbox and keeps the record, and [ISR](https://github.com/mpwilso/isr) tells the person accepting it what is left to check. Three stand alone: [Polarizer](https://github.com/mpwilso/polarizer) holds an agent's risky tool calls until a person approves them, [Mordecai](https://github.com/mpwilso/mordecai) judges whether a Claude skill helps, and [Max Q](https://github.com/mpwilso/Project-Max-Q) ranks job postings against a profile. Each runs on its own. The three were run in order once, on one change: [ISR's run log](https://github.com/mpwilso/isr/blob/master/docs/run-log.md)."));
+  assert.doesNotMatch(others, /\[Loupe\]/);
+  const titles = sections().map((s) => s.title);
+  assert.deepEqual(titles.slice(-2), ['The other tools', 'License']);
+  assert.ok(section('License').includes('[MIT](LICENSE).'));
 });
 
 test('what is different includes the learning loop, and what is next no longer lists it', () => {
-  assert.ok(section("What's different").includes('- **It learns from corrections and answers.** Every learned fact names its source, and nothing is saved without your yes.'));
+  assert.ok(section("What's different").includes('- **It learns your team from your documents, your corrections and your answers.** Every learned fact names its source, and nothing is saved without your yes.'));
   const next = section("What's next");
   assert.doesNotMatch(next, /learning loop/i);
   assert.ok(next.includes('Checks against your lower environments that read and never change anything'));
@@ -142,64 +151,73 @@ test('the story section shows real lines from the example, then the whole story,
   assert.ok(body.includes('<details>') && body.includes('```markdown\n' + story + '```\n'), 'the full story, word for word');
 });
 
-// The proof and what each trial changed, in one list: each claim once, with the trial records it came from.
+const trialsIndex = readFileSync(join(root, 'docs/trials/README.md'), 'utf8');
+
+// Three findings in the README, each with the trial records it came from; the rest, one per trial, in the trials index.
 test('what the trials found: each bullet links the trials it came from, with the numbers they recorded', () => {
   const body = section('What the trials found');
   const items = body.split('\n').filter((line) => line.startsWith('- '));
-  assert.ok(items.length > 0, 'bullets');
+  assert.equal(items.length, 3, 'three bullets: the baseline, the guesses and the tickets');
   const has = (...parts: string[]) => assert.ok(items.some((item) => parts.every((part) => item.includes(part))), parts.join(' ... '));
   has('a usable estimate on 1 of 4 stories, against Loupe\'s 4 of 4', 'the same format every time', '(docs/trials/2026-09-30-trial-2.md)');
   has('9 guessed behaviors', 'trial 3 had 0', '(docs/trials/2026-09-30-trial-3.md)');
-  has('1 of 6 runs', 'all 6 runs in trial 4 used Loupe and passed the checker before they were shown, the refusal of thin input included, at about one to three minutes a story.', '[trial 5](docs/trials/2026-09-30-trial-5.md)');
-  has('in trial 5 every citation checked out: each known fact named the document that holds it.', '[trial 5](docs/trials/2026-09-30-trial-5.md)');
-  has('trial 6b passed every step it reran', '(docs/trials/2026-09-30-trial-6b.md)');
-  has('In trial 7, Loupe tried shell commands outside its rules, including a python edit, and permissions blocked them.', "Files mode now writes with Claude Code's file tools, never with shell commands");
-  has('the checker now needs a live source for a ticket anywhere in a story', '"always run the checker"', 'for v0.3.0 users too');
-  // The tracker evidence, with the totals in the trial 8 and 9 records.
-  has('Every tracker call in trials 8 to 8e was a read, 77 in all, and customer data surfaced 0 times.', '[trial 8](docs/trials/2026-09-30-trial-8.md)');
-  assert.match(readFileSync(join(root, 'docs/trials/2026-09-30-trial-8.md'), 'utf8'), /\| Tracker calls \| 77, all reads \|/);
   has('Every ticket created in trial 9 matched its story byte for byte, compared by script, and nothing was created without a yes.', '[trial 9](docs/trials/2026-10-01-trial-9.md)');
-  has('an unsettled behavior becomes a whole "To confirm" requirement; in 10c, all four address-change stories passed');
-  assert.ok(body.includes('From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).'));
+  assert.ok(body.includes('Each trial was run by hand and recorded, on one small invented team with a handful of inputs each. What every trial found, and what changed after it, is in [docs/trials](docs/trials/README.md).'));
   // The trials are evals run by hand; the scripts that measured trial 9 are tracked, not left in the gitignored build/.
-  assert.ok(body.includes('Evals: each trial is run by hand and recorded; the scripts that ran trial 9 and compared its tickets with their stories are in [scripts/trials](scripts/trials/).'));
+  assert.ok(body.includes('The scripts that ran trial 9 and compared its tickets with their stories are in [scripts/trials](scripts/trials/).'));
   for (const file of ['compare.py', 'run-all.sh', 'run-turn.sh', 'settings-flag.json']) assert.ok(existsSync(join(root, 'scripts/trials/trial-9', file)), file);
   for (const item of items) {
     const trials = [...item.matchAll(/\]\((docs\/trials\/[\w.-]+\.md)\)/g)].map((m) => m[1]);
     assert.ok(trials.length >= 1, `a trial record: ${item}`);
     for (const file of trials) assert.ok(existsSync(join(root, file)), file);
   }
+  // The findings that left the README live in the trials index, with their numbers.
+  for (const claim of [
+    "the skill didn't start in 1 of 6 runs, the refusal skipped the checker, and it broke four rules, the team's and its own, such as using the user story template for a bug.",
+    "Loupe ran and the checker passed in 6 of 6 runs, the refusal of thin input included, at about one to three minutes a story, and it got all four of trial 3's missed rules right, but some known facts cited a document that didn't hold them, because each context file listed its sources as a group.",
+    'with each fact in a context file now carrying its own source. Every known fact in the two finished stories cited the document that holds it',
+    '"remember this" went to learned.md, not memory; all five steps passed.',
+    "the first run tried shell commands outside its rules, including a python edit, and permissions blocked them, so files mode now writes with Claude Code's file tools, never with shell commands",
+    'All 77 tracker calls read, no customer email surfaced',
+    'the checker now needs a live source for a ticket anywhere in a story; a story marked "Not checked" without trying led to "always run the checker"; and repeat runs found that the setup guide\'s edit rule broke after a cd, which the guide\'s new rule fixes.',
+    'Trial 10 found two stories with an invented Example, and 10b three requirements stating behaviors the input never mentions; after both fixes, Examples keep to the input, an unsettled behavior becomes a whole "To confirm" requirement, and all four address-change stories passed in 10c.',
+  ]) assert.ok(trialsIndex.includes(claim), claim);
+  assert.match(readFileSync(join(root, 'docs/trials/2026-09-30-trial-8.md'), 'utf8'), /\| Tracker calls \| 77, all reads \|/);
 });
 
-test('the limits say exactly who ran and scored the trials', () => {
-  assert.ok(section('Limits').includes('- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with me checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trials 9 and 10 were measured by the Claude Code session that ran them, with me reviewing two readings in 10c. A separate reviewer scored trials 2 and 3 blind.'));
-  assert.ok(section('Limits').includes("- In claude.ai, you swap the updated learned.md into the project's files by hand; in Claude Code, Loupe edits it in place. Learning has been tested on the invented team and no other."));
+test('the limits keep three bullets, and the full list and who scored each trial live in docs', () => {
+  const limits = section('Limits');
+  assert.equal(limits.split('\n').filter((line) => line.startsWith('- ')).length, 3);
+  assert.ok(limits.includes('- Tested on one invented company, at about one to three minutes per story, by the people who built Loupe. [docs/trials](docs/trials/README.md) says who scored each trial, and which were blind.'));
+  assert.ok(limits.includes('The full list is in [docs/limits.md](docs/limits.md).'));
+  assert.ok(trialsIndex.includes('The trials were run by the people who built Loupe. The advisor scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trials 9 and 10 were measured by the Claude Code session that ran them, with Matt Wilson reviewing two readings in 10c. A separate reviewer scored trials 2 and 3 blind.'));
+  const full = readFileSync(join(root, 'docs/limits.md'), 'utf8');
+  for (const line of limits.split('\n').filter((line) => line.startsWith('- ')).slice(1)) assert.ok(full.includes(line), `in docs/limits.md too: ${line}`);
+  assert.ok(full.includes("- In claude.ai, you swap the updated learned.md into the project's files by hand; in Claude Code, Loupe edits it in place. Learning has been tested on the invented team and no other."));
   assert.doesNotMatch(readme, /doesn't learn from corrections yet/);
 });
 
-test('setup says what you need, and gets the skill from the latest release, nothing else', () => {
-  const setup = section('Setup');
-  assert.ok(setup.includes('You need a Claude account with Skills and code execution turned on.'));
+test('try it gives the three routes, gets the skill from the latest release, and says what is tested', () => {
+  const tryIt = section('Try it');
+  assert.ok(tryIt.includes('You need a Claude account with Skills and code execution turned on.'));
   // Actions artifacts last 7 days, so the release is the one route that is always there.
-  assert.ok(setup.includes('**Get the skill.** Download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest).'));
-  assert.doesNotMatch(readme, /\/actions\b/, 'no link to Actions artifacts');
+  assert.ok(tryIt.includes('- **Claude:** download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest)'));
+  assert.doesNotMatch(readme, /\/actions\/(?!workflows\/tests\.yml)/, 'no link to Actions artifacts; the CI badge is the one Actions link');
+  assert.ok(tryIt.includes('- **Claude Code plugin:** run `/plugin marketplace add mpwilso/loupe`, then `/plugin install loupe@loupe`. Untested in trials.'));
+  assert.ok(tryIt.includes('- **Claude Code installer:** clone this repository and run `node scripts/install-claude-code.ts`.'));
+  assert.ok(tryIt.includes('[docs/claude-project.md](docs/claude-project.md)') && tryIt.includes('[docs/claude-code.md](docs/claude-code.md)'));
+  assert.match(tryIt, /The terminal is tested; the VS Code extension isn't yet\./);
+  assert.ok(tryIt.includes('To search your tracker before writing, and to create tickets from finished stories, see [docs/live-context.md](docs/live-context.md).'));
+  // The guides hold the steps the README used to repeat.
+  const project = readFileSync(join(root, 'docs/claude-project.md'), 'utf8');
+  for (const step of ['## 1. Get the skill zip', '## 2. Upload the skill', '## 3. Create the project', '## 4. Add the context files', '## 5. Share the project']) assert.ok(project.includes(step), step);
+  const code = readFileSync(join(root, 'docs/claude-code.md'), 'utf8');
+  assert.ok(code.includes('```\ngit clone https://github.com/mpwilso/loupe.git\ncd loupe\nnode scripts/install-claude-code.ts\n```'));
+  assert.match(code, /The terminal is tested; the VS Code extension isn't yet\./);
+  assert.doesNotMatch(code, /in a terminal or in the VS Code extension/, 'the guide no longer says the extension works');
 });
 
-test('under the hood: the repo map is real, and the documented checker command passes', () => {
-  const hood = section('Under the hood');
-  assert.ok(hood.includes("The model writes the story, and code checks it, so a story's shape doesn't depend on the model behaving"));
-  for (const [, dir] of hood.matchAll(/^- `([\w/.-]+\/)`/gm)) assert.ok(existsSync(join(root, dir)), dir);
-  for (const dir of ['skill/', 'spec/', 'src/', 'examples/pellwick/', 'docs/', 'docs/trials/', 'mock/', 'brand/', 'scripts/']) assert.ok(hood.includes(`- \`${dir}\``), dir);
-  assert.ok(hood.includes('`scripts/test.sh`'));
-  const command = hood.match(/```\n(node src\/run\.js check [^\n]+)\n```/)?.[1];
-  assert.ok(command, 'a checker command in a code block');
-  const run = spawnSync(process.execPath, command.split(' ').slice(1), { cwd: root, encoding: 'utf8' });
-  assert.deepEqual([run.status, run.stdout], [0, `Checked with Node ${process.version}.\n`], command);
-  assert.ok(hood.includes('[LICENSE](LICENSE)'));
-  assert.ok(hood.includes('[claude-code.md](docs/claude-code.md)') && hood.includes('[live-context.md](docs/live-context.md)'));
-});
-
-test('how it was built says who directed it and links the trials', () => {
+test('how it was built says who directed it, how the checker works, and the documented checker command passes', () => {
   const built = section('How it was built');
   assert.ok(built.includes('I designed and directed Loupe: I set the quality bar,'));
   assert.ok(built.includes('Claude Code wrote most of the code.'));
@@ -207,6 +225,22 @@ test('how it was built says who directed it and links the trials', () => {
   assert.ok(built.includes('Two of the trials were scored in blind review, one of them against plain Claude.'));
   assert.doesNotMatch(built, /tested live in claude\.ai/, 'trials 7 to 9 ran in Claude Code');
   assert.ok(built.includes('[docs/trials](docs/trials/)'));
+  assert.ok(built.includes("The model writes the story, and code checks it, so a story's shape doesn't depend on the model behaving"));
+  assert.ok(built.includes('Zero runtime dependencies. TypeScript, run directly by Node 22.18 or newer. CI tests on Node 22.18.0 and 24.21.0.'));
+  assert.ok(built.includes('`scripts/test.sh`'));
+  const command = built.match(/```\n(node src\/run\.js check [^\n]+)\n```/)?.[1];
+  assert.ok(command, 'a checker command in a code block');
+  const run = spawnSync(process.execPath, command.split(' ').slice(1), { cwd: root, encoding: 'utf8' });
+  assert.deepEqual([run.status, run.stdout], [0, `Checked with Node ${process.version}.\n`], command);
+  assert.ok(built.includes('[docs/layout.md](docs/layout.md)'));
+});
+
+test('the folder map in docs/layout.md is real', () => {
+  const layout = readFileSync(join(root, 'docs/layout.md'), 'utf8');
+  for (const [, dir] of layout.matchAll(/^- `([\w/.-]+\/)`/gm)) assert.ok(existsSync(join(root, dir)), dir);
+  for (const dir of ['skill/', 'spec/', 'src/', 'examples/pellwick/', 'docs/', 'docs/trials/', 'mock/', 'brand/', 'scripts/']) assert.ok(layout.includes(`- \`${dir}\``), dir);
+  for (const [, link] of layout.matchAll(/\]\(([^)\s]+)\)/g)) assert.ok(existsSync(join(root, 'docs', link)), link);
+  assert.ok(layout.includes('[claude-code.md](claude-code.md)') && layout.includes('[live-context.md](live-context.md)'));
 });
 
 test('the diagram is shown for both themes', () => {
@@ -215,15 +249,8 @@ test('the diagram is shown for both themes', () => {
   assert.ok(body.includes('src="docs/img/how-it-works-light.svg"'));
 });
 
-// After trial 7b: Claude Code support, with what was and wasn't tested.
-test('setup covers Claude Code: the install commands, the guide, and what is tested', () => {
-  const setup = section('Setup');
-  const part = setup.split('### Use it in Claude Code\n')[1] ?? '';
-  assert.ok(part, 'a "Use it in Claude Code" part');
-  assert.ok(part.includes('```\ngit clone https://github.com/mpwilso/loupe.git\ncd loupe\nnode scripts/install-claude-code.ts\n```'));
-  assert.ok(part.includes('[docs/claude-code.md](docs/claude-code.md)'));
-  assert.match(part, /The terminal is tested; the VS Code extension isn't yet\./);
-  assert.ok(part.includes('To search your tracker before writing, and to create tickets from finished stories, see [docs/live-context.md](docs/live-context.md).'));
+// After trial 7b: Claude Code support, in what is different and what is next.
+test('what is different covers Claude Code, and what is next has moved on from it', () => {
   assert.ok(section("What's different").includes('- **In Claude Code, it keeps to its folder.** It reads your team\'s context from a `loupe/` folder in your repository and writes nowhere else.'));
   const next = section("What's next");
   assert.doesNotMatch(next, /A VS Code version/);
@@ -231,15 +258,15 @@ test('setup covers Claude Code: the install commands, the guide, and what is tes
   assert.doesNotMatch(next, /creating Jira tickets/, 'ticket creation shipped in M4c');
 });
 
-// M4b: the tracker, in plain words, with its limits as measured in trial 8e.
-test('the README says what reading a tracker does, and its limits as measured', () => {
-  assert.ok(section("What's different").includes('- **In Claude Code, it can read your tracker.** It searches the team\'s tracker before writing, cites any ticket it uses with when it was read, flags likely duplicates, and never changes the tracker.'));
+// M4b and M4c: the tracker, in plain words, with its limits as measured in trial 8e.
+test('the README says what reading a tracker and creating tickets do, and the limits as measured', () => {
+  assert.ok(section("What's different").includes('- **In Claude Code, it can read your tracker and create tickets.** It searches the team\'s tracker before writing, cites any ticket it uses with when it was read, and flags likely duplicates. It creates a ticket from a finished story after showing you exactly what it will create and asking, and it never changes an existing ticket.'));
   const limits = section('Limits');
   assert.ok(limits.includes('- The customer-data detector catches emails and secrets, but not names, phone numbers or street addresses.'));
   assert.ok(limits.includes("- Reading a tracker and creating tickets were tested on an invented mock tracker, never a real one, with Claude Code's own permission prompt stood in for in trial 9."));
   // M4c, trial 9.
   assert.ok(section("What's different").includes('- **Stories are written for developers and QA.** User and job stories have a background, numbered requirements and test scenarios, each scenario with a happy path and at least one unhappy path.'));
-  assert.ok(section("What's different").includes('- **It can create a ticket from a finished story.** It shows exactly what it will create and asks before it does, and it never changes an existing ticket.'));
-  assert.ok(limits.includes('- Where Loupe cites tracker facts still varies from run to run: in trial 8e, 2 of 3 stories listed a fact from a ticket under Known, and the third left it as a question.'));
-  assert.match(readFileSync(join(root, 'docs/trials/2026-09-30-trial-8.md'), 'utf8'), /\| 8e \| 2 of 3 \|/, 'the rate the README quotes is the one recorded');
+  const full = readFileSync(join(root, 'docs/limits.md'), 'utf8');
+  assert.ok(full.includes('- Where Loupe cites tracker facts still varies from run to run: in trial 8e, 2 of 3 stories listed a fact from a ticket under Known, and the third left it as a question.'));
+  assert.match(readFileSync(join(root, 'docs/trials/2026-09-30-trial-8.md'), 'utf8'), /\| 8e \| 2 of 3 \|/, 'the rate the docs quote is the one recorded');
 });

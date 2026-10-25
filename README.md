@@ -5,25 +5,13 @@
   </picture>
 </p>
 
-<p align="center"><b>Story tools help you write faster. Loupe won't hand you a story it can't back up.</b></p>
+<p align="center"><a href="https://github.com/mpwilso/loupe/actions/workflows/tests.yml"><img src="https://github.com/mpwilso/loupe/actions/workflows/tests.yml/badge.svg" alt="CI"></a></p>
 
-Status: A portfolio project, built to show how I design, test and judge an AI tool. Tried on one invented team across ten trials, with reruns. Every trial is in docs/trials, including the misses.
+<p align="center"><b>Turns meeting notes into stories a developer can build. It won't hand you one it can't back up.</b></p>
 
-- **Claude:** download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest), upload it in Customize, then Skills, and follow [setup](#setup).
-- **Claude Code plugin:** run `/plugin marketplace add mpwilso/loupe`, then `/plugin install loupe@loupe`. No trial has used it yet.
-- **Claude Code installer:** clone this repository and run `node scripts/install-claude-code.ts`.
+A Claude skill for product managers, in Claude or Claude Code. Each fact in a story points at where it came from, and an input too thin to build from gets the questions to ask instead of a story.
 
-Loupe is a Claude skill for product managers. It turns meeting notes, tickets and emails into stories a developer can build without a second meeting. Product owners and product managers write with it. Developers, testers and anyone else who reads a story get one that says what's known, unknown and assumed.
-It runs in Claude, or in Claude Code, where it reads the team's context from your repository, can search your tracker before writing, and can create a ticket from a finished story with your approval.
-What sets it apart from collections of product manager skills: a checker enforces the story shape, every known fact cites its source, thin input gets questions instead of a story, and every trial is published with its misses.
-
-Loupe is one of six tools, and one of three that run in order. Loupe writes the story, [Parallax](https://github.com/mpwilso/parallax) builds it under a gated agent loop and keeps the record, and [ISR](https://github.com/mpwilso/isr) tells the person accepting it what is left. Each runs on its own, and they have been run in that order once, on one change: [ISR's run log](https://github.com/mpwilso/isr/blob/master/docs/run-log.md). The other three stand alone: [Polarizer](https://github.com/mpwilso/polarizer) holds an agent's risky tool calls until a person approves them, [Mordecai](https://github.com/mpwilso/mordecai) judges whether a skill helps, and [Project Max-Q](https://github.com/mpwilso/Project-Max-Q) ranks job postings and checks resume claims.
-
-Jump to [setup](#setup), [an example story](#what-a-story-looks-like), [what the trials found](#what-the-trials-found), [how it works under the hood](#under-the-hood), or [how it was built](#how-it-was-built).
-
-## Why it exists
-
-A story can look done and still hide what nobody knows: a rule no one checked, a screen no one described, a number with no source. The developer finds the gaps halfway through the build, and the team books a second meeting to fill them. Loupe puts those gaps on the page before anyone starts.
+Status: a portfolio project, built to show how I design, test and judge an AI tool. Tried on one invented team across ten trials, with reruns. Every trial is in [docs/trials](docs/trials/README.md), including the misses.
 
 ## What a story looks like
 
@@ -153,33 +141,16 @@ Before release: Tell support that subscribers can skip online and how skips show
 
 ## What's different
 
+A story can look done and still hide what nobody knows: a rule no one checked, a screen no one described, a number with no source. The developer finds the gaps halfway through the build, and the team books a second meeting to fill them. Loupe puts those gaps on the page before anyone starts.
+
 - **It refuses thin input.** Below the bar you get "Not ready yet" and the questions to ask, not a story.
 - **Every known fact names its source.** A fact with no source is unknown, and the story says so.
 - **Guesses are marked "To confirm".** They are never stated as fact.
 - **Stories are written for developers and QA.** User and job stories have a background, numbered requirements and test scenarios, each scenario with a happy path and at least one unhappy path.
 - **A checker enforces the shape.** Loupe keeps fixing the story until it passes.
-- **It learns your team from your own documents.** It turns them into short context files, every fact with its source.
-- **It learns from corrections and answers.** Every learned fact names its source, and nothing is saved without your yes.
+- **It learns your team from your documents, your corrections and your answers.** Every learned fact names its source, and nothing is saved without your yes.
 - **In Claude Code, it keeps to its folder.** It reads your team's context from a `loupe/` folder in your repository and writes nowhere else.
-- **In Claude Code, it can read your tracker.** It searches the team's tracker before writing, cites any ticket it uses with when it was read, flags likely duplicates, and never changes the tracker.
-- **It can create a ticket from a finished story.** It shows exactly what it will create and asks before it does, and it never changes an existing ticket.
-
-## What the trials found
-
-- **A fair baseline.** Trial 1's plain-Claude comparison was given Loupe's own context files, which taught it Loupe's format. In trial 2 it got the team's raw files and nothing else. In blind review it gave a usable estimate on 1 of 4 stories, against Loupe's 4 of 4, and Loupe kept the same format every time. ([trial 1](docs/trials/2026-09-30-trial-1.md), [trial 2](docs/trials/2026-09-30-trial-2.md))
-- **Guesses marked.** In trial 3's blind review, trial 2's stories stated 9 guessed behaviors as fact. Before trial 3, the "To confirm" rule was extended from behavior to screen details, and trial 3 had 0. ([trial 2](docs/trials/2026-09-30-trial-2.md), [trial 3](docs/trials/2026-09-30-trial-3.md))
-- **Starts every time.** In trial 3 the skill didn't start in 1 of 6 runs, and a refusal skipped the checker. With project instructions added, all 6 runs in trial 4 used Loupe and passed the checker before they were shown, the refusal of thin input included, at about one to three minutes a story. ([trial 3](docs/trials/2026-09-30-trial-3.md), [trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
-- **Rules it missed.** Trial 3 broke four rules, the team's and its own, such as using the user story template for a bug. After fixes, trial 4 got all four right. ([trial 3](docs/trials/2026-09-30-trial-3.md), [trial 4](docs/trials/2026-09-30-trial-4.md))
-- **One source per fact.** In trial 4, some facts cited a document that didn't hold them, because each context file listed its sources as a group. Each fact now carries its own source, and in trial 5 every citation checked out: each known fact named the document that holds it. ([trial 4](docs/trials/2026-09-30-trial-4.md), [trial 5](docs/trials/2026-09-30-trial-5.md))
-- **Learning that asks before saving.** Trial 6 found a learned fact with no person in its source, approved entries changed after the yes, and "remember this" saved to Claude's own memory with no source. After the fixes, trial 6b passed every step it reran. ([trial 6](docs/trials/2026-09-30-trial-6.md), [trial 6b](docs/trials/2026-09-30-trial-6b.md))
-- **File tools, not shell commands.** In trial 7, Loupe tried shell commands outside its rules, including a python edit, and permissions blocked them. Files mode now writes with Claude Code's file tools, never with shell commands, and the guide's rules make Claude Code keep it inside `loupe/`. The rerun passed every step. ([trial 7](docs/trials/2026-09-30-trial-7.md))
-- **Tracker facts, sourced.** Trial 8 named tracker tickets in questions with sources the checker never looked at, so the checker now needs a live source for a ticket anywhere in a story. A story marked "Not checked" without trying led to "always run the checker". Repeat runs found that the setup guide's edit rule broke after a `cd`; the guide's new rule fixes it, for v0.3.0 users too. Every tracker call in trials 8 to 8e was a read, 77 in all, and customer data surfaced 0 times. ([trial 8](docs/trials/2026-09-30-trial-8.md))
-- **Tickets after a yes.** Every ticket created in trial 9 matched its story byte for byte, compared by script, and nothing was created without a yes. ([trial 9](docs/trials/2026-10-01-trial-9.md))
-- **Examples and requirements kept to the input.** In trial 10, two stories invented a detail in their Example, and in 10b, three stated behaviors the input never mentions as requirements. Examples now keep to what the input says, and an unsettled behavior becomes a whole "To confirm" requirement; in 10c, all four address-change stories passed. ([trial 10](docs/trials/2026-10-01-trial-10.md))
-
-From trials on one small invented team, a handful of inputs each; see [docs/trials](docs/trials/).
-
-Evals: each trial is run by hand and recorded; the scripts that ran trial 9 and compared its tickets with their stories are in [scripts/trials](scripts/trials/).
+- **In Claude Code, it can read your tracker and create tickets.** It searches the team's tracker before writing, cites any ticket it uses with when it was read, and flags likely duplicates. It creates a ticket from a finished story after showing you exactly what it will create and asking, and it never changes an existing ticket.
 
 ## How it works
 
@@ -187,52 +158,35 @@ Evals: each trial is run by hand and recorded; the scripts that ran trial 9 and 
 
 Loupe learns your team once, from your own documents. Each input then gets a readiness check, a story in your team's template, and a checker that sends it back until it fits. Before you see it, Loupe rereads every known fact against its source.
 
+## Try it
+
+- **Claude:** download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest) and upload it in Customize, then Skills. You need a Claude account with Skills and code execution turned on. The project setup, step by step, is in [docs/claude-project.md](docs/claude-project.md).
+- **Claude Code plugin:** run `/plugin marketplace add mpwilso/loupe`, then `/plugin install loupe@loupe`. Untested in trials.
+- **Claude Code installer:** clone this repository and run `node scripts/install-claude-code.ts`. Then keep your team's context in a `loupe/` folder in your repository: [docs/claude-code.md](docs/claude-code.md). The terminal is tested; the VS Code extension isn't yet.
+
+Then type "set up the team" and point Loupe at your team's documents. After that, paste notes, a transcript, a ticket or an email. To search your tracker before writing, and to create tickets from finished stories, see [docs/live-context.md](docs/live-context.md).
+
+## What the trials found
+
+- **A fair baseline.** Trial 1's plain-Claude comparison was given Loupe's own context files, which taught it Loupe's format. In trial 2 it got the team's raw files and nothing else. In blind review it gave a usable estimate on 1 of 4 stories, against Loupe's 4 of 4, and Loupe kept the same format every time. ([trial 1](docs/trials/2026-09-30-trial-1.md), [trial 2](docs/trials/2026-09-30-trial-2.md))
+- **Guesses marked.** In trial 3's blind review, trial 2's stories stated 9 guessed behaviors as fact. Before trial 3, the "To confirm" rule was extended from behavior to screen details, and trial 3 had 0. ([trial 2](docs/trials/2026-09-30-trial-2.md), [trial 3](docs/trials/2026-09-30-trial-3.md))
+- **Tickets after a yes.** Every ticket created in trial 9 matched its story byte for byte, compared by script, and nothing was created without a yes. ([trial 9](docs/trials/2026-10-01-trial-9.md))
+
+Each trial was run by hand and recorded, on one small invented team with a handful of inputs each. What every trial found, and what changed after it, is in [docs/trials](docs/trials/README.md). The scripts that ran trial 9 and compared its tickets with their stories are in [scripts/trials](scripts/trials/).
+
 ## Limits
 
-- Tested on one invented company, at about one to three minutes per story.
-- Skills on claude.ai belong to one person, so each teammate uploads it once.
-- In claude.ai, you swap the updated learned.md into the project's files by hand; in Claude Code, Loupe edits it in place. Learning has been tested on the invented team and no other.
-- The customer-data detector catches emails and secrets, but not names, phone numbers or street addresses.
+- Tested on one invented company, at about one to three minutes per story, by the people who built Loupe. [docs/trials](docs/trials/README.md) says who scored each trial, and which were blind.
 - Reading a tracker and creating tickets were tested on an invented mock tracker, never a real one, with Claude Code's own permission prompt stood in for in trial 9.
-- Where Loupe cites tracker facts still varies from run to run: in trial 8e, 2 of 3 stories listed a fact from a ticket under Known, and the third left it as a question.
-- The trials were run by the people who built Loupe. The advisor, Claude in a separate claude.ai chat with me checking, scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trials 9 and 10 were measured by the Claude Code session that ran them, with me reviewing two readings in 10c. A separate reviewer scored trials 2 and 3 blind.
+- The customer-data detector catches emails and secrets, but not names, phone numbers or street addresses.
 
-## Setup
+The full list is in [docs/limits.md](docs/limits.md).
 
-You need a Claude account with Skills and code execution turned on.
+## How it was built
 
-1. **Get the skill.** Download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest).
-2. **Turn on code execution.** In Claude's settings, turn on "Code execution and file creation". The checker needs it.
-3. **Upload the skill.** In Claude, open Customize, then Skills, and upload the zip. Each teammate does this once.
-4. **Create the project.** Make a Claude Project and paste the project instructions from [docs/claude-project.md](docs/claude-project.md).
-5. **Set up the team.** In the project, type "set up the team", then add the context files it gives you to the project's knowledge. The full steps, with sharing, are in [docs/claude-project.md](docs/claude-project.md).
+I designed and directed Loupe: I set the quality bar, designed ten trials, with reruns, and fixed what each exposed. Trials 1 to 6b were run in claude.ai, and trials 7 to 10 in Claude Code. Two of the trials were scored in blind review, one of them against plain Claude. Claude Code wrote most of the code. The trials are in [docs/trials](docs/trials/).
 
-### Use it in Claude Code
-
-```
-git clone https://github.com/mpwilso/loupe.git
-cd loupe
-node scripts/install-claude-code.ts
-```
-
-Then keep your team's context in a `loupe/` folder in your repository. The full steps are in [docs/claude-code.md](docs/claude-code.md). The terminal is tested; the VS Code extension isn't yet.
-To search your tracker before writing, and to create tickets from finished stories, see [docs/live-context.md](docs/live-context.md).
-
-## Under the hood
-
-The model writes the story, and code checks it, so a story's shape doesn't depend on the model behaving: the checker rejects any story that doesn't fit, and a draft it couldn't check says so.
-
-- `skill/`: the skill's instructions and writing rules.
-- `spec/`: the story shape, the readiness bar, the plain-language rules and the context-file format, as data.
-- `src/`: the checkers.
-- `examples/pellwick/`: an invented team used for trials, from its raw documents to the expected stories.
-- `docs/`: the guides, such as [claude-code.md](docs/claude-code.md) for Claude Code and [live-context.md](docs/live-context.md) for the tracker.
-- `docs/trials/`: what each trial found.
-- `mock/`: an invented tracker for trying the tracker features.
-- `brand/`: the mark, lockups and palette. `node scripts/brand.ts` draws them, and the diagram; see [brand/](brand/README.md).
-- `scripts/`: the test runner, the skill builder, the brand drawing and the trial 9 scripts.
-
-The story shape is data in `spec/*.json`. The checker in `src/` enforces it, and the skill loops until the story passes. Zero runtime dependencies. TypeScript, run directly by Node 22.18 or newer. CI tests on Node 22.18.0 and 24.21.0.
+The model writes the story, and code checks it, so a story's shape doesn't depend on the model behaving: the checker rejects any story that doesn't fit, and a draft it couldn't check says so. The story shape is data in `spec/*.json`. The checker in `src/` enforces it, and the skill loops until the story passes. Zero runtime dependencies. TypeScript, run directly by Node 22.18 or newer. CI tests on Node 22.18.0 and 24.21.0.
 
 Run the tests with `scripts/test.sh`. Check a story file yourself with:
 
@@ -240,13 +194,17 @@ Run the tests with `scripts/test.sh`. Check a story file yourself with:
 node src/run.js check examples/pellwick/expected/skip-a-box.md
 ```
 
-It prints `Checked with Node` and the version when the story passes, or one line per problem when it doesn't. Use `check-context` in place of `check` for context files. MIT license: [LICENSE](LICENSE).
-
-## How it was built
-
-I designed and directed Loupe: I set the quality bar, designed ten trials, with reruns, and fixed what each exposed. Trials 1 to 6b were run in claude.ai, and trials 7 to 10 in Claude Code. Two of the trials were scored in blind review, one of them against plain Claude. Claude Code wrote most of the code. The trials are in [docs/trials](docs/trials/).
+It prints `Checked with Node` and the version when the story passes, or one line per problem when it doesn't. Use `check-context` in place of `check` for context files. What each folder holds is in [docs/layout.md](docs/layout.md).
 
 ## What's next
 
 1. Checks against your lower environments that read and never change anything, so a story can cite how the system behaves today.
 2. Estimates calibrated on your team's history.
+
+## The other tools
+
+This is one of six tools. Three run in order: Loupe writes the story, [Parallax](https://github.com/mpwilso/parallax) builds it in a sandbox and keeps the record, and [ISR](https://github.com/mpwilso/isr) tells the person accepting it what is left to check. Three stand alone: [Polarizer](https://github.com/mpwilso/polarizer) holds an agent's risky tool calls until a person approves them, [Mordecai](https://github.com/mpwilso/mordecai) judges whether a Claude skill helps, and [Max Q](https://github.com/mpwilso/Project-Max-Q) ranks job postings against a profile. Each runs on its own. The three were run in order once, on one change: [ISR's run log](https://github.com/mpwilso/isr/blob/master/docs/run-log.md).
+
+## License
+
+[MIT](LICENSE).
