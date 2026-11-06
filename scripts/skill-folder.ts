@@ -17,6 +17,7 @@ export function skillFiles(): Record<string, string> {
     'files-mode.md': 'skill/files-mode.md',
     'tracker.md': 'skill/tracker.md',
     'tracker-write.md': 'skill/tracker-write.md',
+  'looks.md': 'skill/looks.md',
     ...Object.fromEntries(['run.js', 'node-version.js', 'check.ts', 'check-context.ts', 'check-folder.ts', 'check-tickets.ts', 'spec.ts'].map((f) => [`src/${f}`, `src/${f}`])),
     ...Object.fromEntries(folder('spec', '.json').map((f) => [`spec/${f}`, `spec/${f}`])),
     ...Object.fromEntries(folder('templates', '.md').map((f) => [`templates/${f}`, `templates/${f}`])),

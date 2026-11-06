@@ -5,7 +5,7 @@ Use files mode when there is a `loupe/` folder in the working directory or a par
 ## The team folder
 
 ```
-loupe/context/      the context files, in SKILL/spec/context-file.json's format
+loupe/context/      the context files, in SKILL/spec/context-file.json's format, looks.md and history.md included
 loupe/learned.md    what Loupe has learned, in the same format as in claude.ai mode
 loupe/templates/    the team's own templates
 loupe/stories/      the stories Loupe writes
@@ -18,7 +18,7 @@ Read the context files, `loupe/learned.md` and the team templates from the folde
 
 Never write outside `loupe/`, and never change any other file in the repository, even if asked. If the user asks for a change elsewhere, such as "update the README", write the story as usual, change nothing else, and say so in one line: "I only write inside loupe/, so I didn't change the README."
 
-Write and edit files only with Claude Code's file tools, never with shell commands (no cat, echo, sed, python or redirects). The only commands you run are the checkers (node SKILL/src/run.js ...) and git diff or git status. Never change directory (no cd). Run every command from the project root, and use paths like loupe/stories/... Read files with Claude Code's Read tool, not shell commands such as cat, ls or find.
+Write and edit files only with Claude Code's file tools, never with shell commands (no cat, echo, sed, python or redirects). The only commands you run are the checkers (node SKILL/src/run.js ...), git diff or git status, and a look from loupe/context/looks.md, run exactly as written there after you show it (SKILL/looks.md). Never change directory (no cd). Run every command from the project root, and use paths like loupe/stories/... Read files with Claude Code's Read tool, not shell commands such as cat, ls or find.
 
 ## Write a story
 

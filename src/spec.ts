@@ -11,6 +11,30 @@ export function fill(template: string | undefined, vars: Record<string, string |
   return (template ?? '').replace(/\{(\w+)\}/g, (whole, key: string) => (key in vars ? String(vars[key]) : whole));
 }
 
+export type EntryField = { line: number; value: string };
+export type Entry = { line: number; text: string; fields: Map<string, EntryField> };
+export type Entries = { header: { line: number; text: string }[]; entries: Entry[]; unknown: { line: number; field: string }[]; stray: number[] };
+
+// The body of a file of entries, like learned.md: a short header, then entries starting "- ", each followed by its
+// fields, indented. Headings are skipped. A field not in the list, or a line that is neither, is reported, not kept.
+export function parseEntries(lines: string[], end: number, rule: { entry: string; field: string; fields: string[] }): Entries {
+  const found: Entries = { header: [], entries: [], unknown: [], stray: [] };
+  lines.slice(end + 1).forEach((raw, i) => {
+    const line = end + i + 2;
+    const text = raw.trim();
+    const entry = new RegExp(rule.entry).exec(raw);
+    const field = new RegExp(rule.field).exec(raw);
+    if (!text || text.startsWith('#')) return;
+    if (entry) found.entries.push({ line, text: entry[1], fields: new Map() });
+    else if (field && found.entries.length) {
+      if (!rule.fields.includes(field[1])) found.unknown.push({ line, field: field[1] });
+      else found.entries.at(-1)!.fields.set(field[1], { line, value: field[2] });
+    } else if (found.entries.length) found.stray.push(line);
+    else found.header.push({ line, text });
+  });
+  return found;
+}
+
 export function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

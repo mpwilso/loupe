@@ -1,0 +1,20 @@
+{
+  "environment": "staging",
+  "subscribers": [
+    {
+      "id": "1042",
+      "nextBox": { "box": "B-7731", "ships": "2026-10-09", "status": "scheduled", "skipped": false },
+      "boxes": [
+        { "box": "B-7702", "shipped": "2026-09-11", "status": "delivered" },
+        { "box": "B-7640", "shipped": "2026-08-14", "status": "delivered" }
+      ]
+    },
+    {
+      "id": "1057",
+      "nextBox": { "box": "B-7745", "ships": "2026-10-23", "status": "scheduled", "skipped": true },
+      "boxes": [
+        { "box": "B-7710", "shipped": "2026-09-11", "status": "delivered" }
+      ]
+    }
+  ]
+}

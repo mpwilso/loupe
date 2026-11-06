@@ -1,29 +1,43 @@
 // Checks a context file against the rules in spec/context-file.json.
-// learned.md, the file Loupe proposes and a person approves, has entries with their own fields instead of a source on
-// every line. Check it together with the team's other context files, since its "replaces:" lines quote them.
+// Three files have entries with their own fields instead of a source on every line: learned.md, the file Loupe proposes
+// and a person approves (check it with the team's other context files, since its "replaces:" lines quote them);
+// looks.md, the read-only looks at lower environments; and history.md, what finished stories were estimated at and took.
 // Usage: node src/check-context.ts path/to/file.md ...
 // Set LOUPE_TODAY=YYYY-MM-DD to check staleness against a fixed date.
 import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
-import { fill, frontMatter, isRealDate, loadSpec, runCli, todayFromEnv, type Problem } from './spec.ts';
+import { fill, frontMatter, isRealDate, loadSpec, parseEntries, runCli, todayFromEnv, type Entry, type Problem } from './spec.ts';
 
 type Rule = { pattern: string; message?: string };
-type LearnedSpec = {
+type EntriesSpec = {
   fileName: string;
-  maxBodyWords: number;
-  foldAfterWords: number;
-  foldMessage?: string;
   header: Rule;
   entry: string;
   field: string;
   fields: string[];
   unknownFieldMessage?: string;
   strayMessage?: string;
+};
+type LearnedSpec = EntriesSpec & {
+  maxBodyWords: number;
+  foldAfterWords: number;
+  foldMessage?: string;
   sentence: { end: string; second: string; message?: string };
   kind: Rule;
   source: Rule & { dateMessage?: string };
   applies: Rule;
   replaces: Rule & { notFoundMessage?: string; duplicateMessage?: string };
+};
+type LooksSpec = EntriesSpec & {
+  sentence: { end: string; second: string; message?: string };
+  environment: Rule & { never: string; neverMessage?: string };
+  run: Rule & { writes: { what: string; pattern: string; flags?: string }[]; writesMessage?: string };
+  source: Rule & { dateMessage?: string };
+};
+type HistorySpec = EntriesSpec & {
+  estimated: Rule & { ascendingMessage?: string };
+  actual: Rule;
+  source: Rule & { dateMessage?: string };
 };
 
 export type ContextSpec = {
@@ -36,11 +50,14 @@ export type ContextSpec = {
   lineSource: { exempt: string; pattern: string; message?: string };
   secrets: { what: string; pattern: string; flags?: string }[];
   learned: LearnedSpec;
+  looks: LooksSpec;
+  history: HistorySpec;
   messages: Record<string, string>;
 };
 
 // learned: check the file as learned.md. others: the texts of the team's other context files.
-export type ContextOptions = { learned?: boolean; others?: string[] };
+// looks: check it as looks.md. history: check it as history.md.
+export type ContextOptions = { learned?: boolean; looks?: boolean; history?: boolean; others?: string[] };
 
 export const contextSpec = loadSpec<ContextSpec>('context-file.json');
 let spec: ContextSpec;
@@ -53,6 +70,12 @@ export function setContextSpec(next: ContextSpec): void {
 }
 setContextSpec(contextSpec);
 const DAY = 24 * 60 * 60 * 1000;
+
+// The options for a context file, from its name: learned.md, looks.md and history.md have their own rules.
+export function contextOptions(path: string): ContextOptions {
+  const name = basename(path);
+  return { learned: name === spec.learned.fileName, looks: name === spec.looks.fileName, history: name === spec.history.fileName };
+}
 
 export function checkContext(text: string, today = new Date(), options: ContextOptions = {}): { errors: Problem[]; warnings: Problem[] } {
   const { errors, warnings } = findProblems(text, today, options);
@@ -102,8 +125,10 @@ function findProblems(text: string, today: Date, options: ContextOptions): { err
   }
 
   // Every fact line names its own source, so a story can cite the document that holds it. Headings are exempt.
-  // learned.md names each entry's source in a field instead.
+  // learned.md, looks.md and history.md name each entry's source in a field instead.
   if (options.learned) errors.push(...checkLearned(lines, end, options.others ?? []));
+  else if (options.looks) errors.push(...checkLooks(lines, end));
+  else if (options.history) errors.push(...checkHistory(lines, end));
   else {
     lines.slice(end + 1).forEach((line, i) => {
       const { exempt, pattern, message } = spec.lineSource;
@@ -132,41 +157,41 @@ const factsIn = (text: string) => {
   return lines.slice(frontMatter(lines).end + 1).map((line) => line.trim().replace(/^(- |\d+\. )/, '').replace(/ \([^()]+\)$/, ''));
 };
 
-type Entry = { line: number; text: string; fields: Map<string, { line: number; value: string }> };
+type Add = (line: number, message: string | undefined, vars?: Record<string, string | number>) => void;
+
+// The parts every file of entries shares: the header line, the fields each entry may have, and stray lines.
+function entriesOf(lines: string[], end: number, rule: EntriesSpec, add: Add): Entry[] {
+  const { header, entries, unknown, stray } = parseEntries(lines, end, rule);
+  for (const { line, field } of unknown) add(line, rule.unknownFieldMessage, { field });
+  for (const line of stray) add(line, rule.strayMessage);
+  if (!new RegExp(rule.header.pattern, 'i').test(header.map((h) => h.text).join(' '))) add(header[0]?.line ?? end + 2, rule.header.message);
+  return entries;
+}
+
+// One plain sentence, ending with a period and holding no second one.
+const oneSentence = (text: string, rule: { end: string; second: string }) => new RegExp(rule.end).test(text) && !new RegExp(rule.second).test(text);
+
+// A source field with a date at its end, in the rule's form, that is a real day.
+function checkSource(entry: Entry, rule: Rule & { dateMessage?: string }, add: Add): void {
+  const source = entry.fields.get('source');
+  const date = source && new RegExp(rule.pattern).exec(source.value);
+  if (!date) add(source?.line ?? entry.line, rule.message);
+  else if (!isSpecDate(date[1])) add(source!.line, rule.dateMessage);
+}
 
 function checkLearned(lines: string[], end: number, others: string[]): Problem[] {
   const L = spec.learned;
   const problems: Problem[] = [];
-  const add = (line: number, message: string | undefined, vars: Record<string, string> = {}) => problems.push({ line, text: fill(message, vars) });
-  const entries: Entry[] = [];
-  const header: { line: number; text: string }[] = [];
-  lines.slice(end + 1).forEach((raw, i) => {
-    const line = end + i + 2;
-    const text = raw.trim();
-    const entry = new RegExp(L.entry).exec(raw);
-    const field = new RegExp(L.field).exec(raw);
-    if (!text || text.startsWith('#')) return;
-    if (entry) entries.push({ line, text: entry[1], fields: new Map() });
-    else if (field && entries.length) {
-      if (!L.fields.includes(field[1])) add(line, L.unknownFieldMessage, { field: field[1] });
-      else entries.at(-1)!.fields.set(field[1], { line, value: field[2] });
-    } else if (entries.length) add(line, L.strayMessage);
-    else header.push({ line, text });
-  });
-
-  // A short header says what the file is, and that a person approves every entry.
-  if (!new RegExp(L.header.pattern, 'i').test(header.map((h) => h.text).join(' '))) add(header[0]?.line ?? end + 2, L.header.message);
+  const add: Add = (line, message, vars = {}) => problems.push({ line, text: fill(message, vars) });
+  const entries = entriesOf(lines, end, L, add);
 
   const known = others.flatMap(factsIn);
   const replaced = new Set<string>();
   entries.forEach((e, i) => {
-    if (!new RegExp(L.sentence.end).test(e.text) || new RegExp(L.sentence.second).test(e.text)) add(e.line, L.sentence.message);
+    if (!oneSentence(e.text, L.sentence)) add(e.line, L.sentence.message);
     const kind = e.fields.get('kind');
     if (!kind || !new RegExp(L.kind.pattern).test(kind.value)) add(kind?.line ?? e.line, L.kind.message);
-    const source = e.fields.get('source');
-    const date = source && new RegExp(L.source.pattern).exec(source.value);
-    if (!date) add(source?.line ?? e.line, L.source.message);
-    else if (!isSpecDate(date[1])) add(source!.line, L.source.dateMessage);
+    checkSource(e, L.source, add);
     const applies = e.fields.get('applies');
     if (applies && !new RegExp(L.applies.pattern).test(applies.value)) add(applies.line, L.applies.message);
     const replaces = e.fields.get('replaces');
@@ -183,13 +208,72 @@ function checkLearned(lines: string[], end: number, others: string[]): Problem[]
   return problems;
 }
 
+// looks.md: each look is one sentence saying what it shows, the lower environment it reads, the exact command, and
+// who gave it. The command is refused when it carries any sign of a write. That is a guard, not proof: a command
+// can change things without any of those signs, so a person reads every look before it runs.
+function checkLooks(lines: string[], end: number): Problem[] {
+  const L = spec.looks;
+  const problems: Problem[] = [];
+  const add: Add = (line, message, vars = {}) => problems.push({ line, text: fill(message, vars) });
+  for (const e of entriesOf(lines, end, L, add)) {
+    if (!oneSentence(e.text, L.sentence)) add(e.line, L.sentence.message);
+    const environment = e.fields.get('environment');
+    if (!environment || !new RegExp(L.environment.pattern).test(environment.value)) add(environment?.line ?? e.line, L.environment.message);
+    else if (new RegExp(L.environment.never, 'i').test(environment.value)) add(environment.line, L.environment.neverMessage, { value: environment.value });
+    const run = e.fields.get('run');
+    if (!run || !new RegExp(L.run.pattern).test(run.value)) add(run?.line ?? e.line, L.run.message);
+    else {
+      for (const sign of L.run.writes) {
+        const match = new RegExp(sign.pattern, sign.flags).exec(run.value);
+        if (match) add(run.line, L.run.writesMessage, { what: sign.what, match: match[0].trim() });
+      }
+    }
+    checkSource(e, L.source, add);
+  }
+  return problems;
+}
+
+// history.md: each entry is a finished story's title, the range it was estimated at, the hours it took, and where
+// the hours came from.
+function checkHistory(lines: string[], end: number): Problem[] {
+  const H = spec.history;
+  const problems: Problem[] = [];
+  const add: Add = (line, message, vars = {}) => problems.push({ line, text: fill(message, vars) });
+  for (const e of entriesOf(lines, end, H, add)) {
+    const estimated = e.fields.get('estimated');
+    const range = estimated && new RegExp(H.estimated.pattern).exec(estimated.value);
+    if (!range) add(estimated?.line ?? e.line, H.estimated.message);
+    else if (Number(range[1]) > Number(range[2])) add(estimated!.line, H.estimated.ascendingMessage, { low: range[1], high: range[2] });
+    const actual = e.fields.get('actual');
+    if (!actual || !new RegExp(H.actual.pattern).test(actual.value)) add(actual?.line ?? e.line, H.actual.message);
+    checkSource(e, H.source, add);
+  }
+  return problems;
+}
+
+export type HistoryEntry = { title: string; low: number; high: number; actual: number };
+
+// The entries of a history.md that the story checker can compare a Calibration line with. Entries that don't fit the
+// rules are left out; check-context reports them.
+export function historyEntries(text: string): HistoryEntry[] {
+  const H = spec.history;
+  const lines = text.split(/\r?\n/);
+  const { end } = frontMatter(lines);
+  if (end < 0) return [];
+  return parseEntries(lines, end, H).entries.flatMap((e) => {
+    const range = new RegExp(H.estimated.pattern).exec(e.fields.get('estimated')?.value ?? '');
+    const actual = new RegExp(H.actual.pattern).exec(e.fields.get('actual')?.value ?? '');
+    return range && actual ? [{ title: e.text, low: Number(range[1]), high: Number(range[2]), actual: Number(actual[1]) }] : [];
+  });
+}
+
 export function main(args: string[]): void {
   const today = todayFromEnv();
   // Each file is checked on its own; learned.md is checked against the others given with it.
   const check = (text: string, path: string) => {
-    const learned = basename(path) === spec.learned.fileName;
-    const others = learned ? args.filter((p) => p !== path && p.endsWith('.md')).map((p) => readFileSync(p, 'utf8')) : [];
-    return checkContext(text, today, { learned, others });
+    const options = contextOptions(path);
+    const others = options.learned ? args.filter((p) => p !== path && p.endsWith('.md')).map((p) => readFileSync(p, 'utf8')) : [];
+    return checkContext(text, today, { ...options, others });
   };
   runCli(check, 'Usage: node src/check-context.ts path/to/file.md ...\nCheck learned.md together with the team\'s other context files.', args);
 }

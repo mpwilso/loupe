@@ -63,6 +63,74 @@
       "duplicateMessage": "Two entries replace \"{quote}\". Keep one, or have the newer entry replace the older one."
     }
   },
+  "looks": {
+    "fileName": "looks.md",
+    "header": {
+      "pattern": "\\bnever change",
+      "message": "Start looks.md with a short line saying each look reads a lower environment and never changes it."
+    },
+    "entry": "^- (\\S.*)$",
+    "field": "^\\s+(\\w+):\\s*(.*)$",
+    "fields": ["environment", "run", "source"],
+    "unknownFieldMessage": "\"{field}:\" is not a look field. The fields are environment, run and source.",
+    "strayMessage": "Each line after the header is a look starting \"- \", or one of its fields, indented, like \"  environment: staging\".",
+    "sentence": {
+      "end": "[.!?]$",
+      "second": "[.!?]\\s+[A-Z]",
+      "message": "Write each look as one plain sentence saying what it shows, ending with a period."
+    },
+    "environment": {
+      "pattern": "^\\S.*$",
+      "message": "This look needs \"environment:\" naming the lower environment it reads, like \"environment: staging\".",
+      "never": "\\b(prod|production|live)\\b",
+      "neverMessage": "\"{value}\" looks like production. Loupe never looks at production, so leave this look out."
+    },
+    "run": {
+      "pattern": "^\\S.*$",
+      "message": "This look needs \"run:\" with the exact command Loupe runs, word for word, like \"run: curl -s http://localhost:8765/subscribers/{subscriber}/next-box\".",
+      "writes": [
+        { "what": "a request method that writes", "pattern": "(^|\\s)(-X|--request)[ =]*(POST|PUT|PATCH|DELETE)\\b", "flags": "i" },
+        { "what": "data sent with the request", "pattern": "(^|\\s)(-d|--data(-\\w+)?|-F|--form|-T|--upload-file)(\\s|=|$)" },
+        { "what": "a database statement that writes", "pattern": "\\b(insert|update|delete|drop|alter|truncate|create|grant|merge)\\b", "flags": "i" },
+        { "what": "a command that changes files", "pattern": "(^|\\s|\\|\\s*)(rm|mv|cp|chmod|chown|mkdir|touch|tee|dd|kill)(\\s|$)" },
+        { "what": "an edit in place", "pattern": "\\bsed\\s+(-\\w*i|--in-place)" },
+        { "what": "output sent to a file", "pattern": ">" },
+        { "what": "a git command that changes a repository", "pattern": "\\bgit\\s+(push|commit|reset|checkout|merge|rebase|rm|clean|tag|stash|am|apply)\\b" }
+      ],
+      "writesMessage": "This command has {what}, \"{match}\". A look reads and never changes anything, so leave this one out."
+    },
+    "source": {
+      "pattern": "^[^,]+, [^,]+, (\\d{4}-\\d{2}-\\d{2})$",
+      "message": "This look needs a source: who gave it, how, and the date, like \"source: Sam Okafor, setup interview, 2026-09-30\".",
+      "dateMessage": "The date in this source must be a real date like 2026-09-30."
+    }
+  },
+  "history": {
+    "fileName": "history.md",
+    "header": {
+      "pattern": "\\bestimat",
+      "message": "Start history.md with a short line saying each entry is a finished story, what was estimated and what it took."
+    },
+    "entry": "^- (\\S.*)$",
+    "field": "^\\s+(\\w+):\\s*(.*)$",
+    "fields": ["estimated", "actual", "source"],
+    "unknownFieldMessage": "\"{field}:\" is not a history field. The fields are estimated, actual and source.",
+    "strayMessage": "Each line after the header is a finished story's title starting \"- \", or one of its fields, indented, like \"  actual: 11 hours\".",
+    "estimated": {
+      "pattern": "^(\\d+) to (\\d+) hours$",
+      "message": "This entry needs \"estimated:\" with the range the story gave, like \"estimated: 4 to 8 hours\".",
+      "ascendingMessage": "The estimate says {low} to {high} hours. The first number can't be bigger than the second."
+    },
+    "actual": {
+      "pattern": "^(\\d+) hours$",
+      "message": "This entry needs \"actual:\" with the hours the story took, like \"actual: 11 hours\"."
+    },
+    "source": {
+      "pattern": "^[^,]+, [^,]+, (\\d{4}-\\d{2}-\\d{2})$",
+      "message": "This entry needs a source: who gave the hours, from where, and the date, like \"source: Priya Raman, timesheets, 2026-09-29\".",
+      "dateMessage": "The date in this source must be a real date like 2026-09-29."
+    }
+  },
   "messages": {
     "noFrontMatter": "The file must start with front matter between two \"---\" lines.",
     "missingField": "The front matter is missing \"{field}\": {help}.",

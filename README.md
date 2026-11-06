@@ -151,6 +151,8 @@ A story can look done and still hide what nobody knows: a rule no one checked, a
 - **It learns your team from your documents, your corrections and your answers.** Every learned fact names its source, and nothing is saved without your yes.
 - **In Claude Code, it keeps to its folder.** It reads your team's context from a `loupe/` folder in your repository and writes nowhere else.
 - **In Claude Code, it can read your tracker and create tickets.** It searches the team's tracker before writing, cites any ticket it uses with when it was read, and flags likely duplicates. It creates a ticket from a finished story after showing you exactly what it will create and asking, and it never changes an existing ticket.
+- **In Claude Code, it can look at a lower environment before it writes.** It runs the looks your team listed, which read and never change anything, shows each before it runs, and cites what it saw with the time. Untried in a trial.
+- **It sizes a story against your team's history.** The estimate names the past stories it drew on and the hours each took, or says plainly that it has no history to draw on. Untried in a trial.
 
 ## How it works
 
@@ -195,11 +197,6 @@ node src/run.js check examples/pellwick/expected/skip-a-box.md
 ```
 
 It prints `Checked with Node` and the version when the story passes, or one line per problem when it doesn't. Use `check-context` in place of `check` for context files. What each folder holds is in [docs/layout.md](docs/layout.md).
-
-## What's next
-
-1. Checks against your lower environments that read and never change anything, so a story can cite how the system behaves today.
-2. Estimates calibrated on your team's history.
 
 ## The other tools
 

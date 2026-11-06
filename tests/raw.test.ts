@@ -74,7 +74,8 @@ test('every key fact in the context files is also in raw/, however it is worded'
 test('every fact line in the context files has a key fact', () => {
   const uncovered: string[] = [];
   // learned.md comes from corrections and answers, not from raw/; its sources are traced in the next test.
-  for (const file of readdirSync(dir('context')).filter((f) => f !== 'learned.md')) {
+  // looks.md and history.md come from the setup interview and the timesheets, which raw/ doesn't hold.
+  for (const file of readdirSync(dir('context')).filter((f) => !['learned.md', 'looks.md', 'history.md'].includes(f))) {
     const lines = readFileSync(new URL(file, dir('context')), 'utf8').split('\n');
     const body = lines.slice(lines.indexOf('---', 1) + 1).filter((line) => line.trim() && !line.startsWith('#'));
     const mine = facts.filter(([name]) => `${name}.md` === file).map(([, context]) => context);

@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { builtInFolder, check, findTeamTemplates, loadTemplates } from '../src/check.ts';
-import { checkContext } from '../src/check-context.ts';
+import { checkContext, contextOptions } from '../src/check-context.ts';
 import { format, loadSpec } from '../src/spec.ts';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -44,9 +44,10 @@ test('every example context file passes, with no warnings on the day it was writ
     const paths = list(`examples/${team}/context`);
     for (const path of paths) {
       // learned.md is checked against the team's other context files, which its "replaces:" lines quote.
-      const learned = path.endsWith('/learned.md');
-      const others = learned ? paths.filter((p) => p !== path).map(read) : [];
-      const result = checkContext(read(path), new Date('2026-09-30T00:00:00Z'), { learned, others });
+      // looks.md and history.md are checked by their own rules, picked by name.
+      const options = contextOptions(path);
+      const others = options.learned ? paths.filter((p) => p !== path).map(read) : [];
+      const result = checkContext(read(path), new Date('2026-09-30T00:00:00Z'), { ...options, others });
       assert.deepEqual([...result.errors, ...result.warnings].map(format), [], path);
     }
   }
@@ -339,7 +340,7 @@ test('the trial 6 plan has every step, scripted messages, pass lines and a scori
   assert.deepEqual(checkContext(empty, new Date('2026-10-01T00:00:00Z'), { learned: true, others }), { errors: [], warnings: [] });
 });
 
-// M3 is described as built, with its manual step; M4 and M5 stay planned. The README waits for trial 6.
+// M3 is described as built, with its manual step; M4b's looks and M5 are built and untried in a trial.
 test('the docs describe the learning loop as it works, including the manual swap', () => {
   const direction = read('docs/direction.md');
   const learns = direction.split('\n').find((line) => line.startsWith('9. Learns'))!;
@@ -347,12 +348,14 @@ test('the docs describe the learning loop as it works, including the manual swap
   assert.match(learns, /learned\.md/);
   assert.match(learns, /nothing without (a|the user's) yes/);
   assert.match(learns, /replaces learned\.md in the project's files/);
-  assert.match(direction, /planned \(M5\)/);
-  // M4a built Claude Code support, M4b tracker reads (trial 8) and M4c ticket creation (trial 9); checks against
-  // lower environments are what's still planned.
+  assert.doesNotMatch(direction, /planned \(M5\)|Calibrating against the team's history is planned/);
+  assert.match(direction, /^M5 Estimates calibrated against team history: a history\.md of finished stories and their hours, named on every estimate\. In no trial yet\.$/m);
+  // M4a built Claude Code support, M4b tracker reads (trial 8) and looks at lower environments (no trial), and M4c
+  // ticket creation (trial 9).
   assert.doesNotMatch(direction, /A VS Code version is planned|In VS Code \(later\)/);
   assert.match(direction, /^M4a Claude Code/m);
-  assert.match(direction, /^M4b Live context: reading the team's tracker before writing, tested on a mock tracker in trial 8\. Read-only checks against lower environments are planned\.$/m);
+  assert.match(direction, /^M4b Live context: reading the team's tracker before writing, tested on a mock tracker in trial 8\. Read-only looks at lower environments, listed in looks\.md, tried on a mock environment and in no trial yet\.$/m);
+  assert.doesNotMatch(direction, /Checking facts against real systems is planned|lower environments to check facts against real systems/);
   assert.match(direction, /^M4c Tickets: creating a ticket from a finished story, only after the user's yes, tested on a mock tracker in trial 9\.$/m);
   assert.doesNotMatch(direction, /Planned for Claude Code \(M4b\)/);
   assert.match(direction, /the VS Code extension is untested/);

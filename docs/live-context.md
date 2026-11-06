@@ -83,6 +83,36 @@ Atlassian's MCP server lists its Jira tools in groups on its [supported tools pa
 
 The deny list names the tools on that page as of the date above. Tool names change, so check the page again before you rely on it; a tool added later is neither allowed nor denied, so Claude Code asks before it runs.
 
+## Looks at a lower environment
+
+In Claude Code, Loupe can look at a lower environment before it writes a story, so a Known line can say what the system does today, with the environment and the time it looked: "(staging, looked 2026-10-02 14:05)". A look is one of the read-only commands your team lists in `loupe/context/looks.md`, with the environment it reads and who gave it. Loupe shows each look before it runs, runs it only as written, with its placeholders filled from the input, and never runs anything else. The checker refuses a look that could write, or one on anything named like production.
+
+### Try it with the mock environment
+
+This repository has a mock lower environment, a small web server with invented Pellwick staging data. It answers GET and nothing else. Start it from your copy of this repository:
+
+```
+node /path/to/loupe/mock/environment/server.ts
+```
+
+It listens on `http://localhost:8765`. The example team's `examples/pellwick/context/looks.md` lists two looks at it, and `node scripts/build-team-folder.ts` copies that file into the team folder it builds, so a story about subscriber 1042's next box can cite what staging shows.
+
+Claude Code asks before each look runs, because a look is a Bash command. That prompt is a second lock: read the command and refuse anything that isn't a listed look. To stop the prompts for one look, allow its exact command in `.claude/settings.json`, and nothing broader:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s http://localhost:8765/*)"
+    ]
+  }
+}
+```
+
+### A real lower environment
+
+This is not tested with Loupe. List only reads, on a lower environment that holds made-up data, and never production. The checker refuses a command with any sign of a write, such as a `POST`, data sent with a request, an `UPDATE` or an output redirect; a command can write without any such sign, so read every look before you list it, and again when Claude Code asks.
+
 ## Creating tickets
 
 When you ask for a ticket from a finished story, Loupe shows exactly what it will create, asks "Create this in SUBS?", and creates it only after a clear yes. It never updates, comments on, moves, assigns, closes or deletes an issue. It keeps a list of the tickets it created in `loupe/tickets.md`, and the folder check makes sure each one names a finished story and no story has two.
