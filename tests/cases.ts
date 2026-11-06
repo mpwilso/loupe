@@ -46,6 +46,36 @@ export const learned = (text: string) => {
   return [...errors, ...warnings];
 };
 
+// looks.md and history.md have entries with fields, like learned.md.
+export const looks = (text: string) => {
+  const { errors, warnings } = checkContext(text, today, { looks: true });
+  return [...errors, ...warnings];
+};
+export const history = (text: string) => {
+  const { errors, warnings } = checkContext(text, today, { history: true });
+  return [...errors, ...warnings];
+};
+// A story checked against the team's history, as check-folder checks it: its Calibration line is verified.
+export const calibrated = (text: string) => check(text, undefined, { history: fixture('good-history.md') }).errors;
+export const lookStory = () => fixture('good-look-story.md');
+const calibration = 'Calibration: "Send a reminder email two days before the cutoff" took 7 hours against 6 to 10 estimated.';
+export const calibrationCases: [string, string][] = [
+  ['a Calibration line saying there is no history file, for a team with one', lookStory().replace(calibration, 'Calibration: none, the team has no history file.')],
+  ['a Calibration line naming a story that is not in history.md', lookStory().replace('Send a reminder email two days before the cutoff', 'Send a reminder email')],
+  ['a Calibration line with other numbers than history.md', lookStory().replace('took 7 hours', 'took 9 hours')],
+];
+// One command per sign of a write, each put in place of a clean look.
+export const writeSigns: [string, string][] = [
+  ['a request method that writes', 'curl -s -X POST http://localhost:8765/subscribers/{subscriber}/next-box'],
+  ['data sent with the request', 'curl -s --data skipped=true http://localhost:8765/subscribers/{subscriber}/next-box'],
+  ['a database statement that writes', 'psql postgresql://localhost/pellwick_test -c "UPDATE orders SET status = 1"'],
+  ['a command that changes files', 'cat notes.txt | tee copy.txt'],
+  ['an edit in place', 'sed -i s/a/b/ notes.txt'],
+  ['output sent to a file', 'curl -s http://localhost:8765/subscribers/{subscriber}/boxes > boxes.json'],
+  ['a git command that changes a repository', 'git push origin staging'],
+];
+export const withRun = (run: string) => fixture('good-looks.md').replace('run: curl -s http://localhost:8765/subscribers/{subscriber}/next-box', `run: ${run}`);
+
 // tickets.md is checked against the stories in the folder: two finished stories and one "Not ready yet".
 export const ticketStories = () =>
   new Map([
@@ -61,6 +91,10 @@ export const badCases: { name: string; problems: () => Problem[] }[] = [
   ...files('bad/learned/').map((name) => ({ name, problems: () => learned(fixture(name)) })),
   ...files('bad/tickets/').map((name) => ({ name, problems: () => tickets(fixture(name)) })),
   ...files('bad/v2/').map((name) => ({ name, problems: () => story(fixture(name)) })),
+  ...files('bad/looks/').map((name) => ({ name, problems: () => looks(fixture(name)) })),
+  ...files('bad/history/').map((name) => ({ name, problems: () => history(fixture(name)) })),
+  ...writeSigns.map(([what, run]) => ({ name: `a look with ${what}`, problems: () => looks(withRun(run)) })),
+  ...calibrationCases.map(([name, text]) => ({ name, problems: () => calibrated(text) })),
   { name: 'warn/many-scenarios.md', problems: () => check(fixture('warn/many-scenarios.md')).warnings },
   { name: 'warn/stale.md', problems: () => context(fixture('warn/stale.md'), new Date('2027-01-01T00:00:00Z')) },
   { name: 'warn/future.md', problems: () => context(fixture('warn/future.md')) },

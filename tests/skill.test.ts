@@ -37,6 +37,7 @@ const sources: Record<string, string> = {
   'files-mode.md': 'skill/files-mode.md',
   'tracker.md': 'skill/tracker.md',
   'tracker-write.md': 'skill/tracker-write.md',
+  'looks.md': 'skill/looks.md',
   'src/run.js': 'src/run.js',
   'src/node-version.js': 'src/node-version.js',
   'src/check.ts': 'src/check.ts',
@@ -490,10 +491,12 @@ test('files mode never writes outside loupe/, and says so', () => {
   assert.match(text, /say so in one line/i);
 });
 
-// Trial 7 fixes: no shell writes, the real diff pasted, and a duplicate story saved as -2 without asking.
-test('files mode writes only with the file tools, and runs only the checkers and git diff or git status', () => {
+// Trial 7 fixes: no shell writes, the real diff pasted, and a duplicate story saved as -2 without asking. M4b adds one
+// more command it may run: a look from looks.md, as written.
+test('files mode writes only with the file tools, and runs only the checkers, git diff or git status, and a listed look', () => {
   const text = filesMode();
-  assert.ok(text.includes("Write and edit files only with Claude Code's file tools, never with shell commands (no cat, echo, sed, python or redirects). The only commands you run are the checkers (node SKILL/src/run.js ...) and git diff or git status."));
+  assert.ok(text.includes("Write and edit files only with Claude Code's file tools, never with shell commands (no cat, echo, sed, python or redirects). The only commands you run are the checkers (node SKILL/src/run.js ...), git diff or git status, and a look from loupe/context/looks.md, run exactly as written there after you show it (SKILL/looks.md)."));
+  assert.ok(file('looks.md').includes('Never run a command that isn\'t in `looks.md`, and never change a listed command beyond its placeholders.'));
 });
 
 test('files mode pastes the actual git diff in a fenced block after a learned.md change', () => {

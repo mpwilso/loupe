@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
@@ -82,6 +82,35 @@ test('check-folder checks tickets.md: a ticket for a finished story passes, one 
   const run = checkFolder(dir);
   assert.equal(run.status, 1);
   assert.ok(run.stdout.includes(`${join(dir, 'tickets.md')}:\n  line 2: There is no story 2026-10-02-gone.md in stories/.\n`), run.stdout);
+});
+
+// M5: a story's Calibration line is checked against the team's history.md, and a story saved without one still passes.
+test('check-folder checks every Calibration line against history.md in the context folder', () => {
+  const dir = teamFolder('history', 'good-look-story.md');
+  copyFileSync(join(fixtures, 'good-history.md'), join(dir, 'context/history.md'));
+  copyFileSync(join(fixtures, 'good-v2-story.md'), join(dir, 'stories/2026-10-03-no-calibration.md'));
+  assert.deepEqual([checkFolder(dir).status, checkFolder(dir).stdout], [0, `Checked with Node ${process.version}.\n`]);
+  writeFileSync(join(dir, 'stories/2026-10-04-wrong-numbers.md'), readFileSync(join(fixtures, 'good-look-story.md'), 'utf8').replace('took 7 hours', 'took 9 hours'));
+  const run = checkFolder(dir);
+  assert.equal(run.status, 1);
+  assert.ok(
+    run.stdout.includes(`${join(dir, 'stories/2026-10-04-wrong-numbers.md')}:\n  line 55: history.md says "Send a reminder email two days before the cutoff" took 7 hours against 6 to 10 estimated. Use the numbers from history.md.\n`),
+    run.stdout,
+  );
+  // Without a history file, the line is taken at its word.
+  rmSync(join(dir, 'context/history.md'));
+  assert.equal(checkFolder(dir).status, 0, checkFolder(dir).stdout);
+});
+
+// M4b: looks.md in the context folder is checked by its own rules, by name.
+test('check-folder checks looks.md by its own rules and refuses a look that could write', () => {
+  const dir = teamFolder('looks', 'good-story.md');
+  copyFileSync(join(fixtures, 'good-looks.md'), join(dir, 'context/looks.md'));
+  assert.equal(checkFolder(dir).status, 0, checkFolder(dir).stdout);
+  copyFileSync(join(fixtures, 'bad/looks/writes-post.md'), join(dir, 'context/looks.md'));
+  const run = checkFolder(dir);
+  assert.equal(run.status, 1);
+  assert.ok(run.stdout.includes(`${join(dir, 'context/looks.md')}:\n  line 11: This command has a request method that writes, "-X POST".`), run.stdout);
 });
 
 // Story format v2: a team folder can hold stories saved in v1 next to new ones in v2.

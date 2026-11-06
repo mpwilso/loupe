@@ -7,7 +7,20 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { escapeRegExp, fill, format, frontMatter, isRealDate, loadSpec, nestedRepeat, runCli, type Problem } from './spec.ts';
+import { historyEntries, type HistoryEntry } from './check-context.ts';
 
+type Calibration = {
+  lead: string;
+  noFile: string;
+  nothingComparable: string;
+  item: string;
+  separator: string;
+  lineMessage?: string;
+  itemMessage?: string;
+  noneButHistoryMessage?: string;
+  notInHistoryMessage?: string;
+  wrongNumbersMessage?: string;
+};
 type LineRule = {
   pattern: string;
   message?: string;
@@ -29,6 +42,7 @@ type Section = {
   itemPattern?: string;
   itemMessage?: string;
   lines?: LineRule[];
+  calibration?: Calibration;
   questionMarks?: { count: number; message: string };
   overflow?: { line: string; message: string; confidence: string; notLevel: string; confidenceMessage: string; unknown: string; unknownMessage?: string };
 };
@@ -54,6 +68,7 @@ type StoryShape = Shape & {
   failed: { pattern: string; message?: string };
   chatOnly: { pattern: string; message?: string };
   liveSource: { key: string; notKeys?: string[]; detect: string; pattern: string; noSourceMessage?: string; noReadMessage?: string; badReadMessage?: string };
+  lookSource: { detect: string; pattern: string; message?: string; badTimeMessage?: string };
   secrets: { message?: string };
   shapes: NamedShape[];
   summary: {
@@ -151,11 +166,11 @@ export function loadTemplates(folder: string): Template[] {
   return templates;
 }
 
-// Walks up from the story to the nearest folder holding a context folder, and returns its templates folder if there is one.
+// Walks up from the story to the nearest folder holding a context folder: the team folder.
 // The path is made absolute first, so a story named from inside its team folder still finds the folders above it. It
 // stops at the repository's root, the folder holding .git; outside a repository it looks only in the story's folder and
 // the one above, so an unrelated context folder higher up is never taken for the team's.
-export function findTeamTemplates(storyPath: string): string | undefined {
+export function findTeamFolder(storyPath: string): string | undefined {
   const start = dirname(resolve(storyPath));
   const dirs: string[] = [];
   for (let dir = start; ; dir = dirname(dir)) {
@@ -163,19 +178,31 @@ export function findTeamTemplates(storyPath: string): string | undefined {
     if (existsSync(join(dir, '.git')) || dirname(dir) === dir) break;
   }
   const inRepo = existsSync(join(dirs.at(-1) as string, '.git'));
-  for (const dir of inRepo ? dirs : dirs.slice(0, 2)) {
-    if (existsSync(join(dir, 'context'))) {
-      const folder = join(dir, 'templates');
-      return existsSync(folder) ? folder : undefined;
-    }
-  }
-  return undefined;
+  return (inRepo ? dirs : dirs.slice(0, 2)).find((dir) => existsSync(join(dir, 'context')));
 }
+
+// The team's templates folder, if the team folder has one.
+export function findTeamTemplates(storyPath: string): string | undefined {
+  const team = findTeamFolder(storyPath);
+  const folder = team && join(team, 'templates');
+  return folder && existsSync(folder) ? folder : undefined;
+}
+
+// The team's history.md, if its context folder has one: what a story's Calibration line is checked against.
+export function findTeamHistory(storyPath: string): string | undefined {
+  const team = findTeamFolder(storyPath);
+  const file = team && join(team, 'context', historyFileName);
+  return file && existsSync(file) ? readFileSync(file, 'utf8') : undefined;
+}
+const historyFileName = loadSpec<{ history: { fileName: string } }>('context-file.json').history.fileName;
+
+// history: the text of the team's history.md, when it has one; a Calibration line is checked against it.
+export type CheckOptions = { history?: string };
 
 export const builtInFolder = fileURLToPath(new URL(`../${specs.story.templates.folder}/`, import.meta.url));
 const builtIn = loadTemplates(builtInFolder);
 
-export function check(text: string, templates = builtIn): { errors: Problem[]; warnings: Problem[] } {
+export function check(text: string, templates = builtIn, options: CheckOptions = {}): { errors: Problem[]; warnings: Problem[] } {
   let lines = text.split(/\r?\n/);
   let offset = 0;
   if (lines[0]?.trim() === '---') {
@@ -211,8 +238,8 @@ export function check(text: string, templates = builtIn): { errors: Problem[]; w
   if (hasSummary) checkLines(summary, story.summary.lines, 'The summary', 1, add);
   if (hasSummary) checkSummary(summary, rest, notReady, mark, add);
   const shift = (e: Problem) => (e.line ? { ...e, line: e.line + skip + head + offset } : e);
-  const inBody = [...marks.map(({ line, text }) => ({ line, text })), ...checkShape(rest, shape, templates, offset > 0, warnings).map((e) => (e.line ? { ...e, line: e.line + skip } : e))];
-  const errors = [...found, ...chat.filter((e) => e.text), ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines), ...checkLiveSources(lines), ...checkSecrets(lines).filter((e) => e.text)];
+  const inBody = [...marks.map(({ line, text }) => ({ line, text })), ...checkShape(rest, shape, templates, offset > 0, warnings, options).map((e) => (e.line ? { ...e, line: e.line + skip } : e))];
+  const errors = [...found, ...chat.filter((e) => e.text), ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines), ...checkLiveSources(lines), ...checkLookSources(lines), ...checkSecrets(lines).filter((e) => e.text)];
   return { errors: errors.map((e) => (e.line ? { ...e, line: e.line + offset } : e)), warnings: warnings.filter((w) => w.text).map(shift) };
 }
 
@@ -226,7 +253,7 @@ function pickShape(lines: string[]): Shape {
   return { ...story, sections: best.headings.map((h) => story.sections.find((s) => s.heading === h)!), storyLines: best.storyLines };
 }
 
-function checkShape(lines: string[], shape: Shape, templates: Template[], template: boolean, warnings: Problem[] = []): Problem[] {
+function checkShape(lines: string[], shape: Shape, templates: Template[], template: boolean, warnings: Problem[] = [], options: CheckOptions = {}): Problem[] {
   const problems: Problem[] = [];
   const add = (line: number | undefined, message = '') => void (message && problems.push({ line, text: message }));
   const warn = (line: number | undefined, message = '') => void (message && warnings.push({ line, text: message }));
@@ -271,7 +298,7 @@ function checkShape(lines: string[], shape: Shape, templates: Template[], templa
     seen.add(block.heading);
     if (index < furthest) add(block.line, fill(M.outOfOrder, { heading: block.heading, order }));
     furthest = Math.max(furthest, index);
-    checkSection(shape.sections[index], block.line, block.body, templates, template, add, warn);
+    checkSection(shape.sections[index], block.line, block.body, templates, template, add, warn, options);
     if (shape.storyLines && index === 0 && block.body.length > shape.storyLines.max) add(block.body[shape.storyLines.max].line, shape.storyLines.message);
   }
   for (const section of shape.sections) {
@@ -322,7 +349,7 @@ function checkOverflow(shape: Shape, blocks: { heading: string; body: Entry[] }[
   }
 }
 
-function checkSection(section: Section, headingLine: number, body: Entry[], templates: Template[], template: boolean, add: Add, warn: Add): void {
+function checkSection(section: Section, headingLine: number, body: Entry[], templates: Template[], template: boolean, add: Add, warn: Add, options: CheckOptions = {}): void {
   const { name } = section;
   if (body.length === 0) {
     add(headingLine, fill(section.allowNone ? M.emptyNoneAllowed : M.emptySection, { name }));
@@ -354,11 +381,41 @@ function checkSection(section: Section, headingLine: number, body: Entry[], temp
       }
     }
   } else if (section.kind === 'lines' && section.lines) {
-    checkLines(body, section.lines, name, headingLine, add, template);
+    // Estimate may carry one line more than its rules, the Calibration line, which has its own checks.
+    const C = section.calibration;
+    const at = C ? body.findIndex((entry) => entry.text.startsWith(C.lead)) : -1;
+    const rest = at >= 0 ? body.filter((_, i) => i !== at) : C && body.length > section.lines.length ? body.slice(0, section.lines.length) : body;
+    checkLines(rest, section.lines, name, headingLine, add, template);
+    if (C && !template) checkCalibration(C, body, at, options, add);
   } else if (section.kind === 'sourced') {
     checkSourced(section, body, add);
   } else if (section.kind === 'scenarios' && section.scenarios) {
     checkScenarios(section.scenarios, headingLine, body, add, warn);
+  }
+}
+
+// The Calibration line of Estimate: the past stories the estimate drew on, each with the hours it took against its
+// estimate, or a plain "none" saying why. With the team's history.md at hand, each story named must be in it, with the
+// same numbers. A story without the line passes: stories saved before the team had a history have none.
+function checkCalibration(C: Calibration, body: Entry[], at: number, options: CheckOptions, add: Add): void {
+  const history = options.history === undefined ? undefined : historyEntries(options.history);
+  const line = body[at];
+  if (!line) return void (body[2] && add(body[2].line, C.lineMessage));
+  const value = line.text.slice(C.lead.length);
+  if (value === C.noFile) return void (history && add(line.line, C.noneButHistoryMessage));
+  if (value === C.nothingComparable) return;
+  for (const item of value.split(new RegExp(C.separator))) {
+    const match = new RegExp(C.item).exec(item);
+    if (!match) {
+      add(line.line, C.itemMessage);
+      continue;
+    }
+    const [, title, actual, low, high] = match;
+    const past: HistoryEntry | undefined = history?.find((h) => h.title === title);
+    if (history && !past) add(line.line, fill(C.notInHistoryMessage, { title }));
+    else if (past && (past.actual !== Number(actual) || past.low !== Number(low) || past.high !== Number(high))) {
+      add(line.line, fill(C.wrongNumbersMessage, { title, actual: past.actual, low: past.low, high: past.high }));
+    }
   }
 }
 
@@ -501,6 +558,23 @@ function checkLiveSources(lines: string[]): Problem[] {
   });
 }
 
+// A fact Loupe looked up in a lower environment is cited with the environment and when it looked, since what an
+// environment shows changes. Any source that says "looked" must take that form.
+function checkLookSources(lines: string[]): Problem[] {
+  const rule = story.lookSource;
+  const detect = new RegExp(rule.detect);
+  const pattern = new RegExp(rule.pattern);
+  return lines.flatMap((text, i) => {
+    const sources = text.trimEnd().match(/\(([^()]+)\)$/)?.[1].split('; ') ?? [];
+    return sources.flatMap((source) => {
+      if (!detect.test(source)) return [];
+      const match = pattern.exec(source);
+      const message = !match ? rule.message : isRealDate(match[1]) ? undefined : rule.badTimeMessage;
+      return message ? [{ line: i + 1, text: message }] : [];
+    });
+  });
+}
+
 // Secrets and customer data, with the same detector as the context files.
 const secretPatterns = loadSpec<{ secrets: { what: string; pattern: string; flags?: string }[] }>('context-file.json').secrets;
 function checkSecrets(lines: string[]): Problem[] {
@@ -558,7 +632,7 @@ export function main(args: string[]): void {
       const folder = findTeamTemplates(path);
       return folder ? [...builtIn, ...loadTemplates(folder)] : builtIn;
     };
-    runCli((text, path) => check(text, override ?? forStory(path)), usage, positionals, onFail);
+    runCli((text, path) => check(text, override ?? forStory(path), { history: findTeamHistory(path) }), usage, positionals, onFail);
   } catch (error) {
     console.error((error as Error).message);
     process.exit(2);

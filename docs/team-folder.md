@@ -4,14 +4,15 @@ In Claude Code, Loupe reads what it knows about your team from a folder named `l
 
 ```
 loupe/
-  context/      the context files: applications.md, environments.md, priorities.md, conventions.md, story-style.md
+  context/      the context files: applications.md, environments.md, priorities.md, conventions.md, story-style.md,
+                and if the team has them, looks.md and history.md
   learned.md    what Loupe has learned from corrections and answers
   templates/    your team's own story templates, if it has any
   stories/      the stories Loupe writes, one file each
   tickets.md    the tracker tickets Loupe created, if any
 ```
 
-- **context/** holds the same context files as in claude.ai, in the same format: dated, with a source on every fact. Loupe writes them when you set up the team, after you say yes.
+- **context/** holds the same context files as in claude.ai, in the same format: dated, with a source on every fact. Loupe writes them when you set up the team, after you say yes. Two are optional: **looks.md**, the read-only looks at your lower environments, and **history.md**, finished stories with their estimate and the hours they took. Every story's Calibration line is checked against history.md. See [live-context.md](live-context.md#looks-at-a-lower-environment).
 - **learned.md** is the file Loupe keeps from corrections and answers. In Claude Code, Loupe edits it in place after you say yes, and shows you the change.
 - **templates/** holds team templates, such as a change request form, in the format of the built-in templates.
 - **stories/** holds each finished story as `<yyyy-mm-dd>-<short-slug>.md`, for example `2026-10-02-skip-next-box.md`.

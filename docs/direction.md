@@ -9,7 +9,7 @@ Loupe turns what a team knows into stories a developer can build without a secon
 - Its rules are proven. Every rule in the spec has a failing case, and a test fails if one doesn't.
 
 ## Who it's for
-Product owners and product managers write with it. Developers, testers and anyone else who reads a story are its audience. A non-technical PM uses it inside Claude. A PM or developer can also use it in Claude Code, in a terminal or VS Code. Checking facts against real systems is planned.
+Product owners and product managers write with it. Developers, testers and anyone else who reads a story are its audience. A non-technical PM uses it inside Claude. A PM or developer can also use it in Claude Code, in a terminal or VS Code, where it can also check facts against a lower environment, through read-only looks the team lists.
 
 ## What it does
 1. Learns the team. A short interview plus whatever a new team member would need: documents, slides, transcripts, past stories. It distills them into short context files (applications, environments, priorities, known tech debt, conventions, the team's story style), each dated and showing where it came from. It flags files that look stale.
@@ -18,7 +18,7 @@ Product owners and product managers write with it. Developers, testers and anyon
 4. Writes the story in the team's template, every time in the same shape.
 5. Says what it knows, what it doesn't and what it's assuming, one line each. Every known fact shows its source.
 6. Rates its confidence: high, medium or low, with why, and what would raise it.
-7. Estimates the work in hours, as a range for a developer who knows the system, with its basis. Calibrating against the team's history is planned (M5).
+7. Estimates the work in hours, as a range for a developer who knows the system, with its basis. With a history file of finished stories and the hours they took, the estimate names the past stories it drew on, or says plainly that it has none.
 8. Asks now the questions a developer would ask later. Questions that would stop the build come first, and if more than five would, it says so, suggests a spike first and won't rate its confidence High.
 9. Learns. When the user corrects a story or answers one of its questions, it proposes exact entries for learned.md, a context file it owns, each with its source, and saves nothing without a yes. In claude.ai a skill can't edit the project's files, so it hands back the updated learned.md, and the PM replaces learned.md in the project's files. In Claude Code it edits `loupe/learned.md` in place and shows the change. Every later story reads it, so nobody repeats themselves.
 
@@ -43,7 +43,7 @@ The core: the story shape, templates, readiness bar, checker and context-file fo
 - In Claude: a skill plus a project template. The skill interviews the user, builds the context files, then writes stories in that project. A PM builds it once and shares it with the team.
 - In Claude Code (M4a): the same core, reading the team's context from a `loupe/` folder in the repository and writing only there. It is tested in the terminal; the VS Code extension is untested.
 - Also in Claude Code: reading the team's tracker before writing (M4b), and creating a ticket from a finished story, only after the user's yes (M4c). Both use whatever tracker tools Claude Code has, and both were tested on an invented mock tracker, never a real one.
-- Planned for Claude Code: read-only access to lower environments to check facts against real systems.
+- Also in Claude Code: read-only looks at lower environments, listed by the team in looks.md, each shown before it runs, run only as written, and cited with the time. Tried on a mock environment, in no trial yet.
 
 ## Never
 - Touch production. Lower environments only, read-only, enforced by code.
@@ -68,6 +68,6 @@ M1 Core: story shape, templates, checker, context-file format, one example team.
 M2 The Claude skill and project template, the README and brand.
 M3 The learning loop.
 M4a Claude Code: the same skill, with the team's context in a `loupe/` folder in the repository.
-M4b Live context: reading the team's tracker before writing, tested on a mock tracker in trial 8. Read-only checks against lower environments are planned.
+M4b Live context: reading the team's tracker before writing, tested on a mock tracker in trial 8. Read-only looks at lower environments, listed in looks.md, tried on a mock environment and in no trial yet.
 M4c Tickets: creating a ticket from a finished story, only after the user's yes, tested on a mock tracker in trial 9.
-M5 Estimates calibrated against team history.
+M5 Estimates calibrated against team history: a history.md of finished stories and their hours, named on every estimate. In no trial yet.

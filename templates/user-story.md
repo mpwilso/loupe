@@ -50,6 +50,7 @@ How to raise it: [What would make it higher.]
 ## Estimate
 [N to M hours]
 Basis: [What the range is based on, for a developer who knows the system.]
+Calibration: [The past stories the estimate drew on, from the team's history.md: "title" took N hours against A to B estimated. Or "none, the team has no history file." or "none, nothing in the team's history compares."]
 
 ## Questions before building
 - [What would a developer ask later? At most 5 questions. Write "None." if there are none.]

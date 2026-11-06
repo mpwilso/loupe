@@ -120,11 +120,13 @@ test('the other tools are named once, near the end, and Loupe is plain text ther
   assert.ok(section('License').includes('[MIT](LICENSE).'));
 });
 
-test('what is different includes the learning loop, and what is next no longer lists it', () => {
-  assert.ok(section("What's different").includes('- **It learns your team from your documents, your corrections and your answers.** Every learned fact names its source, and nothing is saved without your yes.'));
-  const next = section("What's next");
-  assert.doesNotMatch(next, /learning loop/i);
-  assert.ok(next.includes('Checks against your lower environments that read and never change anything'));
+test('what is different includes the learning loop, looks and calibrated estimates, and nothing is listed as next', () => {
+  const different = section("What's different");
+  assert.ok(different.includes('- **It learns your team from your documents, your corrections and your answers.** Every learned fact names its source, and nothing is saved without your yes.'));
+  assert.ok(different.includes('- **In Claude Code, it can look at a lower environment before it writes.** It runs the looks your team listed, which read and never change anything, shows each before it runs, and cites what it saw with the time. Untried in a trial.'));
+  assert.ok(different.includes("- **It sizes a story against your team's history.** The estimate names the past stories it drew on and the hours each took, or says plainly that it has no history to draw on. Untried in a trial."));
+  assert.equal(section("What's next"), '', 'what was next is built, so the section is gone');
+  assert.ok(!sections().some((s) => /next/i.test(s.title)));
 });
 
 test('the story section shows real lines from the example, then the whole story, collapsed', () => {
@@ -249,13 +251,10 @@ test('the diagram is shown for both themes', () => {
   assert.ok(body.includes('src="docs/img/how-it-works-light.svg"'));
 });
 
-// After trial 7b: Claude Code support, in what is different and what is next.
-test('what is different covers Claude Code, and what is next has moved on from it', () => {
+// After trial 7b: Claude Code support, in what is different. What was next, looks and calibration, is built, so nothing is listed as next.
+test('what is different covers Claude Code, and nothing is listed as next', () => {
   assert.ok(section("What's different").includes('- **In Claude Code, it keeps to its folder.** It reads your team\'s context from a `loupe/` folder in your repository and writes nowhere else.'));
-  const next = section("What's next");
-  assert.doesNotMatch(next, /A VS Code version/);
-  assert.ok(next.includes('Checks against your lower environments that read and never change anything, so a story can cite how the system behaves today.'));
-  assert.doesNotMatch(next, /creating Jira tickets/, 'ticket creation shipped in M4c');
+  assert.doesNotMatch(readme, /A VS Code version|creating Jira tickets|What's next/);
 });
 
 // M4b and M4c: the tracker, in plain words, with its limits as measured in trial 8e.

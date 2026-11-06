@@ -20,4 +20,4 @@ Issues can hold customer data: customers' names, emails, phone numbers and addre
 
 ## Live facts stay live
 
-Never copy a fact read from the tracker into the context files or learned.md: tracker data changes, so it goes stale there. Read it again for the next story.
+Never copy a fact read from the tracker into the context files or learned.md: tracker data changes, so it goes stale there. Read it again for the next story. The same goes for what a look at a lower environment shows (`SKILL/looks.md`).
