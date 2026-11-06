@@ -2,12 +2,11 @@
 
 Each release is on GitHub with its full notes and the skill zip: [releases](https://github.com/mpwilso/loupe/releases).
 
-## Unreleased
+## [v0.8.0](https://github.com/mpwilso/loupe/releases/tag/v0.8.0), 2026-11-05
 
 - Looks at lower environments: a team lists read-only looks in `looks.md`, each with its environment, its exact command and who gave it. Loupe shows a look before it runs, runs it only as written, and cites what it saw as "(staging, looked 2026-10-02 14:05)". The checker refuses a look with any sign of a write, or on anything named like production, and holds the citation to its form. A mock lower environment under `mock/environment/` answers GET and nothing else. Tried on the mock, in no trial.
 - Calibrated estimates: a team's `history.md` lists finished stories with their estimate and the hours they took, and a story's Estimate gains a third line, `Calibration:`, naming the past stories it drew on with their hours, or saying plainly that there is no history or nothing comparable. The checker verifies the names and numbers against the history.md it finds next to the story's context folder. Stories saved without the line still pass.
 - The README's "What's next" is gone: both items are built.
-
 - README cut to about half and restructured to the order the author's other tools use: lockup, CI badge, tagline, what Loupe is, status, then the example.
 - Template patterns are guarded against a hang: a length cap, and no repeat nested in a repeat. A choice inside a repeated group is still allowed.
 - The release workflow attests the zip and runs setup-node without its cache. Dependabot covers npm as well as GitHub Actions.
