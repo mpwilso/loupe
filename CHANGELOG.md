@@ -2,7 +2,7 @@
 
 Each release is on GitHub with its full notes and the skill zip: [releases](https://github.com/mpwilso/loupe/releases).
 
-## Unreleased
+## [v0.8.1](https://github.com/mpwilso/loupe/releases/tag/v0.8.1), 2026-11-06
 
 - A look is now one read command from a short list, checked word by word: curl sending GET, wget printing to the screen, HTTPie with GET, psql or mysql with one SELECT, or kubectl get, describe or logs. Anything else is refused, and so is any shell character, such as `|`, `;`, `&&`, `>`, `$(` or a backtick, and any word that writes, even inside a word like `updateOne`.
 - A new command, `node src/run.js check-look looks.md <number> name=value ...`, fills in one look, checks each value against its placeholder's shape (`{name:id}` or `{name:date}`, id when none is given), checks the filled command again in full, and prints `ok:` and the command, or `refused:` and why. Loupe runs only what it prints.
