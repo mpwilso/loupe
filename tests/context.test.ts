@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { checkContext, contextSpec } from '../src/check-context.ts';
 import { format } from '../src/spec.ts';
-import { fixture, learnedOptions, secretLine, secrets, shortLookalikes, today, withLine } from './cases.ts';
+import { fixture, learnedOptions, secretLine, secretLines, secrets, shortLookalikes, today, withLine } from './cases.ts';
 
 const secret = (what: string) =>
   `line 8: This looks like ${what}. Remove it. Context files must never hold secrets, credentials or customer data.`;
@@ -20,6 +20,7 @@ const bad: Record<string, string> = {
   'too-long': 'The body has 315 words; the limit is 300. Keep only what a new team member needs.',
   'paragraph-no-source': 'line 8: This fact doesn\'t say where it came from. End the line with its own source in parentheses, like "(planning email, Priya Raman, 2026-09-18)".',
   'numbered-no-source': 'line 10: This fact doesn\'t say where it came from. End the line with its own source in parentheses, like "(planning email, Priya Raman, 2026-09-18)".',
+  empty: 'line 1: The file is empty. Write its front matter and entries, or delete it.',
   'no-line-source': 'line 7: This fact doesn\'t say where it came from. End the line with its own source in parentheses, like "(planning email, Priya Raman, 2026-09-18)".',
 };
 
@@ -84,6 +85,17 @@ test('a requirement about passwords or tokens passes, and a value that looks lik
   }
 });
 
+// Review fixes: credentials sent in a header or a link, whatever their case.
+test('an authorization header, an API key header and a token in a link are caught, whatever the case', () => {
+  for (const [what, line] of secretLines) {
+    assert.deepEqual(checkContext(withLine(line), today).errors.map(format), [secret(what)], line);
+  }
+  // Naming the header without a value is a fact a team may need.
+  for (const line of ['Every call sends an Authorization header.', 'The API key goes in a header.', 'Tokens expire after a day.']) {
+    assert.deepEqual(checkContext(withLine(line), today).errors, [], line);
+  }
+});
+
 test('every bullet in a context file ends with its own source', () => {
   const text = `${fixture('good-context.md')}- Stockroom is the staff tool. (Interview with the engineering lead, 2026-09-01)\n1. Skips come first. (planning email, 2026-09-18)\n`;
   assert.deepEqual(checkContext(text, today).errors, []);
@@ -110,6 +122,7 @@ const learnedBad: Record<string, string> = {
     'line 12: "replaces:" quotes "The web app is where staff manage refunds.", but no other context file or earlier entry says that. Quote the earlier fact exactly, and check learned.md together with the other context files.',
   'duplicate-replaces': 'line 16: Two entries replace "The web app is where customers manage their orders.". Keep one, or have the newer entry replace the older one.',
   'unknown-field': 'line 12: "said:" is not an entry field. The fields are kind, source, applies and replaces.',
+  'repeated-field': 'line 19: "kind:" appears twice in this entry. Keep one.',
   'fold-soon': 'warning: learned.md has 570 words. Past 480, say so in one line and offer to fold its entries into the main context files at the next setup refresh.',
   'too-long': 'The body has 745 words; the limit is 600. Keep only what a new team member needs.',
 };

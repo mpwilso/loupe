@@ -22,6 +22,9 @@
     { "what": "an API key", "pattern": "\\b(sk-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{35})" },
     { "what": "a GitHub token", "pattern": "\\b(gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{22,})" },
     { "what": "a Slack token", "pattern": "\\bxox[abprs]-[A-Za-z0-9-]{10,}" },
+    { "what": "an authorization header", "pattern": "\\bauthorization\\s*:\\s*(bearer|basic)\\s+\\S", "flags": "i" },
+    { "what": "an API key header", "pattern": "\\b(x-)?api-key\\s*[:=]\\s*\\S", "flags": "i" },
+    { "what": "a token in a link", "pattern": "[A-Za-z0-9]_token\\s*=\\s*[^\\s&]", "flags": "i" },
     { "what": "an email address", "pattern": "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b" }
   ],
   "learned": {
@@ -37,6 +40,7 @@
     "field": "^\\s+(\\w+):\\s*(.*)$",
     "fields": ["kind", "source", "applies", "replaces"],
     "unknownFieldMessage": "\"{field}:\" is not an entry field. The fields are kind, source, applies and replaces.",
+    "repeatedFieldMessage": "\"{field}:\" appears twice in this entry. Keep one.",
     "strayMessage": "Each line after the header is an entry starting \"- \", or one of its fields, indented, like \"  kind: fact\".",
     "sentence": {
       "end": "[.!?]$",
@@ -73,6 +77,7 @@
     "field": "^\\s+(\\w+):\\s*(.*)$",
     "fields": ["environment", "run", "source"],
     "unknownFieldMessage": "\"{field}:\" is not a look field. The fields are environment, run and source.",
+    "repeatedFieldMessage": "\"{field}:\" appears twice in this look. Keep one.",
     "strayMessage": "Each line after the header is a look starting \"- \", or one of its fields, indented, like \"  environment: staging\".",
     "sentence": {
       "end": "[.!?]$",
@@ -82,22 +87,145 @@
     "environment": {
       "pattern": "^\\S.*$",
       "message": "This look needs \"environment:\" naming the lower environment it reads, like \"environment: staging\".",
-      "never": "\\b(prod|production|live)\\b",
       "neverMessage": "\"{value}\" looks like production. Loupe never looks at production, so leave this look out."
     },
+    "productionWords": ["prod", "prd", "production", "live"],
     "run": {
       "pattern": "^\\S.*$",
-      "message": "This look needs \"run:\" with the exact command Loupe runs, word for word, like \"run: curl -s http://localhost:8765/subscribers/{subscriber}/next-box\".",
-      "writes": [
-        { "what": "a request method that writes", "pattern": "(^|\\s)(-X|--request)[ =]*(POST|PUT|PATCH|DELETE)\\b", "flags": "i" },
-        { "what": "data sent with the request", "pattern": "(^|\\s)(-d|--data(-\\w+)?|-F|--form|-T|--upload-file)(\\s|=|$)" },
-        { "what": "a database statement that writes", "pattern": "\\b(insert|update|delete|drop|alter|truncate|create|grant|merge)\\b", "flags": "i" },
-        { "what": "a command that changes files", "pattern": "(^|\\s|\\|\\s*)(rm|mv|cp|chmod|chown|mkdir|touch|tee|dd|kill)(\\s|$)" },
-        { "what": "an edit in place", "pattern": "\\bsed\\s+(-\\w*i|--in-place)" },
-        { "what": "output sent to a file", "pattern": ">" },
-        { "what": "a git command that changes a repository", "pattern": "\\bgit\\s+(push|commit|reset|checkout|merge|rebase|rm|clean|tag|stash|am|apply)\\b" }
-      ],
-      "writesMessage": "This command has {what}, \"{match}\". A look reads and never changes anything, so leave this one out."
+      "message": "This look needs \"run:\" with the exact command Loupe runs, word for word, like \"run: curl -s http://localhost:8765/subscribers/{subscriber}/next-box\"."
+    },
+    "placeholder": "\\{([A-Za-z][A-Za-z0-9_]*)(?::([^{}]*))?\\}",
+    "defaultShape": "id",
+    "shapes": {
+      "id": { "pattern": "^[A-Za-z0-9_-]{1,64}$", "example": "1042", "message": "\"{value}\" is not an id: 1 to 64 letters, digits, _ or -." },
+      "date": { "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "realDate": true, "example": "2026-10-02", "message": "\"{value}\" is not a real date like 2026-10-02." }
+    },
+    "shapeMessage": "\"{shape}\" is not a placeholder shape. The shapes are {shapes}. Free text, such as an email, is never allowed.",
+    "command": {
+      "anywhere": "&|<>`$\\",
+      "bare": "(){}*?[]#~!",
+      "url": "^https?://[^\\s{}\\[\\]]+$",
+      "select": "^select\\b",
+      "writeWords": ["insert", "update", "delete", "drop", "alter", "truncate", "grant", "copy", "create", "call", "do", "merge", "into"],
+      "aliases": { "https": "http" },
+      "tools": {
+        "curl": {
+          "kind": "url",
+          "flags": ["-s", "--silent", "-S", "--show-error", "-f", "--fail", "--fail-with-body", "-L", "--location", "-i", "--include", "-I", "--head", "-G", "--get", "-k", "--insecure", "--compressed", "-g", "--globoff", "-v", "--verbose"],
+          "values": ["-H", "--header", "-m", "--max-time", "--connect-timeout", "-A", "--user-agent", "--retry"],
+          "choices": { "-X": ["GET"], "--request": ["GET"] },
+          "refused": {
+            "-d": "sends data", "--data": "sends data", "--data-raw": "sends data", "--data-binary": "sends data", "--data-urlencode": "sends data", "--data-ascii": "sends data", "--json": "sends data",
+            "-F": "sends a form", "--form": "sends a form", "--form-string": "sends a form",
+            "-T": "uploads a file", "--upload-file": "uploads a file",
+            "-o": "writes a file", "--output": "writes a file", "-O": "writes a file", "--remote-name": "writes a file", "--remote-name-all": "writes a file", "--output-dir": "writes a file", "-D": "writes a file", "--dump-header": "writes a file", "-c": "writes a file", "--cookie-jar": "writes a file",
+            "-K": "reads its options from a file", "--config": "reads its options from a file",
+            "-u": "puts a user name or password in the command", "--user": "puts a user name or password in the command"
+          }
+        },
+        "wget": {
+          "kind": "url",
+          "flags": ["-q", "--quiet", "-S", "--server-response", "-nv", "--no-verbose", "--no-check-certificate"],
+          "values": ["--header", "-T", "--timeout", "-t", "--tries", "--max-redirect", "-U", "--user-agent"],
+          "choices": { "-O": ["-"], "--output-document": ["-"] },
+          "required": { "option": "-O -", "options": ["-O", "--output-document"], "why": "so it prints what it reads and saves no file" },
+          "refused": {
+            "--post-data": "sends data", "--post-file": "sends data", "--body-data": "sends data", "--body-file": "sends data",
+            "--method": "can send any method",
+            "-o": "writes a log file", "--output-file": "writes a log file", "-a": "writes a log file", "--append-output": "writes a log file",
+            "-i": "reads its links from a file", "--input-file": "reads its links from a file",
+            "-r": "saves many pages", "--recursive": "saves many pages", "-m": "saves many pages", "--mirror": "saves many pages", "-P": "saves many pages", "--directory-prefix": "saves many pages",
+            "--user": "puts a user name or password in the command", "--password": "puts a user name or password in the command", "--http-user": "puts a user name or password in the command", "--http-password": "puts a user name or password in the command"
+          }
+        },
+        "http": {
+          "kind": "url",
+          "methods": ["GET"],
+          "flags": ["-h", "--headers", "-b", "--body", "-v", "--verbose", "--check-status", "-F", "--follow", "-I", "--ignore-stdin"],
+          "values": ["--pretty", "--print", "-p", "--timeout", "--style", "-s"],
+          "required": { "option": "--ignore-stdin", "options": ["-I", "--ignore-stdin"], "why": "so it never sends its input as data" },
+          "refused": {
+            "-f": "sends a form", "--form": "sends a form", "--multipart": "sends a form", "--raw": "sends data",
+            "-d": "writes a file", "--download": "writes a file", "-o": "writes a file", "--output": "writes a file", "--session": "writes a file",
+            "-a": "puts a user name or password in the command", "--auth": "puts a user name or password in the command"
+          }
+        },
+        "psql": {
+          "kind": "sql",
+          "flags": ["-A", "--no-align", "-t", "--tuples-only", "-q", "--quiet", "-X", "--no-psqlrc", "-x", "--expanded", "--csv", "-w", "--no-password"],
+          "values": ["-h", "--host", "-p", "--port", "-U", "--username", "-d", "--dbname", "-c", "--command"],
+          "query": ["-c", "--command"],
+          "hosts": ["-h", "--host"],
+          "databases": ["-d", "--dbname"],
+          "database": { "plain": "^[A-Za-z0-9_.-]+$", "uri": "^postgres(ql)?://", "uriExample": ", or a URI like postgresql://localhost/pellwick_test" },
+          "refused": {
+            "-f": "runs a file of commands", "--file": "runs a file of commands",
+            "-o": "writes a file", "--output": "writes a file", "-L": "writes a file", "--log-file": "writes a file",
+            "-v": "sets values a query can use", "--set": "sets values a query can use", "--variable": "sets values a query can use"
+          }
+        },
+        "mysql": {
+          "kind": "sql",
+          "flags": ["-B", "--batch", "-N", "--skip-column-names", "-t", "--table", "-s", "--silent"],
+          "values": ["-h", "--host", "-P", "--port", "-u", "--user", "-D", "--database", "-e", "--execute"],
+          "query": ["-e", "--execute"],
+          "hosts": ["-h", "--host"],
+          "databases": ["-D", "--database"],
+          "database": { "plain": "^[A-Za-z0-9_]+$" },
+          "refused": {
+            "-p": "puts a password in the command", "--password": "puts a password in the command",
+            "--init-command": "runs another command first",
+            "--tee": "writes a file",
+            "--local-infile": "can read files on this computer"
+          }
+        },
+        "kubectl": {
+          "kind": "kubectl",
+          "verbs": ["get", "describe", "logs"],
+          "flags": ["-A", "--all-namespaces", "--previous", "--timestamps", "--show-labels", "--no-headers"],
+          "values": ["-n", "--namespace", "-l", "--selector", "--tail", "-c", "--container", "--since", "--context"],
+          "choices": { "-o": ["json", "yaml", "wide", "name"], "--output": ["json", "yaml", "wide", "name"] },
+          "hosts": ["--context"],
+          "required": { "option": "--context", "options": ["--context"], "why": "so the cluster it reads is named in the look" },
+          "refused": {
+            "-f": "keeps running and never stops", "--follow": "keeps running and never stops", "-w": "keeps running and never stops", "--watch": "keeps running and never stops",
+            "--kubeconfig": "reads another cluster's settings",
+            "--token": "puts a token in the command",
+            "--as": "acts as another user", "--as-group": "acts as another user",
+            "-s": "names a server outside its context", "--server": "names a server outside its context"
+          }
+        }
+      },
+      "shellMessage": "The command has {char}, which a shell reads as more than text. A look has no & | < > ` $ \\ or new line anywhere, and no ; but one at the end of a query.",
+      "unquotedMessage": "The command has \"{char}\" outside quotes, which a shell reads as more than text. Put it inside quotes, or leave it out.",
+      "quoteMessage": "The command has a quote that never closes.",
+      "toolMessage": "\"{tool}\" is not a look. A look runs curl, wget, HTTPie (http or https), psql, mysql, or kubectl get, describe or logs.",
+      "verbMessage": "kubectl in a look runs {verbs}, and \"{verb}\" is none of them.",
+      "refusedOptionMessage": "\"{option}\" {what}, and a look never does.",
+      "optionMessage": "{tool} in a look can't use \"{option}\". It can use {options}.",
+      "clusterMessage": "\"{option}\" joins short options that must stand alone. Write each apart, like -s -X GET.",
+      "valueMessage": "\"{option}\" needs a value after it.",
+      "choiceMessage": "In a look, \"{option}\" takes {choices}, not \"{value}\".",
+      "requiredMessage": "{tool} in a look needs {option}, {why}.",
+      "urlMessage": "{tool} in a look reads a full URL, starting http:// or https://, with no braces or brackets. \"{token}\" is not one.",
+      "urlCountMessage": "{tool} in a look reads one URL, and this one has {count}.",
+      "methodMessage": "{tool} in a look reads with GET or no method, not \"{method}\".",
+      "credentialsMessage": "\"{token}\" holds a password. Keep credentials out of looks.md.",
+      "productionMessage": "\"{host}\" looks like production. Loupe never looks at production. This checks the name, not where it really points.",
+      "queryCountMessage": "{tool} in a look runs one query, given once with {options}, and this one has {count}.",
+      "selectMessage": "A look's query is one SELECT, with no \";\" but one at the end. \"{query}\" is not.",
+      "writeWordMessage": "The command has \"{word}\", a word that writes, like {words}. A look never writes.",
+      "databaseMessage": "{tool} in a look names one database, by a plain name like pellwick_test{uri}. \"{token}\" is not one.",
+      "secretResourceMessage": "A look never reads Kubernetes secrets.",
+      "placeholderMessage": "The placeholder {placeholder} is not inside a URL's path or query value, or inside a single-quoted SQL literal. A placeholder goes nowhere else."
+    },
+    "fill": {
+      "fileMessage": "looks.md doesn't pass check-context, so no look runs. Fix this first: {problem}",
+      "entryMessage": "looks.md has no look number {number}. Count the looks from 1, in the order looks.md lists them.",
+      "argumentMessage": "\"{argument}\" is not name=value, like subscriber=1042.",
+      "unknownNameMessage": "This look has no placeholder named \"{name}\". Its placeholders are: {names}.",
+      "repeatedNameMessage": "\"{name}\" is given twice. Give each placeholder one value.",
+      "missingNameMessage": "This look needs a value for \"{name}\", like {name}={example}."
     },
     "source": {
       "pattern": "^[^,]+, [^,]+, (\\d{4}-\\d{2}-\\d{2})$",
@@ -115,6 +243,8 @@
     "field": "^\\s+(\\w+):\\s*(.*)$",
     "fields": ["estimated", "actual", "source"],
     "unknownFieldMessage": "\"{field}:\" is not a history field. The fields are estimated, actual and source.",
+    "repeatedFieldMessage": "\"{field}:\" appears twice in this entry. Keep one.",
+    "duplicateMessage": "Two entries are titled \"{title}\". Keep one, so a Calibration line names one story.",
     "strayMessage": "Each line after the header is a finished story's title starting \"- \", or one of its fields, indented, like \"  actual: 11 hours\".",
     "estimated": {
       "pattern": "^(\\d+) to (\\d+) hours$",
@@ -132,6 +262,7 @@
     }
   },
   "messages": {
+    "empty": "The file is empty. Write its front matter and entries, or delete it.",
     "noFrontMatter": "The file must start with front matter between two \"---\" lines.",
     "missingField": "The front matter is missing \"{field}\": {help}.",
     "badDate": "\"{field}\" must be a real date like 2026-09-30.",

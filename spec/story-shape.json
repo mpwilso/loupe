@@ -37,9 +37,12 @@
   },
   "lookSource": {
     "detect": "\\blooked\\b",
-    "pattern": "^[^,]+, looked (\\d{4}-\\d{2}-\\d{2}) ([01]\\d|2[0-3]):[0-5]\\d$",
+    "detectFlags": "i",
+    "pattern": "^([^,]+), looked (\\d{4}-\\d{2}-\\d{2}) ([01]\\d|2[0-3]):[0-5]\\d$",
     "message": "This source cites a look at an environment. Write it as the environment and when Loupe looked, like \"(staging, looked 2026-10-02 14:05)\".",
-    "badTimeMessage": "The time in this look source must be a real date and time, like \"looked 2026-10-02 14:05\"."
+    "badTimeMessage": "The time in this look source must be a real date and time, like \"looked 2026-10-02 14:05\".",
+    "productionMessage": "This look source names \"{environment}\", which looks like production. Loupe never looks at production.",
+    "notListedMessage": "This look source names \"{environment}\", which no look in looks.md reads. Name the environment as looks.md does."
   },
   "secrets": {
     "message": "This looks like {what}. Remove it. A story must never hold secrets, credentials or customer data."
@@ -172,8 +175,8 @@
         "lead": "Calibration: ",
         "noFile": "none, the team has no history file.",
         "nothingComparable": "none, nothing in the team's history compares.",
-        "item": "^\"([^\"]+)\" took (\\d+) hours against (\\d+) to (\\d+) estimated\\.$",
-        "separator": "(?<=\\.) ",
+        "item": "^\"((?:(?!\" took ).)+)\" took (\\d+) hours against (\\d+) to (\\d+) estimated\\.",
+        "separator": " ",
         "lineMessage": "The third line of Estimate, if there is one, is \"Calibration:\" and the past stories the estimate drew on.",
         "itemMessage": "Each sentence on the Calibration line reads \"<title>\" took N hours against A to B estimated. Or the line reads exactly \"Calibration: none, the team has no history file.\" or \"Calibration: none, nothing in the team's history compares.\"",
         "noneButHistoryMessage": "The team has a history file, so the Calibration line names the past stories the estimate drew on, or says nothing in the history compares.",

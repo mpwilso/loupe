@@ -43,7 +43,9 @@ const sources: Record<string, string> = {
   'src/check.ts': 'src/check.ts',
   'src/check-context.ts': 'src/check-context.ts',
   'src/check-folder.ts': 'src/check-folder.ts',
+  'src/check-look.ts': 'src/check-look.ts',
   'src/check-tickets.ts': 'src/check-tickets.ts',
+  'src/look-command.ts': 'src/look-command.ts',
   'src/spec.ts': 'src/spec.ts',
   ...Object.fromEntries(readdirSync(join(root, 'spec')).map((f) => [`spec/${f}`, `spec/${f}`])),
   ...Object.fromEntries(md('templates').map((f) => [`templates/${f}`, `templates/${f}`])),
@@ -492,11 +494,12 @@ test('files mode never writes outside loupe/, and says so', () => {
 });
 
 // Trial 7 fixes: no shell writes, the real diff pasted, and a duplicate story saved as -2 without asking. M4b adds one
-// more command it may run: a look from looks.md, as written.
+// more command it may run: a look, exactly as check-look printed it.
 test('files mode writes only with the file tools, and runs only the checkers, git diff or git status, and a listed look', () => {
   const text = filesMode();
-  assert.ok(text.includes("Write and edit files only with Claude Code's file tools, never with shell commands (no cat, echo, sed, python or redirects). The only commands you run are the checkers (node SKILL/src/run.js ...), git diff or git status, and a look from loupe/context/looks.md, run exactly as written there after you show it (SKILL/looks.md)."));
-  assert.ok(file('looks.md').includes('Never run a command that isn\'t in `looks.md`, and never change a listed command beyond its placeholders.'));
+  assert.ok(text.includes("Write and edit files only with Claude Code's file tools, never with shell commands (no cat, echo, sed, python or redirects). The only commands you run are the checkers (node SKILL/src/run.js ...), git diff or git status, and a look, exactly as check-look printed it after `ok: `, once you show it (SKILL/looks.md)."));
+  assert.ok(file('looks.md').includes("Never run a command that `check-look` didn't print after `ok: `, and never change what it printed."));
+  assert.ok(file('looks.md').includes('Run `node SKILL/src/run.js check-look loupe/context/looks.md <number> name=value ...`'));
 });
 
 test('files mode pastes the actual git diff in a fenced block after a learned.md change', () => {

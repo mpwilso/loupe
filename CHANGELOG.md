@@ -2,9 +2,22 @@
 
 Each release is on GitHub with its full notes and the skill zip: [releases](https://github.com/mpwilso/loupe/releases).
 
+## Unreleased
+
+- A look is now one read command from a short list, checked word by word: curl sending GET, wget printing to the screen, HTTPie with GET, psql or mysql with one SELECT, or kubectl get, describe or logs. Anything else is refused, and so is any shell character, such as `|`, `;`, `&&`, `>`, `$(` or a backtick, and any word that writes, even inside a word like `updateOne`.
+- A new command, `node src/run.js check-look looks.md <number> name=value ...`, fills in one look, checks each value against its placeholder's shape (`{name:id}` or `{name:date}`, id when none is given), checks the filled command again in full, and prints `ok:` and the command, or `refused:` and why. Loupe runs only what it prints.
+- Placeholders may sit only in a URL's path or query value, or inside a single-quoted SQL value, never as a whole word or an option.
+- No guide allows a look to run without asking any more: Claude Code asks before every look.
+- An environment, host or cluster is refused when a part of its name is prod, prd, production or live, in any case, like prod1, PROD_US or production2. The docs say plainly that this checks names, not where a host really points.
+- A story's look source must name an environment the team's looks.md lists, never one named like production, and "Looked" with a capital is held to the same form.
+- The secret detector catches `Authorization: Bearer` and `Basic` headers, `X-Api-Key` and `Api-Key` headers, and `access_token=` in a link.
+- A field given twice in one entry of looks.md, history.md or learned.md is reported, where the second used to replace the first without a word.
+- History fixes: a title with spaces after it still matches; two entries with one title are reported; a title holding ". " or a double quote can be named word for word on a Calibration line; and an empty history.md, or one with no front matter, counts as no history, while check-context reports the empty file.
+- README: plainer words for a product manager. It says early that Pellwick, Helpline and Stockroom are invented, defines a lower environment, says what Claude and Claude Code are, says what the minutes per story measure, and says Claude scored every trial but trial 3. v0.8.0's notes now say what its look checks really were.
+
 ## [v0.8.0](https://github.com/mpwilso/loupe/releases/tag/v0.8.0), 2026-11-05
 
-- Looks at lower environments: a team lists read-only looks in `looks.md`, each with its environment, its exact command and who gave it. Loupe shows a look before it runs, runs it only as written, and cites what it saw as "(staging, looked 2026-10-02 14:05)". The checker refuses a look with any sign of a write, or on anything named like production, and holds the citation to its form. A mock lower environment under `mock/environment/` answers GET and nothing else. Tried on the mock, in no trial.
+- Looks at lower environments: a team lists read-only looks in `looks.md`, each with its environment, its exact command and who gave it. Loupe shows a look before it runs, runs it only as written, and cites what it saw as "(staging, looked 2026-10-02 14:05)". The checker refuses a look with one of a few signs of a write, or at an environment named prod, production or live, and holds the citation to its form. A mock lower environment under `mock/environment/` answers GET and nothing else. Tried on the mock, in no trial.
 - Calibrated estimates: a team's `history.md` lists finished stories with their estimate and the hours they took, and a story's Estimate gains a third line, `Calibration:`, naming the past stories it drew on with their hours, or saying plainly that there is no history or nothing comparable. The checker verifies the names and numbers against the history.md it finds next to the story's context folder. Stories saved without the line still pass.
 - The README's "What's next" is gone: both items are built.
 - README cut to about half and restructured to the order the author's other tools use: lockup, CI badge, tagline, what Loupe is, status, then the example.

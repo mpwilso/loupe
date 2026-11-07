@@ -43,10 +43,10 @@ The core: the story shape, templates, readiness bar, checker and context-file fo
 - In Claude: a skill plus a project template. The skill interviews the user, builds the context files, then writes stories in that project. A PM builds it once and shares it with the team.
 - In Claude Code (M4a): the same core, reading the team's context from a `loupe/` folder in the repository and writing only there. It is tested in the terminal; the VS Code extension is untested.
 - Also in Claude Code: reading the team's tracker before writing (M4b), and creating a ticket from a finished story, only after the user's yes (M4c). Both use whatever tracker tools Claude Code has, and both were tested on an invented mock tracker, never a real one.
-- Also in Claude Code: read-only looks at lower environments, listed by the team in looks.md, each shown before it runs, run only as written, and cited with the time. Tried on a mock environment, in no trial yet.
+- Also in Claude Code: read-only looks at lower environments, listed by the team in looks.md, each checked by code before it runs, shown first, and cited with the time. Tried on a mock environment, in no trial yet.
 
 ## Never
-- Touch production. Lower environments only, read-only, enforced by code.
+- Touch production. Lower environments only, read-only: code refuses a look that isn't one plain read from a short list, or whose environment or host is named like production. It checks names, not where a host points.
 - Write to a tracker without the user's approval.
 - Fill a gap with an invented fact. An unknown stays unknown and says so.
 - Keep secrets, credentials or customer data in context files. Warn, and leave them out.

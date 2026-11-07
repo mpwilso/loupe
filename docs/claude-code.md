@@ -89,7 +89,7 @@ Keep the leading slash in `Edit(/loupe/**)`. In a settings file, it anchors the 
 
 With a personal install, the skill's files sit outside your repository, and Loupe reads them with the Read tool, never with `cat` or `ls`. Add `Read(~/.claude/skills/loupe/**)` to the allow list so it can, without asking each time. `~/` means your home folder. For an absolute path, start with two slashes, like `Read(//opt/skills/loupe/**)`: one slash means the repository's root.
 
-A look from `loupe/context/looks.md` runs with Bash, so Claude Code asks you before each one unless you allow it. That prompt is a second lock: read the command, and refuse anything that isn't a listed look. To stop the prompts for one look, allow its exact command, such as `Bash(curl -s http://localhost:8765/*)` for the mock environment. Never allow `Bash(curl *)` or any broader rule. See [live-context.md](live-context.md#looks-at-a-lower-environment).
+A look from `loupe/context/looks.md` runs with Bash, after the checker's `check-look` command fills it in and checks it. Claude Code asks you before every look, and that prompt is the second lock: read the command, and refuse anything that isn't the one `check-look` printed. Never add an allow rule for a look, not even one for curl alone. See [live-context.md](live-context.md#looks-at-a-lower-environment).
 
 Without a `loupe/` folder, Loupe works as in claude.ai: it saves `response.md`, and any team template it checks in `team-templates/`, in the folder you started Claude Code in. `Edit(/loupe/**)` doesn't cover them, so it asks first. To allow them too, add `Edit(/response.md)` and `Edit(/team-templates/**)`.
 

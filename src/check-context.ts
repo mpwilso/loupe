@@ -6,6 +6,7 @@
 // Set LOUPE_TODAY=YYYY-MM-DD to check staleness against a fixed date.
 import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
+import { commandProblems, productionLike, type LookRules } from './look-command.ts';
 import { fill, frontMatter, isRealDate, loadSpec, parseEntries, runCli, todayFromEnv, type Entry, type Problem } from './spec.ts';
 
 type Rule = { pattern: string; message?: string };
@@ -16,6 +17,7 @@ type EntriesSpec = {
   field: string;
   fields: string[];
   unknownFieldMessage?: string;
+  repeatedFieldMessage?: string;
   strayMessage?: string;
 };
 type LearnedSpec = EntriesSpec & {
@@ -28,13 +30,16 @@ type LearnedSpec = EntriesSpec & {
   applies: Rule;
   replaces: Rule & { notFoundMessage?: string; duplicateMessage?: string };
 };
-type LooksSpec = EntriesSpec & {
-  sentence: { end: string; second: string; message?: string };
-  environment: Rule & { never: string; neverMessage?: string };
-  run: Rule & { writes: { what: string; pattern: string; flags?: string }[]; writesMessage?: string };
-  source: Rule & { dateMessage?: string };
-};
+type LooksSpec = EntriesSpec &
+  LookRules & {
+    sentence: { end: string; second: string; message?: string };
+    environment: Rule & { neverMessage?: string };
+    run: Rule;
+    fill: Record<string, string | undefined>;
+    source: Rule & { dateMessage?: string };
+  };
 type HistorySpec = EntriesSpec & {
+  duplicateMessage?: string;
   estimated: Rule & { ascendingMessage?: string };
   actual: Rule;
   source: Rule & { dateMessage?: string };
@@ -69,6 +74,8 @@ export function setContextSpec(next: ContextSpec): void {
   M = spec.messages;
 }
 setContextSpec(contextSpec);
+// The rules in use, swapped rules included, for check-look and the story checker, which share them.
+export const contextRules = (): ContextSpec => spec;
 const DAY = 24 * 60 * 60 * 1000;
 
 // The options for a context file, from its name: learned.md, looks.md and history.md have their own rules.
@@ -86,6 +93,11 @@ function findProblems(text: string, today: Date, options: ContextOptions): { err
   const errors: Problem[] = [];
   const warnings: Problem[] = [];
   const lines = text.split(/\r?\n/);
+  // An empty file holds nothing to check, and a story checker treats it as no file at all.
+  if (!text.trim()) {
+    errors.push({ line: 1, text: fill(M.empty) });
+    return { errors, warnings };
+  }
 
   lines.forEach((line, i) => {
     for (const secret of spec.secrets) {
@@ -161,8 +173,9 @@ type Add = (line: number, message: string | undefined, vars?: Record<string, str
 
 // The parts every file of entries shares: the header line, the fields each entry may have, and stray lines.
 function entriesOf(lines: string[], end: number, rule: EntriesSpec, add: Add): Entry[] {
-  const { header, entries, unknown, stray } = parseEntries(lines, end, rule);
+  const { header, entries, unknown, repeated, stray } = parseEntries(lines, end, rule);
   for (const { line, field } of unknown) add(line, rule.unknownFieldMessage, { field });
+  for (const { line, field } of repeated) add(line, rule.repeatedFieldMessage, { field });
   for (const line of stray) add(line, rule.strayMessage);
   if (!new RegExp(rule.header.pattern, 'i').test(header.map((h) => h.text).join(' '))) add(header[0]?.line ?? end + 2, rule.header.message);
   return entries;
@@ -209,8 +222,9 @@ function checkLearned(lines: string[], end: number, others: string[]): Problem[]
 }
 
 // looks.md: each look is one sentence saying what it shows, the lower environment it reads, the exact command, and
-// who gave it. The command is refused when it carries any sign of a write. That is a guard, not proof: a command
-// can change things without any of those signs, so a person reads every look before it runs.
+// who gave it. The environment is refused when a part of its name is a production word, like prod1 or PROD_US. The
+// command must be one read from the short list in src/look-command.ts. Both check names and forms, not proof: a host
+// named staging can point anywhere, so a person reads every look, and Claude Code asks before each one runs.
 function checkLooks(lines: string[], end: number): Problem[] {
   const L = spec.looks;
   const problems: Problem[] = [];
@@ -219,15 +233,10 @@ function checkLooks(lines: string[], end: number): Problem[] {
     if (!oneSentence(e.text, L.sentence)) add(e.line, L.sentence.message);
     const environment = e.fields.get('environment');
     if (!environment || !new RegExp(L.environment.pattern).test(environment.value)) add(environment?.line ?? e.line, L.environment.message);
-    else if (new RegExp(L.environment.never, 'i').test(environment.value)) add(environment.line, L.environment.neverMessage, { value: environment.value });
+    else if (productionLike(environment.value, L.productionWords)) add(environment.line, L.environment.neverMessage, { value: environment.value });
     const run = e.fields.get('run');
     if (!run || !new RegExp(L.run.pattern).test(run.value)) add(run?.line ?? e.line, L.run.message);
-    else {
-      for (const sign of L.run.writes) {
-        const match = new RegExp(sign.pattern, sign.flags).exec(run.value);
-        if (match) add(run.line, L.run.writesMessage, { what: sign.what, match: match[0].trim() });
-      }
-    }
+    else for (const problem of commandProblems(run.value, L, true)) problems.push({ line: run.line, text: problem });
     checkSource(e, L.source, add);
   }
   return problems;
@@ -239,7 +248,11 @@ function checkHistory(lines: string[], end: number): Problem[] {
   const H = spec.history;
   const problems: Problem[] = [];
   const add: Add = (line, message, vars = {}) => problems.push({ line, text: fill(message, vars) });
+  const titles = new Set<string>();
   for (const e of entriesOf(lines, end, H, add)) {
+    // A Calibration line names a past story by its title, so no two entries share one.
+    if (titles.has(e.text)) add(e.line, H.duplicateMessage, { title: e.text });
+    titles.add(e.text);
     const estimated = e.fields.get('estimated');
     const range = estimated && new RegExp(H.estimated.pattern).exec(estimated.value);
     if (!range) add(estimated?.line ?? e.line, H.estimated.message);
@@ -254,18 +267,31 @@ function checkHistory(lines: string[], end: number): Problem[] {
 export type HistoryEntry = { title: string; low: number; high: number; actual: number };
 
 // The entries of a history.md that the story checker can compare a Calibration line with. Entries that don't fit the
-// rules are left out; check-context reports them.
-export function historyEntries(text: string): HistoryEntry[] {
+// rules are left out; check-context reports them. A file with no front matter, an empty one included, is no history
+// at all, so the story checker treats it as no file.
+export function historyEntries(text: string): HistoryEntry[] | undefined {
   const H = spec.history;
   const lines = text.split(/\r?\n/);
   const { end } = frontMatter(lines);
-  if (end < 0) return [];
+  if (end < 0) return undefined;
   return parseEntries(lines, end, H).entries.flatMap((e) => {
     const range = new RegExp(H.estimated.pattern).exec(e.fields.get('estimated')?.value ?? '');
     const actual = new RegExp(H.actual.pattern).exec(e.fields.get('actual')?.value ?? '');
     return range && actual ? [{ title: e.text, low: Number(range[1]), high: Number(range[2]), actual: Number(actual[1]) }] : [];
   });
 }
+
+// The environments a team's looks.md lists, for the story checker's look sources. A file with no front matter lists none
+// that can be trusted, so it counts as no file.
+export function lookEnvironments(text: string): string[] | undefined {
+  const lines = text.split(/\r?\n/);
+  const { end } = frontMatter(lines);
+  if (end < 0) return undefined;
+  return parseEntries(lines, end, spec.looks).entries.flatMap((e) => e.fields.get('environment')?.value.trim() || []);
+}
+
+// Whether a name is like production, by the looks rules in use.
+export const productionName = (name: string) => productionLike(name, spec.looks.productionWords);
 
 export function main(args: string[]): void {
   const today = todayFromEnv();

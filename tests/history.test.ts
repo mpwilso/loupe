@@ -24,6 +24,8 @@ const bad: Record<string, string> = {
   'no-actual': 'line 9: This entry needs "actual:" with the hours the story took, like "actual: 11 hours".',
   'no-source': 'line 9: This entry needs a source: who gave the hours, from where, and the date, like "source: Priya Raman, timesheets, 2026-09-29".',
   'bad-source-date': 'line 12: The date in this source must be a real date like 2026-09-29.',
+  'duplicate-title': 'line 13: Two entries are titled "Show the next delivery date on the orders page". Keep one, so a Calibration line names one story.',
+  'repeated-field': 'line 12: "actual:" appears twice in this entry. Keep one.',
 };
 
 for (const [name, message] of Object.entries(bad)) {
@@ -98,4 +100,48 @@ test('check finds history.md in the team folder next to a story and checks the C
   // A story with no Calibration line still passes: stories saved before the team had a history have none.
   writeFileSync(story, fixture('good-v2-story.md'));
   assert.equal(cli().status, 0, cli().stdout);
+});
+
+// Review fixes: a title is matched as written, without the spaces after it, and a title can hold ". " or a double quote.
+test('a history title with spaces after it still matches the Calibration line that names it', () => {
+  const spaced = fixture('good-history.md').replace('two days before the cutoff\n', 'two days before the cutoff   \n');
+  assert.notEqual(spaced, fixture('good-history.md'));
+  assert.deepEqual(history(spaced), []);
+  assert.deepEqual(check(lookStory(), undefined, { history: spaced }).errors, []);
+});
+
+test('a past story whose title holds ". " or a double quote can be named word for word', () => {
+  const titles = ['Fix the U.S. address form', 'Rename the "Save" button on the orders page'];
+  const text = fixture('good-history.md').replace('Show the next delivery date on the orders page', titles[0]).replace('Send a reminder email two days before the cutoff', titles[1]);
+  assert.deepEqual(history(text), []);
+  assert.deepEqual(historyEntries(text)?.map((e) => e.title), titles);
+  const story = lookStory().replace(calibration, `Calibration: "${titles[0]}" took 11 hours against 4 to 8 estimated. "${titles[1]}" took 7 hours against 6 to 10 estimated.`);
+  assert.deepEqual(check(story, undefined, { history: text }).errors, []);
+  assert.deepEqual(check(story.replace('took 11 hours', 'took 12 hours'), undefined, { history: text }).errors.map(format), [
+    `line 55: history.md says "${titles[0]}" took 11 hours against 4 to 8 estimated. Use the numbers from history.md.`,
+  ]);
+  // A sentence that doesn't fit is still refused, even when the next one does.
+  assert.equal(check(story.replace('took 11 hours', 'took many hours'), undefined, { history: text }).errors.length, 1);
+});
+
+test('an empty history.md, or one with no front matter, is no history, and check-context reports the file', () => {
+  const noFile = lookStory().replace(calibration, 'Calibration: none, the team has no history file.');
+  for (const text of ['', '\n', 'Each entry is a finished story.\n\n- Show the next delivery date on the orders page\n  actual: 11 hours\n']) {
+    assert.deepEqual(check(noFile, undefined, { history: text }).errors, [], JSON.stringify(text));
+  }
+  assert.deepEqual(history('').map(format), ['line 1: The file is empty. Write its front matter and entries, or delete it.']);
+  assert.deepEqual(history('- Show the next delivery date\n').map(format), ['line 1: The file must start with front matter between two "---" lines.']);
+  // With front matter, it is a history file, even with no entries yet.
+  assert.equal(check(noFile, undefined, { history: fixture('good-history.md').split('\n- ')[0] }).errors.length, 1);
+});
+
+test('check-folder takes an empty history.md as no history, and reports the empty file', () => {
+  const team = join(temp, 'empty-history');
+  for (const sub of ['context', 'stories']) mkdirSync(join(team, sub), { recursive: true });
+  copyFileSync(join(root, 'tests/fixtures/good-context.md'), join(team, 'context/applications.md'));
+  writeFileSync(join(team, 'context/history.md'), '');
+  writeFileSync(join(team, 'stories/2026-10-02-next-delivery-date.md'), lookStory().replace(calibration, 'Calibration: none, the team has no history file.'));
+  const run = spawnSync(process.execPath, ['src/run.js', 'check-folder', team], { cwd: root, encoding: 'utf8', env: { ...process.env, LOUPE_TODAY: '2026-10-02' } });
+  assert.equal(run.status, 1);
+  assert.equal(run.stdout, `${join(team, 'context/history.md')}:\n  line 1: The file is empty. Write its front matter and entries, or delete it.\n`);
 });
