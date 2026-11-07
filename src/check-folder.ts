@@ -1,6 +1,6 @@
 // Checks a whole team folder: context files, learned.md, looks.md and history.md with check-context, team templates
 // and stories with check, and tickets.md, the tickets Loupe created, against the stories they came from.
-// With a history.md, every story's Calibration line is checked against it.
+// With a history.md, every story's Calibration line is checked against it, and with a looks.md, every look source.
 // Usage: node src/check-folder.ts path/to/loupe
 // Set LOUPE_TODAY=YYYY-MM-DD to check staleness against a fixed date.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -34,13 +34,15 @@ export function main(args: string[]): void {
   const tickets = join(dir, ticketsSpec.fileName);
   const historyPath = join(dir, 'context', contextSpec.history.fileName);
   const history = existsSync(historyPath) ? readFileSync(historyPath, 'utf8') : undefined;
+  const looksPath = join(dir, 'context', contextSpec.looks.fileName);
+  const looks = existsSync(looksPath) ? readFileSync(looksPath, 'utf8') : undefined;
   const paths = [...contextPaths, ...markdown(teamTemplates), ...storyPaths, ...(existsSync(tickets) ? [tickets] : [])];
   runCli(
     (text, path) => {
       if (path === tickets) return checkTickets(text, new Map(storyPaths.map((p) => [basename(p), readFileSync(p, 'utf8')])));
       if (isLearned(path)) return checkContext(text, today, { learned: true, others });
       if (contextPaths.includes(path)) return checkContext(text, today, contextOptions(path));
-      return check(text, templates, { history });
+      return check(text, templates, { history, looks });
     },
     usage,
     paths,

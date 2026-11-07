@@ -86,6 +86,7 @@ const bad: Record<string, string> = {
   'live-bad-read': 'line 18: The read time in this source must be a real date and time, like "read 2026-10-02 14:05".',
   'live-key-no-source': 'line 38: SUBS-152 is a tracker record, so this line must end with its live source, like "(Jira SUBS-152, read 2026-10-02 14:05)".',
   'live-key-bad-source': 'line 38: SUBS-152 is a tracker record, so this line must end with its live source, like "(Jira SUBS-152, read 2026-10-02 14:05)".',
+  'look-production': 'line 39: This look source names "prod1", which looks like production. Loupe never looks at production.',
   'customer-email': 'line 28: This looks like an email address. Remove it. A story must never hold secrets, credentials or customer data.',
   'not-checked': 'line 5: This draft was never checked. Run the checker on it, fix what it reports, then remove the "Not checked:" line.',
   'failed-checker':

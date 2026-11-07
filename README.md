@@ -15,10 +15,10 @@ Status: a portfolio project, built to show how I design, test and judge an AI to
 
 ## What a story looks like
 
-Every story opens with three lines: the call (written, or not ready yet), how confident Loupe is, and the question to ask before anything else.
+Every story opens with three lines: the call (written, or not ready yet), how confident Loupe is, and the question to ask before anything else. The example is from Pellwick, an invented company that sells cleaning refills by subscription. Helpline, its support queue, and Stockroom, its staff tool, are invented too.
 
 > Call: Story written<br>
-> Confidence: Medium, who, what, where and the cutoff are clear, but billing for a moved box is untested.<br>
+> Confidence: Medium, because the scope and the cutoff are clear, but billing for a moved box is untested.<br>
 > First question: Does skipping count as a payments change under the December freeze, since it affects charging?
 >
 > **Test scenarios**
@@ -41,7 +41,7 @@ The full story, with its background, requirements, test scenarios, estimate and 
 
 ```markdown
 Call: Story written
-Confidence: Medium, who, what, where and the cutoff are clear, but billing for a moved box is untested.
+Confidence: Medium, because the scope and the cutoff are clear, but billing for a moved box is untested.
 First question: Does skipping count as a payments change under the December freeze, since it affects charging?
 
 # Let subscribers skip their next box from their account
@@ -151,7 +151,7 @@ A story can look done and still hide what nobody knows: a rule no one checked, a
 - **It learns your team from your documents, your corrections and your answers.** Every learned fact names its source, and nothing is saved without your yes.
 - **In Claude Code, it keeps to its folder.** It reads your team's context from a `loupe/` folder in your repository and writes nowhere else.
 - **In Claude Code, it can read your tracker and create tickets.** It searches the team's tracker before writing, cites any ticket it uses with when it was read, and flags likely duplicates. It creates a ticket from a finished story after showing you exactly what it will create and asking, and it never changes an existing ticket.
-- **In Claude Code, it can look at a lower environment before it writes.** It runs the looks your team listed, which read and never change anything, shows each before it runs, and cites what it saw with the time. Untried in a trial.
+- **In Claude Code, it can look at a lower environment before it writes.** A lower environment is a test or staging copy of a system. Loupe runs a look your team listed after code checks it: one read command from a short list, such as curl sending GET or psql with one SELECT, at an environment not named like production. Claude Code asks you before each look, and Loupe cites what it saw with the time. Untried in a trial.
 - **It sizes a story against your team's history.** The estimate names the past stories it drew on and the hours each took, or says plainly that it has no history to draw on. Untried in a trial.
 
 ## How it works
@@ -162,6 +162,8 @@ Loupe learns your team once, from your own documents. Each input then gets a rea
 
 ## Try it
 
+Claude is the Claude app, on the web or the desktop. Claude Code is Anthropic's coding tool, run in a terminal. A product manager who doesn't code needs just the Claude app.
+
 - **Claude:** download `loupe-skill.zip` from the [latest release](https://github.com/mpwilso/loupe/releases/latest) and upload it in Customize, then Skills. You need a Claude account with Skills and code execution turned on. The project setup, step by step, is in [docs/claude-project.md](docs/claude-project.md).
 - **Claude Code plugin:** run `/plugin marketplace add mpwilso/loupe`, then `/plugin install loupe@loupe`. Untested in trials.
 - **Claude Code installer:** clone this repository and run `node scripts/install-claude-code.ts`. Then keep your team's context in a `loupe/` folder in your repository: [docs/claude-code.md](docs/claude-code.md). The terminal is tested; the VS Code extension isn't yet.
@@ -170,7 +172,7 @@ Then type "set up the team" and point Loupe at your team's documents. After that
 
 ## What the trials found
 
-- **A fair baseline.** Trial 1's plain-Claude comparison was given Loupe's own context files, which taught it Loupe's format. In trial 2 it got the team's raw files and nothing else. In blind review it gave a usable estimate on 1 of 4 stories, against Loupe's 4 of 4, and Loupe kept the same format every time. ([trial 1](docs/trials/2026-09-30-trial-1.md), [trial 2](docs/trials/2026-09-30-trial-2.md))
+- **A fair baseline.** Loupe was compared with plain Claude, Claude without the Loupe skill. In trial 1, plain Claude was given Loupe's own context files, which taught it Loupe's format, so in trial 2 it got the team's raw files and nothing else. In blind review, plain Claude gave a usable estimate on 1 of 4 stories, against Loupe's 4 of 4, and Loupe kept the same format every time. ([trial 1](docs/trials/2026-09-30-trial-1.md), [trial 2](docs/trials/2026-09-30-trial-2.md))
 - **Guesses marked.** In trial 3's blind review, trial 2's stories stated 9 guessed behaviors as fact. Before trial 3, the "To confirm" rule was extended from behavior to screen details, and trial 3 had 0. ([trial 2](docs/trials/2026-09-30-trial-2.md), [trial 3](docs/trials/2026-09-30-trial-3.md))
 - **Tickets after a yes.** Every ticket created in trial 9 matched its story byte for byte, compared by script, and nothing was created without a yes. ([trial 9](docs/trials/2026-10-01-trial-9.md))
 
@@ -178,8 +180,8 @@ Each trial was run by hand and recorded, on one small invented team with a handf
 
 ## Limits
 
-- Tested on one invented company, at about one to three minutes per story, by the people who built Loupe. [docs/trials](docs/trials/README.md) says who scored each trial, and which were blind.
-- Reading a tracker and creating tickets were tested on an invented mock tracker, never a real one, with Claude Code's own permission prompt stood in for in trial 9.
+- Tested on one invented company. Loupe took about one to three minutes from a request to a checked story. The people who built Loupe ran the trials, and Claude scored every trial but trial 3: a separate Claude chat, with Matt Wilson checking its scores, or the Claude Code session that ran the trial. [docs/trials](docs/trials/README.md) says who scored each trial, and which were blind.
+- Reading a tracker and creating tickets were tested on an invented mock tracker, never a real one. In trial 9, a setting let the create tool run without Claude Code's permission prompt, so that prompt, the second lock, wasn't tested.
 - The customer-data detector catches emails and secrets, but not names, phone numbers or street addresses.
 
 The full list is in [docs/limits.md](docs/limits.md).

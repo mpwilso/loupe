@@ -7,7 +7,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { escapeRegExp, fill, format, frontMatter, isRealDate, loadSpec, nestedRepeat, runCli, type Problem } from './spec.ts';
-import { historyEntries, type HistoryEntry } from './check-context.ts';
+import { historyEntries, lookEnvironments, productionName, type HistoryEntry } from './check-context.ts';
 
 type Calibration = {
   lead: string;
@@ -68,7 +68,7 @@ type StoryShape = Shape & {
   failed: { pattern: string; message?: string };
   chatOnly: { pattern: string; message?: string };
   liveSource: { key: string; notKeys?: string[]; detect: string; pattern: string; noSourceMessage?: string; noReadMessage?: string; badReadMessage?: string };
-  lookSource: { detect: string; pattern: string; message?: string; badTimeMessage?: string };
+  lookSource: { detect: string; detectFlags?: string; pattern: string; message?: string; badTimeMessage?: string; productionMessage?: string; notListedMessage?: string };
   secrets: { message?: string };
   shapes: NamedShape[];
   summary: {
@@ -188,16 +188,20 @@ export function findTeamTemplates(storyPath: string): string | undefined {
   return folder && existsSync(folder) ? folder : undefined;
 }
 
-// The team's history.md, if its context folder has one: what a story's Calibration line is checked against.
-export function findTeamHistory(storyPath: string): string | undefined {
+// A file in the team's context folder, if it has one.
+function findTeamContext(storyPath: string, fileName: string): string | undefined {
   const team = findTeamFolder(storyPath);
-  const file = team && join(team, 'context', historyFileName);
+  const file = team && join(team, 'context', fileName);
   return file && existsSync(file) ? readFileSync(file, 'utf8') : undefined;
 }
-const historyFileName = loadSpec<{ history: { fileName: string } }>('context-file.json').history.fileName;
+const fileNames = loadSpec<{ history: { fileName: string }; looks: { fileName: string } }>('context-file.json');
+// The team's history.md, what a story's Calibration line is checked against, and its looks.md, what a look source is.
+export const findTeamHistory = (storyPath: string) => findTeamContext(storyPath, fileNames.history.fileName);
+export const findTeamLooks = (storyPath: string) => findTeamContext(storyPath, fileNames.looks.fileName);
 
 // history: the text of the team's history.md, when it has one; a Calibration line is checked against it.
-export type CheckOptions = { history?: string };
+// looks: the text of the team's looks.md, when it has one; a look source must name an environment it lists.
+export type CheckOptions = { history?: string; looks?: string };
 
 export const builtInFolder = fileURLToPath(new URL(`../${specs.story.templates.folder}/`, import.meta.url));
 const builtIn = loadTemplates(builtInFolder);
@@ -239,7 +243,7 @@ export function check(text: string, templates = builtIn, options: CheckOptions =
   if (hasSummary) checkSummary(summary, rest, notReady, mark, add);
   const shift = (e: Problem) => (e.line ? { ...e, line: e.line + skip + head + offset } : e);
   const inBody = [...marks.map(({ line, text }) => ({ line, text })), ...checkShape(rest, shape, templates, offset > 0, warnings, options).map((e) => (e.line ? { ...e, line: e.line + skip } : e))];
-  const errors = [...found, ...chat.filter((e) => e.text), ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines), ...checkLiveSources(lines), ...checkLookSources(lines), ...checkSecrets(lines).filter((e) => e.text)];
+  const errors = [...found, ...chat.filter((e) => e.text), ...inBody.filter((e) => e.text).map((e) => (e.line ? { ...e, line: e.line + head } : e)), ...checkPlainLanguage(lines), ...checkLiveSources(lines), ...checkLookSources(lines, options.looks), ...checkSecrets(lines).filter((e) => e.text)];
   return { errors: errors.map((e) => (e.line ? { ...e, line: e.line + offset } : e)), warnings: warnings.filter((w) => w.text).map(shift) };
 }
 
@@ -404,12 +408,16 @@ function checkCalibration(C: Calibration, body: Entry[], at: number, options: Ch
   const value = line.text.slice(C.lead.length);
   if (value === C.noFile) return void (history && add(line.line, C.noneButHistoryMessage));
   if (value === C.nothingComparable) return;
-  for (const item of value.split(new RegExp(C.separator))) {
-    const match = new RegExp(C.item).exec(item);
-    if (!match) {
+  // Each sentence is read from where the last one ended, not split at ". ", so a title can hold ". " or a double quote.
+  // A title ends at the first '" took ', so it can't hold those words.
+  for (let rest = value; rest; ) {
+    const match = new RegExp(C.item).exec(rest);
+    rest = match ? rest.slice(match[0].length) : '';
+    if (!match || (rest && !rest.startsWith(C.separator))) {
       add(line.line, C.itemMessage);
-      continue;
+      break;
     }
+    rest = rest.slice(C.separator.length);
     const [, title, actual, low, high] = match;
     const past: HistoryEntry | undefined = history?.find((h) => h.title === title);
     if (history && !past) add(line.line, fill(C.notInHistoryMessage, { title }));
@@ -559,17 +567,28 @@ function checkLiveSources(lines: string[]): Problem[] {
 }
 
 // A fact Loupe looked up in a lower environment is cited with the environment and when it looked, since what an
-// environment shows changes. Any source that says "looked" must take that form.
-function checkLookSources(lines: string[]): Problem[] {
+// environment shows changes. Any source that says "looked", in any case, must take that form. The environment is never
+// named like production, and with the team's looks.md at hand, it is one that a look there reads.
+function checkLookSources(lines: string[], looks?: string): Problem[] {
   const rule = story.lookSource;
-  const detect = new RegExp(rule.detect);
+  const detect = new RegExp(rule.detect, rule.detectFlags);
   const pattern = new RegExp(rule.pattern);
+  const listed = looks === undefined ? undefined : lookEnvironments(looks)?.map((e) => e.toLowerCase());
   return lines.flatMap((text, i) => {
     const sources = text.trimEnd().match(/\(([^()]+)\)$/)?.[1].split('; ') ?? [];
     return sources.flatMap((source) => {
       if (!detect.test(source)) return [];
       const match = pattern.exec(source);
-      const message = !match ? rule.message : isRealDate(match[1]) ? undefined : rule.badTimeMessage;
+      const environment = match?.[1].trim() ?? '';
+      const message = !match
+        ? rule.message
+        : !isRealDate(match[2])
+          ? rule.badTimeMessage
+          : productionName(environment)
+            ? fill(rule.productionMessage, { environment })
+            : listed && !listed.includes(environment.toLowerCase())
+              ? fill(rule.notListedMessage, { environment })
+              : undefined;
       return message ? [{ line: i + 1, text: message }] : [];
     });
   });
@@ -632,7 +651,7 @@ export function main(args: string[]): void {
       const folder = findTeamTemplates(path);
       return folder ? [...builtIn, ...loadTemplates(folder)] : builtIn;
     };
-    runCli((text, path) => check(text, override ?? forStory(path), { history: findTeamHistory(path) }), usage, positionals, onFail);
+    runCli((text, path) => check(text, override ?? forStory(path), { history: findTeamHistory(path), looks: findTeamLooks(path) }), usage, positionals, onFail);
   } catch (error) {
     console.error((error as Error).message);
     process.exit(2);

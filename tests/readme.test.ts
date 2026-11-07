@@ -123,7 +123,7 @@ test('the other tools are named once, near the end, and Loupe is plain text ther
 test('what is different includes the learning loop, looks and calibrated estimates, and nothing is listed as next', () => {
   const different = section("What's different");
   assert.ok(different.includes('- **It learns your team from your documents, your corrections and your answers.** Every learned fact names its source, and nothing is saved without your yes.'));
-  assert.ok(different.includes('- **In Claude Code, it can look at a lower environment before it writes.** It runs the looks your team listed, which read and never change anything, shows each before it runs, and cites what it saw with the time. Untried in a trial.'));
+  assert.ok(different.includes('- **In Claude Code, it can look at a lower environment before it writes.** A lower environment is a test or staging copy of a system. Loupe runs a look your team listed after code checks it: one read command from a short list, such as curl sending GET or psql with one SELECT, at an environment not named like production. Claude Code asks you before each look, and Loupe cites what it saw with the time. Untried in a trial.'));
   assert.ok(different.includes("- **It sizes a story against your team's history.** The estimate names the past stories it drew on and the hours each took, or says plainly that it has no history to draw on. Untried in a trial."));
   assert.equal(section("What's next"), '', 'what was next is built, so the section is gone');
   assert.ok(!sections().some((s) => /next/i.test(s.title)));
@@ -190,7 +190,7 @@ test('what the trials found: each bullet links the trials it came from, with the
 test('the limits keep three bullets, and the full list and who scored each trial live in docs', () => {
   const limits = section('Limits');
   assert.equal(limits.split('\n').filter((line) => line.startsWith('- ')).length, 3);
-  assert.ok(limits.includes('- Tested on one invented company, at about one to three minutes per story, by the people who built Loupe. [docs/trials](docs/trials/README.md) says who scored each trial, and which were blind.'));
+  assert.ok(limits.includes('- Tested on one invented company. Loupe took about one to three minutes from a request to a checked story. The people who built Loupe ran the trials, and Claude scored every trial but trial 3: a separate Claude chat, with Matt Wilson checking its scores, or the Claude Code session that ran the trial. [docs/trials](docs/trials/README.md) says who scored each trial, and which were blind.'));
   assert.ok(limits.includes('The full list is in [docs/limits.md](docs/limits.md).'));
   assert.ok(trialsIndex.includes('The trials were run by the people who built Loupe. The advisor scored trials 1, 2, 4, 5, 6, 6b, 7 and 8 through 8b. Trials 7 and 8 were scored from saved outputs, not blind, and 8c to 8e and trials 9 and 10 were measured by the Claude Code session that ran them, with Matt Wilson reviewing two readings in 10c. A separate reviewer scored trials 2 and 3 blind.'));
   const full = readFileSync(join(root, 'docs/limits.md'), 'utf8');
@@ -262,7 +262,7 @@ test('the README says what reading a tracker and creating tickets do, and the li
   assert.ok(section("What's different").includes('- **In Claude Code, it can read your tracker and create tickets.** It searches the team\'s tracker before writing, cites any ticket it uses with when it was read, and flags likely duplicates. It creates a ticket from a finished story after showing you exactly what it will create and asking, and it never changes an existing ticket.'));
   const limits = section('Limits');
   assert.ok(limits.includes('- The customer-data detector catches emails and secrets, but not names, phone numbers or street addresses.'));
-  assert.ok(limits.includes("- Reading a tracker and creating tickets were tested on an invented mock tracker, never a real one, with Claude Code's own permission prompt stood in for in trial 9."));
+  assert.ok(limits.includes("- Reading a tracker and creating tickets were tested on an invented mock tracker, never a real one. In trial 9, a setting let the create tool run without Claude Code's permission prompt, so that prompt, the second lock, wasn't tested."));
   // M4c, trial 9.
   assert.ok(section("What's different").includes('- **Stories are written for developers and QA.** User and job stories have a background, numbered requirements and test scenarios, each scenario with a happy path and at least one unhappy path.'));
   const full = readFileSync(join(root, 'docs/limits.md'), 'utf8');

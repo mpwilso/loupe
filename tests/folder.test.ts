@@ -110,7 +110,18 @@ test('check-folder checks looks.md by its own rules and refuses a look that coul
   copyFileSync(join(fixtures, 'bad/looks/writes-post.md'), join(dir, 'context/looks.md'));
   const run = checkFolder(dir);
   assert.equal(run.status, 1);
-  assert.ok(run.stdout.includes(`${join(dir, 'context/looks.md')}:\n  line 11: This command has a request method that writes, "-X POST".`), run.stdout);
+  assert.ok(run.stdout.includes(`${join(dir, 'context/looks.md')}:\n  line 11: In a look, "-X" takes GET, not "POST".`), run.stdout);
+});
+
+// Review fixes: a story's look source names an environment the folder's looks.md lists.
+test('check-folder checks each look source in a story against the environments in looks.md', () => {
+  const dir = teamFolder('look-sources', 'good-look-story.md');
+  copyFileSync(join(fixtures, 'good-looks.md'), join(dir, 'context/looks.md'));
+  assert.equal(checkFolder(dir).status, 0, checkFolder(dir).stdout);
+  writeFileSync(join(dir, 'stories/2026-10-04-uat.md'), readFileSync(join(fixtures, 'good-look-story.md'), 'utf8').replace('(staging, looked', '(uat, looked'));
+  const run = checkFolder(dir);
+  assert.equal(run.status, 1);
+  assert.ok(run.stdout.includes(`${join(dir, 'stories/2026-10-04-uat.md')}:\n  line 39: This look source names "uat", which no look in looks.md reads.`), run.stdout);
 });
 
 // Story format v2: a team folder can hold stories saved in v1 next to new ones in v2.

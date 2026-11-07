@@ -85,7 +85,20 @@ The deny list names the tools on that page as of the date above. Tool names chan
 
 ## Looks at a lower environment
 
-In Claude Code, Loupe can look at a lower environment before it writes a story, so a Known line can say what the system does today, with the environment and the time it looked: "(staging, looked 2026-10-02 14:05)". A look is one of the read-only commands your team lists in `loupe/context/looks.md`, with the environment it reads and who gave it. Loupe shows each look before it runs, runs it only as written, with its placeholders filled from the input, and never runs anything else. The checker refuses a look that could write, or one on anything named like production.
+A lower environment is a test or staging copy of a system, never the one customers use. In Claude Code, Loupe can look at one before it writes a story, so a Known line can say what the system does today, with the environment and the time it looked: "(staging, looked 2026-10-02 14:05)". A look is one of the commands your team lists in `loupe/context/looks.md`, with the environment it reads and who gave it.
+
+Code checks every look, twice: `check-context` when looks.md is written, and `check-look` just before the look runs, with its values filled in. A look must be one command, from this short list:
+- `curl`, sending GET and nothing else, with no data, form, upload, output file, config file or password;
+- `wget`, with `-O -` so it prints what it reads, and no method, data or output file;
+- HTTPie (`http` or `https`), with GET or no method, and `--ignore-stdin`;
+- `psql` or `mysql`, with one query that is a single SELECT;
+- `kubectl get`, `describe` or `logs`, with `--context` naming the cluster, and never a secret.
+
+Anything else is refused, and so is any shell character, such as `|`, `;`, `&&`, `>`, `$(` or a backtick, anywhere in the command. So is a word that writes, such as UPDATE, DELETE or INTO, even as part of a word like `updateOne`. A placeholder, like `{subscriber}` or `{day:date}`, can sit in a URL's path or query value, or inside a single-quoted value in a query, and nowhere else; its value must be an id (letters, digits, `_` or `-`) or a real date. Loupe runs only the command `check-look` prints after `ok: `.
+
+Loupe never looks at production. Both checks refuse an environment, a host or a cluster whose name has prod, prd, production or live as a part, like `prod1`, `PROD_US` or `db.prod.example.test`. They check names, not where a host really points: a host named staging that points at production gets through, so a person reads every look.
+
+Claude Code asks you before every look, because a look is a Bash command. That prompt is the second lock: read the command, and refuse anything that isn't the one `check-look` printed. Never add an allow rule for a look.
 
 ### Try it with the mock environment
 
@@ -95,23 +108,17 @@ This repository has a mock lower environment, a small web server with invented P
 node /path/to/loupe/mock/environment/server.ts
 ```
 
-It listens on `http://localhost:8765`. The example team's `examples/pellwick/context/looks.md` lists two looks at it, and `node scripts/build-team-folder.ts` copies that file into the team folder it builds, so a story about subscriber 1042's next box can cite what staging shows.
+It listens on `http://localhost:8765`. The example team's `examples/pellwick/context/looks.md` lists two looks at it, and `node scripts/build-team-folder.ts` copies that file into the team folder it builds, so a story about subscriber 1042's next box can cite what staging shows. To fill in its first look yourself:
 
-Claude Code asks before each look runs, because a look is a Bash command. That prompt is a second lock: read the command and refuse anything that isn't a listed look. To stop the prompts for one look, allow its exact command in `.claude/settings.json`, and nothing broader:
-
-```json
-{
-  "permissions": {
-    "allow": [
-      "Bash(curl -s http://localhost:8765/*)"
-    ]
-  }
-}
 ```
+node /path/to/loupe/src/run.js check-look loupe/context/looks.md 1 subscriber=1042
+```
+
+That prints `ok: curl -s http://localhost:8765/subscribers/1042/next-box`.
 
 ### A real lower environment
 
-This is not tested with Loupe. List only reads, on a lower environment that holds made-up data, and never production. The checker refuses a command with any sign of a write, such as a `POST`, data sent with a request, an `UPDATE` or an output redirect; a command can write without any such sign, so read every look before you list it, and again when Claude Code asks.
+This is not tested with Loupe. List only reads, on a lower environment that holds made-up data, and never production. The checks are a guard, not proof: a SELECT can call a function that changes data, and an API can change data on a GET. Read every look before you list it, and again when Claude Code asks.
 
 ## Creating tickets
 

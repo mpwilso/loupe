@@ -18,7 +18,7 @@ export function skillFiles(): Record<string, string> {
     'tracker.md': 'skill/tracker.md',
     'tracker-write.md': 'skill/tracker-write.md',
   'looks.md': 'skill/looks.md',
-    ...Object.fromEntries(['run.js', 'node-version.js', 'check.ts', 'check-context.ts', 'check-folder.ts', 'check-tickets.ts', 'spec.ts'].map((f) => [`src/${f}`, `src/${f}`])),
+    ...Object.fromEntries(['run.js', 'node-version.js', 'check.ts', 'check-context.ts', 'check-folder.ts', 'check-look.ts', 'check-tickets.ts', 'look-command.ts', 'spec.ts'].map((f) => [`src/${f}`, `src/${f}`])),
     ...Object.fromEntries(folder('spec', '.json').map((f) => [`spec/${f}`, `spec/${f}`])),
     ...Object.fromEntries(folder('templates', '.md').map((f) => [`templates/${f}`, `templates/${f}`])),
     'examples/story.md': 'examples/pellwick/expected/skip-a-box.md',
